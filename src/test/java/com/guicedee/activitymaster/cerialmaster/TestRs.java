@@ -60,7 +60,7 @@ public class TestRs
 	    
 	    mSystem.runUpdatesOnEnterprise(enterprise.getIEnterprise(), new ConsoleLogActivityMasterProgressMaster());
 	
-	    UUID token = get(CerialMasterSystem.class).getSystemToken(enterprise);
+	    UUID identityToken = get(CerialMasterSystem.class).getSystemToken(enterprise);
 	
 	    ICerialMasterService<?> service = get(ICerialMasterService.class);
 	    List<String> strings = service.listComPorts();
@@ -70,11 +70,11 @@ public class TestRs
 	    {
 		    int portNumber = Integer.parseInt(string.replace("COM", ""));
 		    ComPortConnection<?> search = new ComPortConnection<>(portNumber, Device);
-		    search = service.findComPortConnection(search, enterprise, token);
+		    search = service.findComPortConnection(search, enterprise, identityToken);
 		    if(search == null)
 		    {
 			    search = new ComPortConnection<>(portNumber, Device);
-			    search = service.addOrUpdateConnection(search, enterprise, token);
+			    search = service.addOrUpdateConnection(search, enterprise, identityToken);
 		    }
 		
 		    search.setType(Device);
@@ -82,7 +82,10 @@ public class TestRs
 		    search.setBufferSize(512000);
 		    search.setParity(0);
 		
-		    search = service.addOrUpdateConnection(search,enterprise,token);
+		    search = service.addOrUpdateConnection(search,enterprise,identityToken);
+		
+		    search = service.findComPortConnection(search, enterprise, identityToken);
+		    System.out.println(search);
 	    }
     }
     
