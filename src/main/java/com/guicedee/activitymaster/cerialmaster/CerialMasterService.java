@@ -24,7 +24,6 @@ import static com.guicedee.activitymaster.cerialmaster.services.enumerations.Cer
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.SerialConnectionPort;
 import static com.guicedee.guicedinjection.GuiceContext.get;
 
-@Singleton
 public class CerialMasterService<J extends CerialMasterService<J>>
 		implements ICerialMasterService<J>
 {
@@ -32,6 +31,7 @@ public class CerialMasterService<J extends CerialMasterService<J>>
 	private final Map<String, ComPortConnection<?>> connections = new ConcurrentHashMap<>();
 	
 	@CacheResult(cacheName = "SerialPortResourceType")
+	@Override
 	public IResourceItemType<?> getSerialConnectionType(IEnterprise<?> enterprise, UUID... tokens)
 	{
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -121,6 +121,7 @@ public class CerialMasterService<J extends CerialMasterService<J>>
 				objects[i] = "";
 			}
 		}
+		
 		comPort.setComPort(Integer.parseInt(objects[1].toString()));
 		comPort.setType(ComPortType.valueOf(objects[2].toString()));
 		comPort.setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.valueOf(objects[3].toString()));

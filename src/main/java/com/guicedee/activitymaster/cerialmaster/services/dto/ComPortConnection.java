@@ -1,11 +1,9 @@
 package com.guicedee.activitymaster.cerialmaster.services.dto;
 
+import com.guicedee.activitymaster.cerialmaster.services.exceptions.SerialPortException;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.logger.LogFactory;
-import gnu.io.NRSerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
-import gnu.io.UnsupportedCommOperationException;
+import gnu.io.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -68,7 +66,25 @@ public class ComPortConnection<J extends ComPortConnection<J>>
         {
             throw new RuntimeException("Tried to open a com connection without an end of line character set?");
         }
-        connect();
+        try
+        {
+            connect();
+        }catch (NRSerialPortException nre)
+        {
+            switch(nre.getMessage())
+            {
+                case "No Port":
+                    setStatus(Missing);
+                    return;
+                case "Port in Use":
+                    setStatus(InUse);
+                            return;
+                default:
+                    log.log(Level.SEVERE,"Unknown Exception",nre);
+                    setStatus(GeneralException);
+                    return;
+            }
+        }
         getSerialPortInstance().setDTR(true);
         getSerialPortInstance().setRTS(true);
         // getSerialPortInstance().disableReceiveFraming();
@@ -101,7 +117,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
             log.log(Level.SEVERE,"Reader has too many listeners",e);
             reader.processMessageTerminal("Reader has too many listeners",e);
         }
-        setStatus(Idle);
+        setStatus(Silent);
     }
 
     public void close()
@@ -134,7 +150,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 
     public void writeMessage(ServerMessage<?> sm) {
         try {
-            System.out.println("[" + comPort+ "] TX : " + sm.generateMessage());
+            log.log(Level.FINE,"[" + comPort+ "] TX : " + sm.generateMessage());
             outs.writeBytes(sm.generateMessage());
         } catch (Exception e) {
             log.log(Level.SEVERE,"Unable to write message",e);
@@ -147,10 +163,14 @@ public class ComPortConnection<J extends ComPortConnection<J>>
     public J setStatus(ComPortStatus status) {
         ComPortStatus currentStatus = this.status;
         this.status = status;
-        Set<IComPortStatusChanged> cleanMessages = GuiceContext.instance()
-                .getLoader(IComPortStatusChanged.class, ServiceLoader.load(IComPortStatusChanged.class));
-        for (IComPortStatusChanged<?> messageReceiver : cleanMessages) {
-            messageReceiver.onComPortStatusChanged(me,currentStatus,this.status);
+        if(currentStatus != this.status)
+        {
+            Set<IComPortStatusChanged> cleanMessages = GuiceContext.instance()
+                                                                   .getLoader(IComPortStatusChanged.class, ServiceLoader.load(IComPortStatusChanged.class));
+            for (IComPortStatusChanged<?> messageReceiver : cleanMessages)
+            {
+                messageReceiver.onComPortStatusChanged(me, currentStatus, this.status);
+            }
         }
         return (J) this;
     }
@@ -204,7 +224,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
             }
             else if(event.getEventType() == SerialPortEvent.HARDWARE_ERROR)
             {
-
+                close();
+                setStatus(GeneralException);
             }
             else if(event.getEventType() == SerialPortEvent.DATA_AVAILABLE)
                 try {
@@ -234,7 +255,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 
         @SuppressWarnings({"rawtypes", "unchecked"})
         private void processMessage(String message) {
-            log.fine("[" + comPort+ "] RX Raw : " + message);
+            log.finer("[" + comPort+ "] RX Raw : " + message);
             Set<ICleanReceivedMessage> cleanMessages = GuiceContext.instance()
                     .getLoader(ICleanReceivedMessage.class, ServiceLoader.load(ICleanReceivedMessage.class));
             for (ICleanReceivedMessage<?> messageReceiver : cleanMessages) {
@@ -247,7 +268,6 @@ public class ComPortConnection<J extends ComPortConnection<J>>
             for (IReceiveMessage<?> messageReceiver : receiveMessages) {
                 messageReceiver.receiveMessage(message, me);
             }
-
             me.setStatus(Running);
         }
 
@@ -258,7 +278,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
             for (IErrorReceiveMessage<?> messageReceiver : messageReceivers) {
                 messageReceiver.receiveErrorMessage(message, T, me);
             }
-            System.out.println("Error in receiving string from COM-port: " + T);
+            log.log(Level.FINE,"Message Exception",T);
+            log.log(Level.SEVERE,"Error in receiving string from COM-port: " + T + " - " + message);
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})

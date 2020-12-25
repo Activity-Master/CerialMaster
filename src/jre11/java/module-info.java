@@ -9,6 +9,7 @@ module com.guicedee.activitymaster.cerialmaster {
 	exports com.guicedee.activitymaster.cerialmaster.services;
 	exports com.guicedee.activitymaster.cerialmaster.services.dto;
 	exports com.guicedee.activitymaster.cerialmaster;
+	exports com.guicedee.activitymaster.cerialmaster.services.exceptions;
 	
 	requires static lombok;
 	requires transitive com.neuronrobotics.nrjavaserial;
@@ -29,7 +30,8 @@ module com.guicedee.activitymaster.cerialmaster {
 	opens com.guicedee.activitymaster.cerialmaster to com.google.guice;
 	opens com.guicedee.activitymaster.cerialmaster.implementations to com.google.guice;
 	opens com.guicedee.activitymaster.cerialmaster.services to com.google.guice;
-
+	exports com.guicedee.activitymaster.cerialmaster.services.enumerations;
+	
 	uses IReceiveMessage;
     uses com.guicedee.activitymaster.cerialmaster.services.IErrorReceiveMessage;
 	uses com.guicedee.activitymaster.cerialmaster.services.ITerminalReceiveMessage;
