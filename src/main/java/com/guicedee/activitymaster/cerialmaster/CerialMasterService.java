@@ -1,7 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster;
 
 import com.google.common.base.Strings;
-import com.google.inject.Singleton;
 
 import com.guicedee.activitymaster.cerialmaster.implementations.CerialMasterSystem;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType;
@@ -104,8 +103,7 @@ public class CerialMasterService<J extends CerialMasterService<J>>
 		if(comPortResourceItem == null)
 			return null;
 		
-		
-		List<Object[]> values = comPortResourceItem.getValuePivot(ComPortNumber.toString(), "", system, identitiyTokens,
+		List<Object[]> values = comPortResourceItem.getClassificationsValuePivot(ComPortNumber.toString(), "", system, identitiyTokens,
 				ComPortDeviceType.toString(), ComPortStatus.toString(), BaudRate.toString(),
 				BufferSize.toString(), DataBits.toString(), StopBits.toString(), Parity.toString(),
 				ComPortAllowedCharacters.toString(), ComPortEndOfMessage.toString());
