@@ -1,5 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
+import com.google.inject.Singleton;
 import com.guicedee.activitymaster.core.services.IActivityMasterProgressMonitor;
 import com.guicedee.activitymaster.core.services.IActivityMasterSystem;
 import com.guicedee.activitymaster.core.services.dto.IEnterprise;
@@ -16,6 +17,7 @@ import static com.guicedee.guicedinjection.GuiceContext.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterEventTypes.*;
 
+@Singleton
 public class CerialMasterSystem
 		extends ActivityMasterDefaultSystem<CerialMasterSystem>
 		implements IActivityMasterSystem<CerialMasterSystem>
@@ -36,67 +38,20 @@ public class CerialMasterSystem
 	@Override
 	public void loadUpdates(IEnterprise<?> enterprise, IActivityMasterProgressMonitor progressMonitor)
 	{
-		IClassificationService<?> classificationService = get(IClassificationService.class);
-		IClassificationDataConceptService<?> dataConceptService = get(IClassificationDataConceptService.class);
-		ISystems<?> system = getSystem(enterprise);
-		UUID token = getSystemToken(enterprise);
-
-		try
-		{
-			classificationService.find(ComPort, enterprise, token);
-
-		}
-		catch (NoSuchElementException nse)
-		{
-			_2020012(enterprise, progressMonitor);
-		}
 	}
 
 	@Override
 	public String getSystemName()
 	{
-		return "Grader System";
+		return "Cerial Master System";
 	}
 
 	@Override
 	public String getSystemDescription()
 	{
-		return "This system handles all items for the Graders";
+		return "This system handles communication with serial ports";
 	}
-
-	private void _2020012(IEnterprise<?> enterprise, IActivityMasterProgressMonitor progressMonitor)
-	{
-		IClassificationService<?> classificationService = get(IClassificationService.class);
-		IClassificationDataConceptService<?> dataConceptService = get(IClassificationDataConceptService.class);
-		ISystems<?> system = getSystem(enterprise);
-		UUID token = getSystemToken(enterprise);
-		
-		IResourceItemService<?> resourceItemService = get(IResourceItemService.class);
-		resourceItemService.createType(SerialConnectionPort,system);
-		logProgress("Cerial Master", "Loading Com Port Configurations", progressMonitor);
-		
-		classificationService.create(ComPort, system,Hardware);
-		
-		classificationService.create(ComPortNumber, system, ComPort);
-		classificationService.create(ComPortStatus, system, ComPort);
-		classificationService.create(ComPortDeviceType, system, ComPort);
-		classificationService.create(ComPortAllowedCharacters, system, ComPort);
-		classificationService.create(ComPortEndOfMessage, system, ComPort);
-		
-		classificationService.create(BaudRate, system, ComPort);
-		classificationService.create(BufferSize, system, ComPort);
-		classificationService.create(DataBits, system, ComPort);
-		classificationService.create(StopBits, system, ComPort);
-		classificationService.create(Parity, system, ComPort);
-
-		logProgress("Cerial Master", "Loading Com Port Events", progressMonitor);
-		IEventService<?> eventsService = GuiceContext.get(IEventService.class);
-		eventsService.createEventType(RegisteredANewConnection, system, getSystemToken(enterprise));
-		eventsService.createEventType(ClosedANewConnection, system, getSystemToken(enterprise));
-
-		logProgress("Cerial Master", "Completed Com Ports", progressMonitor);
-
-	}
+	
 
 	@Override
 	public Integer sortOrder()

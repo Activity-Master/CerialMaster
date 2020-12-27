@@ -1,6 +1,7 @@
 package com.guicedee.activitymaster.cerialmaster.services.dto;
 
 import com.guicedee.activitymaster.cerialmaster.services.exceptions.SerialPortException;
+import com.guicedee.activitymaster.core.services.dto.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.logger.LogFactory;
 import gnu.io.*;
@@ -47,6 +48,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
     private final ComPortConnection<J> me;
     private ComPortStatus status = Offline;
     private ComPortType type = ComPortType.Device;
+    
+    private IResourceItem<?> resourceItem;
 
     private PortReader reader;
 

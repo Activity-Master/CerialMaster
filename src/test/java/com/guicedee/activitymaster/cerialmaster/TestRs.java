@@ -7,6 +7,7 @@ import com.guicedee.activitymaster.cerialmaster.services.dto.ServerMessage;
 import com.guicedee.activitymaster.core.ActivityMasterService;
 import com.guicedee.activitymaster.core.services.ConsoleLogActivityMasterProgressMaster;
 import com.guicedee.activitymaster.core.services.dto.IEnterprise;
+import com.guicedee.activitymaster.core.services.dto.ISystems;
 import com.guicedee.activitymaster.core.services.system.IEnterpriseService;
 import com.guicedee.guicedhazelcast.HazelcastProperties;
 import com.guicedee.guicedinjection.GuiceContext;
@@ -56,9 +57,11 @@ public class TestRs
 	    IEnterpriseService enterpriseService = get(IEnterpriseService.class);
 	    IEnterprise<?> enterprise = enterpriseService.getEnterprise(TestEnterprise);
 	    ActivityMasterService mSystem = get(ActivityMasterService.class);
+	
+	    ISystems<?> system = get(CerialMasterSystem.class).getSystem(enterprise);
 	    
 	    
-	    mSystem.runUpdatesOnEnterprise(enterprise.getIEnterprise(), new ConsoleLogActivityMasterProgressMaster());
+	    mSystem.createNewEnterprise(enterprise.getIEnterprise(), new ConsoleLogActivityMasterProgressMaster());
 	
 	    UUID identityToken = get(CerialMasterSystem.class).getSystemToken(enterprise);
 	
@@ -70,11 +73,11 @@ public class TestRs
 	    {
 		    int portNumber = Integer.parseInt(string.replace("COM", ""));
 		    ComPortConnection<?> search = new ComPortConnection<>(portNumber, Device);
-		    search = service.findComPortConnection(search, enterprise, identityToken);
+		    search = service.findComPortConnection(search, system, identityToken);
 		    if(search == null)
 		    {
 			    search = new ComPortConnection<>(portNumber, Device);
-			    search = service.addOrUpdateConnection(search, enterprise, identityToken);
+			    search = service.addOrUpdateConnection(search, system, identityToken);
 		    }
 		
 		    search.setType(Device);
@@ -82,9 +85,9 @@ public class TestRs
 		    search.setBufferSize(512000);
 		    search.setParity(0);
 		
-		    search = service.addOrUpdateConnection(search,enterprise,identityToken);
+		    search = service.addOrUpdateConnection(search,system,identityToken);
 		
-		    search = service.findComPortConnection(search, enterprise, identityToken);
+		    search = service.findComPortConnection(search, system, identityToken);
 		    System.out.println(search);
 	    }
     }
