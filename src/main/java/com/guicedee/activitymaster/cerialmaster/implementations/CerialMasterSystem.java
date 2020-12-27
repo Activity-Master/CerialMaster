@@ -32,14 +32,9 @@ public class CerialMasterSystem
 	@Override
 	public int totalTasks()
 	{
-		return 3;
+		return 0;
 	}
-
-	@Override
-	public void loadUpdates(IEnterprise<?> enterprise, IActivityMasterProgressMonitor progressMonitor)
-	{
-	}
-
+	
 	@Override
 	public String getSystemName()
 	{
