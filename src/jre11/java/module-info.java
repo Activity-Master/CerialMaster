@@ -7,6 +7,7 @@ import com.guicedee.activitymaster.cerialmaster.services.IReceiveMessage;
 module com.guicedee.activitymaster.cerialmaster {
 
 	exports com.guicedee.activitymaster.cerialmaster.services;
+	exports com.guicedee.activitymaster.cerialmaster.services.enumerations;
 	exports com.guicedee.activitymaster.cerialmaster.services.dto;
 	exports com.guicedee.activitymaster.cerialmaster;
 	exports com.guicedee.activitymaster.cerialmaster.services.exceptions;
@@ -29,8 +30,10 @@ module com.guicedee.activitymaster.cerialmaster {
 	
 	opens com.guicedee.activitymaster.cerialmaster to com.google.guice;
 	opens com.guicedee.activitymaster.cerialmaster.implementations to com.google.guice;
-	opens com.guicedee.activitymaster.cerialmaster.services to com.google.guice;
-	exports com.guicedee.activitymaster.cerialmaster.services.enumerations;
+	opens com.guicedee.activitymaster.cerialmaster.services to com.google.guice,com.fasterxml.jackson.databind;
+	opens com.guicedee.activitymaster.cerialmaster.services.dto to com.google.guice,com.fasterxml.jackson.databind;
+	opens com.guicedee.activitymaster.cerialmaster.services.enumerations to com.google.guice,com.fasterxml.jackson.databind;
+	
 	
 	uses IReceiveMessage;
     uses com.guicedee.activitymaster.cerialmaster.services.IErrorReceiveMessage;

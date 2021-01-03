@@ -1,5 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.services.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.guicedee.activitymaster.cerialmaster.services.exceptions.SerialPortException;
 import com.guicedee.activitymaster.core.services.dto.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
@@ -45,7 +46,9 @@ public class ComPortConnection<J extends ComPortConnection<J>>
     private int stopBits = STOPBITS_1;
     private int parity = PARITY_NONE;
 
+    @JsonIgnore
     private final ComPortConnection<J> me;
+    
     private ComPortStatus status = Offline;
     private ComPortType type = ComPortType.Device;
     
