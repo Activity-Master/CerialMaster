@@ -1,6 +1,9 @@
 package com.guicedee.activitymaster.cerialmaster.services.dto;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.guicedee.activitymaster.cerialmaster.services.exceptions.SerialPortException;
 import com.guicedee.activitymaster.core.services.dto.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
@@ -17,6 +20,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
 import static gnu.io.SerialPort.*;
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.*;
 
@@ -24,14 +28,19 @@ import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatu
 @Getter
 @Setter
 @EqualsAndHashCode(of = "comPort",callSuper = false)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true,value = {"inspection"})
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 public class ComPortConnection<J extends ComPortConnection<J>>
         extends NRSerialPort
         implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+    
+    private UUID id;
 
     private static final Logger log = LogFactory.getLog(ComPortConnection.class);
-    public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Logging, Running);
+    public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Logging, Running,Silent);
     public static final EnumSet<ComPortType> graderTypes = EnumSet.of(ComPortType.Sim20,ComPortType.Sim20_2,ComPortType.Lora,ComPortType.Device);
     
     public static final String COM_NAME = "COM";
@@ -50,21 +59,39 @@ public class ComPortConnection<J extends ComPortConnection<J>>
     private final ComPortConnection<J> me;
     
     private ComPortStatus status = Offline;
-    private ComPortType type = ComPortType.Device;
+    private ComPortType type;
     
+    @JsonIgnore
     private IResourceItem<?> resourceItem;
-
+    
+    public J setResourceItem(IResourceItem<?> item)
+    {
+        this.resourceItem = item;
+        setId(item.getId());
+        //noinspection unchecked
+        return (J) this;
+    }
+    
+    @JsonIgnore
     private PortReader reader;
-
-    public ComPortConnection(int comPort,ComPortType type) {
+    
+    public ComPortConnection()
+    {
+        endOfMessageCharacters.add('\n');
+        me = this;
+    }
+    
+    public ComPortConnection(int comPort, ComPortType type) {
         super(COM_NAME + comPort,0);
         this.comPort = comPort;
         this.type = type;
         endOfMessageCharacters.add('\n');
         me = this;
     }
-
+    
+    @JsonIgnore
     private DataInputStream ins;
+    @JsonIgnore
     private DataOutputStream outs;
 
     public void open() {
@@ -106,8 +133,10 @@ public class ComPortConnection<J extends ComPortConnection<J>>
         getSerialPortInstance().notifyOnDSR(true);
         getSerialPortInstance().notifyOnCTS(true);
         getSerialPortInstance().notifyOnOverrunError(true);
+        
         ins = new DataInputStream(getInputStream());
         outs = new DataOutputStream(getOutputStream());
+        
         try {
             getSerialPortInstance().setSerialPortParams(baudRate,
                     dataBits,
@@ -123,7 +152,6 @@ public class ComPortConnection<J extends ComPortConnection<J>>
             log.log(Level.SEVERE,"Reader has too many listeners",e);
             reader.processMessageTerminal("Reader has too many listeners",e);
         }
-        setStatus(Silent);
     }
 
     public void close()
@@ -274,7 +302,6 @@ public class ComPortConnection<J extends ComPortConnection<J>>
             for (IReceiveMessage<?> messageReceiver : receiveMessages) {
                 messageReceiver.receiveMessage(message, me);
             }
-            me.setStatus(Running);
         }
 
         @SuppressWarnings({"rawtypes", "unchecked"})

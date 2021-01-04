@@ -5,6 +5,7 @@ public enum ComPortStatus {
     Missing,
     InUse,
     Offline,
+    FileTransfer,
     Simulation,
     Silent,
     Idle,
