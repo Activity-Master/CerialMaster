@@ -11,6 +11,7 @@ import com.guicedee.activitymaster.core.services.dto.ISystems;
 import com.guicedee.activitymaster.core.services.enumtypes.IResourceType;
 import com.guicedee.activitymaster.core.services.system.IResourceItemService;
 import gnu.io.NRSerialPort;
+import jakarta.cache.annotation.CacheKey;
 import jakarta.cache.annotation.CacheResult;
 import lombok.Getter;
 import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
@@ -38,7 +39,8 @@ public class CerialMasterService<J extends CerialMasterService<J>>
 	}
 	
 	@Override
-	public ComPortConnection<?> addOrUpdateConnection(ComPortConnection<?> comPort, ISystems<?> system, UUID... identityToken)
+	@CacheResult(cacheName = "ComPortConnections",skipGet = true)
+	public ComPortConnection<?> addOrUpdateConnection(@CacheKey ComPortConnection<?> comPort,@CacheKey ISystems<?> system,@CacheKey  UUID... identityToken)
 	{
 		IResourceType<?> comPortResourceItemType = (IResourceType<?>) getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -86,7 +88,8 @@ public class CerialMasterService<J extends CerialMasterService<J>>
 	}
 	
 	@Override
-	public ComPortConnection<?> updateStatus(ComPortConnection<?> comPort, ISystems<?> system, UUID... identityToken)
+	@CacheResult(cacheName = "ComPortConnections",skipGet = true)
+	public ComPortConnection<?> updateStatus(@CacheKey ComPortConnection<?> comPort,@CacheKey ISystems<?> system,@CacheKey UUID... identityToken)
 	{
 		IResourceType<?> comPortResourceItemType = (IResourceType<?>) getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -97,7 +100,8 @@ public class CerialMasterService<J extends CerialMasterService<J>>
 	}
 	
 	@Override
-	public ComPortConnection<?> findComPortConnection(ComPortConnection<?> comPort, ISystems<?> system, UUID... identityToken)
+	@CacheResult(cacheName = "ComPortConnections")
+	public ComPortConnection<?> findComPortConnection(@CacheKey ComPortConnection<?> comPort,@CacheKey ISystems<?> system,@CacheKey UUID... identityToken)
 	{
 		IResourceType<?> comPortResourceItemType = (IResourceType<?>) getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -108,6 +112,8 @@ public class CerialMasterService<J extends CerialMasterService<J>>
 		}
 		
 		comPort.setResourceItem(comPortResourceItem);
+		comPort.setId(comPortResourceItem.getId());
+		
 		List<Object[]> values = comPortResourceItem.getClassificationsValuePivot(ComPortNumber.toString(), comPortResourceItem.getId()
 		                                                                                                                      .toString(),
 				system, identityToken,

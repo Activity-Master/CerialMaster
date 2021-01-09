@@ -94,7 +94,7 @@ public class TestRs
     
 	public static void main(String[] args)
 	{
-		ComPortConnection<?> server = new ComPortConnection<>(5, Device);
+		ComPortConnection<?> server = new ComPortConnection<>(3, Device);
 		server.getEndOfMessageCharacters()
 		      .add('#');
 		server.setBaudRate(115200);

@@ -54,6 +54,14 @@ public class ComPortConnection<J extends ComPortConnection<J>>
     private int dataBits = DATABITS_8;
     private int stopBits = STOPBITS_1;
     private int parity = PARITY_NONE;
+    
+    public J setBaudRate(int rate)
+    {
+        setBaud(rate);
+        this.baudRate = rate;
+        //noinspection unchecked
+        return (J) this;
+    }
 
     @JsonIgnore
     private final ComPortConnection<J> me;
