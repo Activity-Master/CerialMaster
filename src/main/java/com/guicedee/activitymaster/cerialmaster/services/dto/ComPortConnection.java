@@ -45,6 +45,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
     
     public static final String COM_NAME = "COM";
 
+    private final Set<Character> startOfMessageCharacters = new HashSet<>();
     private final Set<Character> endOfMessageCharacters = new HashSet<>();
     private final Set<Character> allowedCharacters = new HashSet<>();
 
@@ -256,6 +257,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 
     public class PortReader
             implements SerialPortEventListener {
+        
         private StringBuilder readBuffer = new StringBuilder();
 
         @Override
@@ -276,8 +278,25 @@ public class ComPortConnection<J extends ComPortConnection<J>>
                         while((i = ins.read()) != -1)
                         {
                             char c = (char) i;
-                            if (Character.isAlphabetic(c) || Character.isDigit(c) || allowedCharacters.contains(c)) {
+                            if (Character.isAlphabetic(c) || Character.isDigit(c) || allowedCharacters.contains(c) || startOfMessageCharacters.contains(c)) {
                                 readBuffer.append(c);
+                                if(!startOfMessageCharacters.isEmpty())
+                                {
+                                    boolean startCorrect = false;
+                                    for (Character startOfMessageCharacter : startOfMessageCharacters)
+                                    {
+                                        if (readBuffer.toString()
+                                                      .startsWith(startOfMessageCharacter + ""))
+                                        {
+                                            startCorrect = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!startCorrect)
+                                    {
+                                        readBuffer = new StringBuilder();
+                                    }
+                                }
                             }
                             if (endOfMessageCharacters.contains(c)) {
                                 try {
