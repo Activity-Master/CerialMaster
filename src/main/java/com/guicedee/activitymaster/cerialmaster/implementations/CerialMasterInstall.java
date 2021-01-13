@@ -37,6 +37,7 @@ public class CerialMasterInstall implements ISystemUpdate
 		logProgress("Cerial Master", "Loading Com Port Configurations", progressMonitor);
 		
 		classificationService.create(ComPort, system,Hardware);
+		classificationService.create(ServerNumber, system,ComPort);
 		
 		classificationService.create(ComPortNumber, system, ComPort);
 		classificationService.create(ComPortStatus, system, ComPort);

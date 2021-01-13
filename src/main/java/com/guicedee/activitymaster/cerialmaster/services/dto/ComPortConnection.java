@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.guicedee.activitymaster.cerialmaster.services.exceptions.SerialPortException;
 import com.guicedee.activitymaster.core.services.dto.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.logger.LogFactory;
@@ -41,7 +40,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 
     private static final Logger log = LogFactory.getLog(ComPortConnection.class);
     public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Logging, Running,Silent);
-    public static final EnumSet<ComPortType> graderTypes = EnumSet.of(ComPortType.Sim20,ComPortType.Sim20_2,ComPortType.Lora,ComPortType.Device);
+    public static final EnumSet<ComPortType> graderTypes = EnumSet.of(ComPortType.Sim20,ComPortType.Sim20Type2,ComPortType.Lora,ComPortType.Device);
     
     public static final String COM_NAME = "COM";
 
@@ -87,6 +86,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
     public ComPortConnection()
     {
         endOfMessageCharacters.add('\n');
+        endOfMessageCharacters.add('\r');
         me = this;
     }
     
@@ -95,6 +95,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
         this.comPort = comPort;
         this.type = type;
         endOfMessageCharacters.add('\n');
+        endOfMessageCharacters.add('\r');
         me = this;
     }
     

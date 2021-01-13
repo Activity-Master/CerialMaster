@@ -15,6 +15,7 @@ public enum CerialMasterClassifications
 		           IResourceItemClassification<CerialMasterClassifications>
 {
 	ComPort("A COM Port", ResourceItem),
+	ServerNumber("A designated server number, used as the network id on the server", ResourceItem),
 	
 	ComPortDeviceType("The type of device for the com port", ResourceItemXClassification),
 	ComPortStatus("The last registered status of the com port", ResourceItemXClassification),
