@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType.Device;
-import static com.guicedee.activitymaster.core.DefaultEnterprise.TestEnterprise;
-import static com.guicedee.guicedinjection.GuiceContext.get;
+import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType.*;
+import static com.guicedee.activitymaster.core.DefaultEnterprise.*;
+import static com.guicedee.guicedinjection.GuiceContext.*;
 
 @Log
 public class TestRs
@@ -59,9 +59,9 @@ public class TestRs
 	    ActivityMasterService mSystem = get(ActivityMasterService.class);
 	
 	    ISystems<?> system = get(CerialMasterSystem.class).getSystem(enterprise);
-	    
-	    
-	    mSystem.createNewEnterprise(enterprise.getIEnterprise(), new ConsoleLogActivityMasterProgressMaster());
+	
+	
+	    enterpriseService.createNewEnterprise(enterprise, new ConsoleLogActivityMasterProgressMaster());
 	
 	    UUID identityToken = get(CerialMasterSystem.class).getSystemToken(enterprise);
 	
