@@ -1,6 +1,7 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
-import com.google.inject.*;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.guicedee.activitymaster.core.services.IActivityMasterProgressMonitor;
 import com.guicedee.activitymaster.core.services.IActivityMasterSystem;
 import com.guicedee.activitymaster.core.services.dto.IEnterprise;
@@ -9,7 +10,6 @@ import com.guicedee.activitymaster.core.services.system.ISystemsService;
 
 import static com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService.*;
 
-@Singleton
 public class CerialMasterSystem
 		extends ActivityMasterDefaultSystem<CerialMasterSystem>
 		implements IActivityMasterSystem<CerialMasterSystem>
@@ -23,6 +23,8 @@ public class CerialMasterSystem
 	{
 		systemsService.get()
 		              .create(enterprise, getSystemName(), getSystemDescription());
+		systemsService.get()
+		              .registerNewSystem(enterprise, getSystem(enterprise));
 	}
 	
 	@Override

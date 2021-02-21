@@ -1,9 +1,9 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
-import com.google.inject.PrivateModule;
-import com.guicedee.guicedinjection.interfaces.IGuiceModule;
+import com.google.inject.*;
 import com.guicedee.activitymaster.cerialmaster.CerialMasterService;
 import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
+import com.guicedee.guicedinjection.interfaces.IGuiceModule;
 
 public class CerialMasterModule
 		extends PrivateModule
@@ -12,7 +12,18 @@ public class CerialMasterModule
 	@Override
 	protected void configure()
 	{
-		bind(ICerialMasterService.class).to(CerialMasterService.class);
+		@SuppressWarnings("Convert2Diamond")
+		Key<ICerialMasterService<?>> genericKey = Key.get(new TypeLiteral<ICerialMasterService<?>>() {});
+		@SuppressWarnings("Convert2Diamond")
+		Key<ICerialMasterService<CerialMasterService>> realKey
+				= Key.get(new TypeLiteral<ICerialMasterService<CerialMasterService>>() {});
+		
+		bind(genericKey).to(realKey);
+		bind(realKey).to(CerialMasterService.class);
+		bind(ICerialMasterService.class).to(genericKey);
+		
+		expose(genericKey);
 		expose(ICerialMasterService.class);
+		
 	}
 }

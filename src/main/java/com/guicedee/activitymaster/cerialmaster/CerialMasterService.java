@@ -1,31 +1,26 @@
 package com.guicedee.activitymaster.cerialmaster;
 
 import com.google.common.base.Strings;
-
-import com.guicedee.activitymaster.cerialmaster.implementations.CerialMasterSystem;
+import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
+import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType;
-import com.guicedee.activitymaster.core.services.dto.IEnterprise;
-import com.guicedee.activitymaster.core.services.dto.IResourceItem;
-import com.guicedee.activitymaster.core.services.dto.IResourceItemType;
-import com.guicedee.activitymaster.core.services.dto.ISystems;
+import com.guicedee.activitymaster.core.services.dto.*;
 import com.guicedee.activitymaster.core.services.enumtypes.IResourceType;
 import com.guicedee.activitymaster.core.services.system.IResourceItemService;
 import gnu.io.NRSerialPort;
 import jakarta.cache.annotation.CacheKey;
 import jakarta.cache.annotation.CacheResult;
 import lombok.Getter;
-import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
-import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
-import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.SerialConnectionPort;
-import static com.guicedee.guicedinjection.GuiceContext.get;
+import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
+import static com.guicedee.guicedinjection.GuiceContext.*;
 
-public class CerialMasterService<J extends CerialMasterService<J>>
-		implements ICerialMasterService<J>
+public class CerialMasterService
+		implements ICerialMasterService<CerialMasterService>
 {
 	@Getter
 	private final Map<String, ComPortConnection<?>> connections = new ConcurrentHashMap<>();
