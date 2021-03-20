@@ -1,18 +1,8 @@
 package com.guicedee.activitymaster.cerialmaster.services.enumerations;
 
-import com.guicedee.activitymaster.core.services.classifications.address.IAddressClassification;
-import com.guicedee.activitymaster.core.services.classifications.involvedparty.IInvolvedPartyClassification;
-import com.guicedee.activitymaster.core.services.classifications.resourceitems.IResourceItemClassification;
-import com.guicedee.activitymaster.core.services.enumtypes.IClassificationDataConceptValue;
-import com.guicedee.activitymaster.core.services.enumtypes.IClassificationValue;
-
-import static com.guicedee.activitymaster.core.services.concepts.EnterpriseClassificationDataConcepts.*;
+import static com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts.*;
 
 public enum CerialMasterClassifications
-		implements IClassificationValue<CerialMasterClassifications>,
-		           IInvolvedPartyClassification<CerialMasterClassifications>,
-		           IAddressClassification<CerialMasterClassifications>,
-		           IResourceItemClassification<CerialMasterClassifications>
 {
 	ComPort("A COM Port", ResourceItem),
 	ServerNumber("A designated server number, used as the network id on the server", ResourceItem),
@@ -32,9 +22,9 @@ public enum CerialMasterClassifications
 	;
 	
 	private String description;
-	private IClassificationDataConceptValue<?> concept;
+	private com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts concept;
 	
-	CerialMasterClassifications(String description, IClassificationDataConceptValue<?> concept)
+	CerialMasterClassifications(String description, com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts concept)
 	{
 		this.description = description;
 		this.concept = concept;
@@ -44,15 +34,13 @@ public enum CerialMasterClassifications
 	{
 		this.description = description;
 	}
-	
-	@Override
+
 	public String classificationDescription()
 	{
 		return this.description;
 	}
-	
-	@Override
-	public IClassificationDataConceptValue<?> concept()
+
+	public com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts concept()
 	{
 		return concept;
 	}

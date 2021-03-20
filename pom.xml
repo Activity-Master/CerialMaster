@@ -22,7 +22,6 @@
         <dependency>
             <groupId>com.guicedee.services</groupId>
             <artifactId>nrjavaserial</artifactId>
-            <version>${guicedee.version}</version>
         </dependency>
 
     </dependencies>

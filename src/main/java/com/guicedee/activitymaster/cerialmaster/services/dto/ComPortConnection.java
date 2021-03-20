@@ -1,18 +1,13 @@
 package com.guicedee.activitymaster.cerialmaster.services.dto;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.guicedee.activitymaster.core.services.dto.IResourceItem;
+import com.fasterxml.jackson.annotation.*;
+import com.guicedee.activitymaster.cerialmaster.services.*;
+import com.guicedee.activitymaster.client.services.builders.warehouse.resourceitem.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.logger.LogFactory;
 import gnu.io.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Accessors;
-import com.guicedee.activitymaster.cerialmaster.services.*;
 
 import java.io.*;
 import java.util.*;
@@ -20,8 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
-import static gnu.io.SerialPort.*;
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.*;
+import static gnu.io.SerialPort.*;
 
 @Accessors(chain = true)
 @Getter
@@ -70,9 +65,9 @@ public class ComPortConnection<J extends ComPortConnection<J>>
     private ComPortType type;
     
     @JsonIgnore
-    private IResourceItem<?> resourceItem;
+    private IResourceItem<?,?> resourceItem;
     
-    public J setResourceItem(IResourceItem<?> item)
+    public J setResourceItem(IResourceItem<?,?> item)
     {
         this.resourceItem = item;
         setId(item.getId());

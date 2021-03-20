@@ -4,9 +4,10 @@ import com.google.common.base.Strings;
 import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType;
-import com.guicedee.activitymaster.core.services.dto.*;
-import com.guicedee.activitymaster.core.services.enumtypes.IResourceType;
-import com.guicedee.activitymaster.core.services.system.IResourceItemService;
+import com.guicedee.activitymaster.client.services.IResourceItemService;
+import com.guicedee.activitymaster.client.services.builders.warehouse.resourceitem.IResourceItem;
+import com.guicedee.activitymaster.client.services.builders.warehouse.resourceitem.IResourceItemType;
+import com.guicedee.activitymaster.client.services.builders.warehouse.systems.ISystems;
 import gnu.io.NRSerialPort;
 import jakarta.cache.annotation.CacheKey;
 import jakarta.cache.annotation.CacheResult;
@@ -27,32 +28,33 @@ public class CerialMasterService
 	
 	@CacheResult(cacheName = "SerialPortResourceType")
 	@Override
-	public IResourceItemType<?> getSerialConnectionType(ISystems<?> system, UUID... identityToken)
+	public IResourceItemType<?,?> getSerialConnectionType(ISystems<?,?> system, UUID... identityToken)
 	{
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
-		return resourceService.findResourceItemType(SerialConnectionPort, system, identityToken);
+		return resourceService.findResourceItemType(SerialConnectionPort.toString(), system, identityToken);
 	}
 	
 	@Override
 	@CacheResult(cacheName = "ComPortConnections",skipGet = true)
-	public ComPortConnection<?> addOrUpdateConnection(@CacheKey ComPortConnection<?> comPort,@CacheKey ISystems<?> system,@CacheKey  UUID... identityToken)
+	public ComPortConnection<?> addOrUpdateConnection(@CacheKey ComPortConnection<?> comPort,@CacheKey ISystems<?,?> system,@CacheKey  UUID... identityToken)
 	{
-		IResourceType<?> comPortResourceItemType = (IResourceType<?>) getSerialConnectionType(system, identityToken);
+		IResourceItemType<?,?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
-		IResourceItem<?> comPortResourceItem = resourceService.create(comPortResourceItemType, comPort.getComPort() + "", system, identityToken);
+		IResourceItem<?,?> comPortResourceItem = resourceService.create(comPortResourceItemType.getName(),
+				comPort.getComPort() + "", system, identityToken);
 		comPort.setResourceItem(comPortResourceItem);
 		
-		comPortResourceItem.addOrUpdate(ComPort, "", system, identityToken);
-		comPortResourceItem.addOrUpdate(ComPortNumber, comPort.getComPort() + "", system, identityToken);
-		comPortResourceItem.addOrUpdate(ComPortDeviceType, comPort.getType()
+		comPortResourceItem.addOrUpdateClassification(ComPort, "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(ComPortNumber, comPort.getComPort() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(ComPortDeviceType, comPort.getType()
 		                                                          .toString(), system, identityToken);
-		comPortResourceItem.addOrUpdate(ComPortStatus, comPort.getStatus()
+		comPortResourceItem.addOrUpdateClassification(ComPortStatus, comPort.getStatus()
 		                                                      .toString(), system, identityToken);
-		comPortResourceItem.addOrUpdate(BaudRate, comPort.getBaudRate() + "", system, identityToken);
-		comPortResourceItem.addOrUpdate(BufferSize, comPort.getBufferSize() + "", system, identityToken);
-		comPortResourceItem.addOrUpdate(DataBits, comPort.getDataBits() + "", system, identityToken);
-		comPortResourceItem.addOrUpdate(StopBits, comPort.getStopBits() + "", system, identityToken);
-		comPortResourceItem.addOrUpdate(Parity, comPort.getParity() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(BaudRate, comPort.getBaudRate() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(BufferSize, comPort.getBufferSize() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(DataBits, comPort.getDataBits() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(StopBits, comPort.getStopBits() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(Parity, comPort.getParity() + "", system, identityToken);
 		
 		if (!comPort.getAllowedCharacters()
 		            .isEmpty())
@@ -64,11 +66,11 @@ public class CerialMasterService
 				            .append("^");
 			}
 			allowedChars.deleteCharAt(allowedChars.length() - 1);
-			comPortResourceItem.addOrUpdate(ComPortAllowedCharacters, allowedChars.toString(), system, identityToken);
+			comPortResourceItem.addOrUpdateClassification(ComPortAllowedCharacters, allowedChars.toString(), system, identityToken);
 		}
 		else
 		{
-			comPortResourceItem.addOrUpdate(ComPortAllowedCharacters, "", system, identityToken);
+			comPortResourceItem.addOrUpdateClassification(ComPortAllowedCharacters, "", system, identityToken);
 		}
 		StringBuilder endOfMessageChars = new StringBuilder();
 		for (Character allowedCharacter : comPort.getEndOfMessageCharacters())
@@ -77,30 +79,30 @@ public class CerialMasterService
 			                 .append("^");
 		}
 		endOfMessageChars.deleteCharAt(endOfMessageChars.length() - 1);
-		comPortResourceItem.addOrUpdate(ComPortEndOfMessage, endOfMessageChars.toString(), system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(ComPortEndOfMessage, endOfMessageChars.toString(), system, identityToken);
 		
 		return comPort;
 	}
 	
 	@Override
 	@CacheResult(cacheName = "ComPortConnections",skipGet = true)
-	public ComPortConnection<?> updateStatus(@CacheKey ComPortConnection<?> comPort,@CacheKey ISystems<?> system,@CacheKey UUID... identityToken)
+	public ComPortConnection<?> updateStatus(@CacheKey ComPortConnection<?> comPort,@CacheKey ISystems<?,?> system,@CacheKey UUID... identityToken)
 	{
-		IResourceType<?> comPortResourceItemType = (IResourceType<?>) getSerialConnectionType(system, identityToken);
+		IResourceItemType<?,?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
-		IResourceItem<?> comPortResourceItem = resourceService.findByClassification(comPortResourceItemType, ComPortNumber, comPort.getComPort() + "", system, identityToken);
-		comPortResourceItem.addOrUpdate(ComPortStatus, comPort.getStatus()
+		IResourceItem<?,?> comPortResourceItem = resourceService.findByClassification(comPortResourceItemType.getName(), ComPortNumber.toString(), comPort.getComPort() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(ComPortStatus, comPort.getStatus()
 		                                                      .toString(), system, identityToken);
 		return comPort;
 	}
 	
 	@Override
 	@CacheResult(cacheName = "ComPortConnections")
-	public ComPortConnection<?> findComPortConnection(@CacheKey ComPortConnection<?> comPort,@CacheKey ISystems<?> system,@CacheKey UUID... identityToken)
+	public ComPortConnection<?> findComPortConnection(@CacheKey ComPortConnection<?> comPort,@CacheKey ISystems<?,?> system,@CacheKey UUID... identityToken)
 	{
-		IResourceType<?> comPortResourceItemType = (IResourceType<?>) getSerialConnectionType(system, identityToken);
+		IResourceItemType<?,?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
-		IResourceItem<?> comPortResourceItem = resourceService.findByClassification(comPortResourceItemType, ComPortNumber, comPort.getComPort() + "", system, identityToken);
+		IResourceItem<?,?> comPortResourceItem = resourceService.findByClassification(comPortResourceItemType.getName(), ComPortNumber.toString(), comPort.getComPort() + "", system, identityToken);
 		if (comPortResourceItem == null)
 		{
 			return null;
@@ -109,12 +111,18 @@ public class CerialMasterService
 		comPort.setResourceItem(comPortResourceItem);
 		comPort.setId(comPortResourceItem.getId());
 		
-		List<Object[]> values = comPortResourceItem.getClassificationsValuePivot(ComPortNumber.toString(), comPortResourceItem.getId()
+		List<Object[]> values = comPortResourceItem.builder().getClassificationsValuePivot(ComPortNumber.toString(), comPortResourceItem.getId()
 		                                                                                                                      .toString(),
 				system, identityToken,
-				ComPortDeviceType.toString(), ComPortStatus.toString(), BaudRate.toString(),
-				BufferSize.toString(), DataBits.toString(), StopBits.toString(), Parity.toString(),
-				ComPortAllowedCharacters.toString(), ComPortEndOfMessage.toString());
+				ComPortDeviceType.toString(),
+				ComPortStatus.toString(),
+				BaudRate.toString(),
+				BufferSize.toString(),
+				DataBits.toString(),
+				StopBits.toString(),
+				Parity.toString(),
+				ComPortAllowedCharacters.toString(),
+				ComPortEndOfMessage.toString());
 		
 		Object[] objects = values.stream()
 		                         .findFirst()

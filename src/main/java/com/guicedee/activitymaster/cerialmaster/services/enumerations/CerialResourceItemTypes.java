@@ -1,20 +1,15 @@
 package com.guicedee.activitymaster.cerialmaster.services.enumerations;
 
-import com.guicedee.activitymaster.core.services.classifications.resourceitems.ResourceItemTypes;
-import com.guicedee.activitymaster.core.services.enumtypes.IClassificationDataConceptValue;
-import com.guicedee.activitymaster.core.services.enumtypes.IResourceType;
+import static com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts.*;
 
-import static com.guicedee.activitymaster.core.services.concepts.EnterpriseClassificationDataConcepts.ResourceItem;
-import static com.guicedee.activitymaster.core.services.concepts.EnterpriseClassificationDataConcepts.ResourceItemType;
-
-public enum CerialResourceItemTypes implements IResourceType<ResourceItemTypes>
+public enum CerialResourceItemTypes
 {
 	SerialConnectionPort("Designates a piece of hardware used as a connection port",ResourceItemType)
 	;
 	private String classificationValue;
-	private IClassificationDataConceptValue<?> dataConceptValue;
+	private com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts dataConceptValue;
 	
-	CerialResourceItemTypes(String classificationValue, IClassificationDataConceptValue<?> dataConceptValue)
+	CerialResourceItemTypes(String classificationValue, com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts dataConceptValue)
 	{
 		this.classificationValue = classificationValue;
 		this.dataConceptValue = dataConceptValue;
@@ -25,26 +20,22 @@ public enum CerialResourceItemTypes implements IResourceType<ResourceItemTypes>
 		this.classificationValue = classificationValue;
 	}
 	
-	@Override
 	public String classificationName()
 	{
 		return name();
 	}
-	
-	@Override
+
 	public String classificationValue()
 	{
 		return this.classificationValue;
 	}
 	
-	@Override
 	public String classificationDescription()
 	{
 		return this.classificationValue;
 	}
-	
-	@Override
-	public IClassificationDataConceptValue<?> concept()
+
+	public com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts concept()
 	{
 		return dataConceptValue;
 	}

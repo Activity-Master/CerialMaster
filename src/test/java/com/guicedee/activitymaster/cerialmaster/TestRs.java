@@ -4,11 +4,11 @@ import com.guicedee.activitymaster.cerialmaster.implementations.CerialMasterSyst
 import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ServerMessage;
+import com.guicedee.activitymaster.client.services.IEnterpriseService;
+import com.guicedee.activitymaster.client.services.builders.warehouse.enterprise.IEnterprise;
+import com.guicedee.activitymaster.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.activitymaster.core.ActivityMasterService;
 import com.guicedee.activitymaster.core.services.ConsoleLogActivityMasterProgressMaster;
-import com.guicedee.activitymaster.core.services.dto.IEnterprise;
-import com.guicedee.activitymaster.core.services.dto.ISystems;
-import com.guicedee.activitymaster.core.services.system.IEnterpriseService;
 import com.guicedee.guicedhazelcast.HazelcastProperties;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedpersistence.readers.hibernateproperties.HibernateEntityManagerProperties;
@@ -55,10 +55,10 @@ public class TestRs
 	    ComPortConnection<?> server = new ComPortConnection<>(5, Device);
 	    
 	    IEnterpriseService enterpriseService = get(IEnterpriseService.class);
-	    IEnterprise<?> enterprise = enterpriseService.getEnterprise(TestEnterprise);
+	    IEnterprise<?,?> enterprise = enterpriseService.getEnterprise(TestEnterprise.name());
 	    ActivityMasterService mSystem = get(ActivityMasterService.class);
 	
-	    ISystems<?> system = get(CerialMasterSystem.class).getSystem(enterprise);
+	    ISystems<?,?> system = get(CerialMasterSystem.class).getSystem(enterprise);
 	
 	
 	    enterpriseService.createNewEnterprise(enterprise, new ConsoleLogActivityMasterProgressMaster());
