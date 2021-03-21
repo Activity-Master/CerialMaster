@@ -3,10 +3,10 @@ package com.guicedee.activitymaster.cerialmaster.implementations;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.guicedee.activitymaster.client.services.ISystemsService;
-import com.guicedee.activitymaster.client.services.administration.IActivityMasterProgressMonitor;
+import com.guicedee.activitymaster.client.services.administration.ActivityMasterDefaultSystem;
 import com.guicedee.activitymaster.client.services.builders.warehouse.enterprise.IEnterprise;
-import com.guicedee.activitymaster.core.services.IActivityMasterSystem;
-import com.guicedee.activitymaster.core.services.system.ActivityMasterDefaultSystem;
+import com.guicedee.activitymaster.client.services.systems.IActivityMasterProgressMonitor;
+import com.guicedee.activitymaster.client.services.systems.IActivityMasterSystem;
 
 import static com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService.*;
 

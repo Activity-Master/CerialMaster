@@ -1,11 +1,9 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
 import com.guicedee.activitymaster.client.services.*;
-import com.guicedee.activitymaster.client.services.administration.IActivityMasterProgressMonitor;
-import com.guicedee.activitymaster.client.services.administration.ISystemUpdate;
 import com.guicedee.activitymaster.client.services.builders.warehouse.enterprise.IEnterprise;
 import com.guicedee.activitymaster.client.services.builders.warehouse.systems.ISystems;
-import com.guicedee.activitymaster.core.updates.DatedUpdate;
+import com.guicedee.activitymaster.client.services.systems.*;
 import com.guicedee.guicedinjection.GuiceContext;
 
 import java.util.UUID;
@@ -16,7 +14,7 @@ import static com.guicedee.activitymaster.cerialmaster.services.enumerations.Cer
 import static com.guicedee.activitymaster.client.services.classifications.ResourceItemClassifications.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
-@DatedUpdate(date = "2020/01/02",taskCount = 3)
+@DatedUpdate(date = "2020/01/02", taskCount = 3)
 public class CerialMasterInstall implements ISystemUpdate
 {
 	@Override

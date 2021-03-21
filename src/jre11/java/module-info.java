@@ -1,5 +1,6 @@
 import com.guicedee.activitymaster.cerialmaster.implementations.*;
 import com.guicedee.activitymaster.cerialmaster.services.IReceiveMessage;
+import com.guicedee.activitymaster.client.services.systems.IActivityMasterSystem;
 
 module com.guicedee.activitymaster.cerialmaster {
 
@@ -14,15 +15,14 @@ module com.guicedee.activitymaster.cerialmaster {
 	requires com.guicedee.guicedhazelcast.hibernate;
 
 	requires com.guicedee.guicedinjection;
-	requires com.guicedee.activitymaster.core;
-	
+
 	requires com.google.guice;
 	
 	requires static com.guicedee.guicedhazelcast;
 	requires com.guicedee.activitymaster.client;
 	
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with CerialMasterModule;
-	provides com.guicedee.activitymaster.core.services.IActivityMasterSystem with CerialMasterSystem;
+	provides IActivityMasterSystem with CerialMasterSystem;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceConfigurator with CerialMasterGuiceConfig;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions with CerialMasterInclusionModule;
 	
