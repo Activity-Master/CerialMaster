@@ -14,7 +14,7 @@ import static com.guicedee.activitymaster.cerialmaster.services.enumerations.Cer
 import static com.guicedee.activitymaster.client.services.classifications.ResourceItemClassifications.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
-@DatedUpdate(date = "2020/01/02", taskCount = 3)
+@SortedUpdate(sortOrder = 500, taskCount = 3)
 public class CerialMasterInstall implements ISystemUpdate
 {
 	@Override

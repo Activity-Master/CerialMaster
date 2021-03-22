@@ -5,6 +5,7 @@ import com.google.inject.Provider;
 import com.guicedee.activitymaster.client.services.ISystemsService;
 import com.guicedee.activitymaster.client.services.administration.ActivityMasterDefaultSystem;
 import com.guicedee.activitymaster.client.services.builders.warehouse.enterprise.IEnterprise;
+import com.guicedee.activitymaster.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.activitymaster.client.services.systems.IActivityMasterProgressMonitor;
 import com.guicedee.activitymaster.client.services.systems.IActivityMasterSystem;
 
@@ -19,12 +20,13 @@ public class CerialMasterSystem
 	private Provider<ISystemsService<?>> systemsService;
 	
 	@Override
-	public void registerSystem(IEnterprise<?,?> enterprise, IActivityMasterProgressMonitor progressMonitor)
+	public ISystems<?,?> registerSystem(IEnterprise<?,?> enterprise, IActivityMasterProgressMonitor progressMonitor)
 	{
-		systemsService.get()
-		              .create(enterprise, getSystemName(), getSystemDescription());
+		ISystems<?, ?> iSystems = systemsService.get()
+		                                        .create(enterprise, getSystemName(), getSystemDescription());
 		systemsService.get()
 		              .registerNewSystem(enterprise, getSystem(enterprise));
+		return iSystems;
 	}
 	
 	@Override
