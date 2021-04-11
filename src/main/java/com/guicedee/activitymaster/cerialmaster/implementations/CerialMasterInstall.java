@@ -1,9 +1,10 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
-import com.guicedee.activitymaster.client.services.*;
-import com.guicedee.activitymaster.client.services.builders.warehouse.enterprise.IEnterprise;
-import com.guicedee.activitymaster.client.services.builders.warehouse.systems.ISystems;
-import com.guicedee.activitymaster.client.services.systems.*;
+import com.guicedee.activitymaster.fsdm.client.services.*;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
+import com.guicedee.activitymaster.fsdm.client.services.systems.ISystemUpdate;
+import com.guicedee.activitymaster.fsdm.client.services.systems.SortedUpdate;
 import com.guicedee.guicedinjection.GuiceContext;
 
 import java.util.UUID;
@@ -11,14 +12,14 @@ import java.util.UUID;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterEventTypes.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
-import static com.guicedee.activitymaster.client.services.classifications.ResourceItemClassifications.*;
+import static com.guicedee.activitymaster.fsdm.client.services.classifications.ResourceItemClassifications.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
 @SortedUpdate(sortOrder = 500, taskCount = 3)
 public class CerialMasterInstall implements ISystemUpdate
 {
 	@Override
-	public void update(IEnterprise<?,?> enterprise, IActivityMasterProgressMonitor progressMonitor)
+	public void update(IEnterprise<?,?> enterprise)
 	{
 		IClassificationService<?> classificationService = get(IClassificationService.class);
 		CerialMasterSystem cms = GuiceContext.get(CerialMasterSystem.class);
@@ -28,7 +29,7 @@ public class CerialMasterInstall implements ISystemUpdate
 		
 		IResourceItemService<?> resourceItemService = get(IResourceItemService.class);
 		resourceItemService.createType(SerialConnectionPort,system);
-		logProgress("Cerial Master", "Loading Com Port Configurations", progressMonitor);
+		logProgress("Cerial Master", "Loading Com Port Configurations");
 		
 		classificationService.create(ComPort, system,Hardware);
 		classificationService.create(ServerNumber, system,ComPort);
@@ -45,11 +46,11 @@ public class CerialMasterInstall implements ISystemUpdate
 		classificationService.create(StopBits, system, ComPort);
 		classificationService.create(Parity, system, ComPort);
 		
-		logProgress("Cerial Master", "Loading Com Port Events", progressMonitor);
+		logProgress("Cerial Master", "Loading Com Port Events");
 		IEventService<?> eventsService = GuiceContext.get(IEventService.class);
 		eventsService.createEventType(RegisteredANewConnection.toString(), system, token);
 		eventsService.createEventType(ClosedANewConnection.toString(), system, token);
 		
-		logProgress("Cerial Master", "Completed Com Ports", progressMonitor);
+		logProgress("Cerial Master", "Completed Com Ports");
 	}
 }

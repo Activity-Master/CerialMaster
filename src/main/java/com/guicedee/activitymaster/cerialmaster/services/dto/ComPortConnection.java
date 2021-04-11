@@ -2,7 +2,7 @@ package com.guicedee.activitymaster.cerialmaster.services.dto;
 
 import com.fasterxml.jackson.annotation.*;
 import com.guicedee.activitymaster.cerialmaster.services.*;
-import com.guicedee.activitymaster.client.services.builders.warehouse.resourceitem.IResourceItem;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.logger.LogFactory;
 import gnu.io.*;

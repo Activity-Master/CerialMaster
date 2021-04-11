@@ -4,11 +4,11 @@ import com.guicedee.activitymaster.cerialmaster.implementations.CerialMasterSyst
 import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ServerMessage;
-import com.guicedee.activitymaster.client.services.ConsoleLogActivityMasterProgressMaster;
-import com.guicedee.activitymaster.client.services.IEnterpriseService;
-import com.guicedee.activitymaster.client.services.builders.warehouse.enterprise.IEnterprise;
-import com.guicedee.activitymaster.client.services.builders.warehouse.systems.ISystems;
-import com.guicedee.activitymaster.core.ActivityMasterService;
+import com.guicedee.activitymaster.fsdm.ActivityMasterService;
+import com.guicedee.activitymaster.fsdm.client.services.ConsoleLogActivityMasterProgressMaster;
+import com.guicedee.activitymaster.fsdm.client.services.IEnterpriseService;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.guicedhazelcast.HazelcastProperties;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedpersistence.readers.hibernateproperties.HibernateEntityManagerProperties;
@@ -21,7 +21,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType.*;
-import static com.guicedee.activitymaster.core.DefaultEnterprise.*;
+import static com.guicedee.activitymaster.fsdm.DefaultEnterprise.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
 @Log

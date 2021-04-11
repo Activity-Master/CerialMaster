@@ -1,8 +1,8 @@
 package com.guicedee.activitymaster.cerialmaster.services;
 
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
-import com.guicedee.activitymaster.client.services.builders.warehouse.resourceitem.IResourceItemType;
-import com.guicedee.activitymaster.client.services.builders.warehouse.systems.ISystems;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItemType;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 
 import java.util.List;
 import java.util.UUID;

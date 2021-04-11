@@ -1,15 +1,15 @@
 package com.guicedee.activitymaster.cerialmaster.services.enumerations;
 
-import static com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts.*;
+import static com.guicedee.activitymaster.fsdm.client.services.classifications.EnterpriseClassificationDataConcepts.*;
 
 public enum CerialResourceItemTypes
 {
 	SerialConnectionPort("Designates a piece of hardware used as a connection port",ResourceItemType)
 	;
 	private String classificationValue;
-	private com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts dataConceptValue;
+	private com.guicedee.activitymaster.fsdm.client.services.classifications.EnterpriseClassificationDataConcepts dataConceptValue;
 	
-	CerialResourceItemTypes(String classificationValue, com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts dataConceptValue)
+	CerialResourceItemTypes(String classificationValue, com.guicedee.activitymaster.fsdm.client.services.classifications.EnterpriseClassificationDataConcepts dataConceptValue)
 	{
 		this.classificationValue = classificationValue;
 		this.dataConceptValue = dataConceptValue;
@@ -35,7 +35,7 @@ public enum CerialResourceItemTypes
 		return this.classificationValue;
 	}
 
-	public com.guicedee.activitymaster.client.services.classifications.EnterpriseClassificationDataConcepts concept()
+	public com.guicedee.activitymaster.fsdm.client.services.classifications.EnterpriseClassificationDataConcepts concept()
 	{
 		return dataConceptValue;
 	}

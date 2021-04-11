@@ -14,14 +14,14 @@ module com.guicedee.activitymaster.cerialmaster {
 
 	requires com.guicedee.guicedinjection;
 
-	requires com.guicedee.activitymaster.core;
+	requires com.guicedee.activitymaster.fsdm;
 	requires com.google.guice;
 	
 	requires static com.guicedee.guicedhazelcast;
     requires static nrjavaserial;
 
     provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.activitymaster.cerialmaster.implementations.CerialKillerModule;
-	provides com.guicedee.activitymaster.core.services.IActivityMasterSystem with com.guicedee.activitymaster.cerialmaster.implementations.CerialKillerSystem;
+	provides com.guicedee.activitymaster.fsdm.services.IActivityMasterSystem with com.guicedee.activitymaster.cerialmaster.implementations.CerialKillerSystem;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceConfigurator with CerialKillerGuiceConfig;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions with CerialKillerInclusionModule;
 	
