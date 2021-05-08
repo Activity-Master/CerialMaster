@@ -5,6 +5,8 @@ import com.guicedee.activitymaster.cerialmaster.services.*;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.logger.LogFactory;
+import com.jwebmp.plugins.quickforms.annotations.*;
+import com.jwebmp.plugins.quickforms.annotations.states.*;
 import gnu.io.*;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -34,21 +36,71 @@ public class ComPortConnection<J extends ComPortConnection<J>>
     private UUID id;
 
     private static final Logger log = LogFactory.getLog(ComPortConnection.class);
-    public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Logging, Running,Silent);
-    public static final EnumSet<ComPortType> graderTypes = EnumSet.of(ComPortType.Sim20,ComPortType.Sim20Type2,ComPortType.Lora,ComPortType.Device);
     
+    public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Logging, Running,Silent);
     public static final String COM_NAME = "COM";
-
-    private final Set<Character> startOfMessageCharacters = new HashSet<>();
-    private final Set<Character> endOfMessageCharacters = new HashSet<>();
-    private final Set<Character> allowedCharacters = new HashSet<>();
-
-    private int comPort;
+    
+    @WebFormStartRow
+    @WebField(classes = "col-12 col-md-2")
+    @LabelField(value = "Start Chars", classes = "col-12 col-md-2")
+    @TextField
+    private Set<Character> startOfMessageCharacters = new HashSet<>();
+    @WebField(classes = "col-12 col-md-2")
+    @LabelField(value = "End Chars", classes = "col-12 col-md-2")
+    @TextField
+    private Set<Character> endOfMessageCharacters = new HashSet<>();
+    
+    @WebField(classes = "col-12 col-md-2")
+    @LabelField(value = "Allowed Chars", classes = "col-12 col-md-2")
+    @TextField
+    private Set<Character> allowedCharacters = new HashSet<>();
+    
+    @WebFormEndRow
+    @WebFormStartRow
+    @LabelField(value = "Baud Rate", classes = "col-12 col-md-3")
+    @WebField(classes = "col-12 col-md-3")
+    @NumberField
     private int baudRate = 9600;
+    @WebField(classes = "col-12 col-md-3")
+    @LabelField(value = "Buffer Size", classes = "col-12 col-md-3")
+    @NumberField
     private int bufferSize = 2048;
+    
+    
+    @WebFormEndRow
+    @WebFormStartRow
+    @WebField(classes = "col-12 col-md-3")
+    @LabelField(value = "Data Bits", classes = "col-12 col-md-3")
+    @NumberField
     private int dataBits = DATABITS_8;
+    @WebField(classes = "col-12 col-md-3")
+    @LabelField(value = "Stop Bits", classes = "col-12 col-md-3")
+    @NumberField
     private int stopBits = STOPBITS_1;
+    @WebField(classes = "col-12 col-md-3")
+    @LabelField(value = "Parity", classes = "col-12 col-md-3")
+    @NumberField
     private int parity = PARITY_NONE;
+    
+    @WebFormEndRow
+    @WebFormStartRow
+    @WebIgnore
+    @WebField(classes = "col-12 col-md-3")
+    @LabelField(value = "Status", classes = "col-12 col-md-3")
+    @WebReadOnly
+    @SelectField
+    private ComPortStatus status = Offline;
+    
+    @WebIgnore
+    @WebField(classes = "col-12 col-md-3")
+    @LabelField(value = "Type", classes = "col-12 col-md-3")
+    @SelectField
+    private ComPortType type;
+    
+    @WebReadOnly
+    @WebIgnore
+    private int comPort;
+    
     
     public J setBaudRate(int rate)
     {
@@ -60,9 +112,6 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 
     @JsonIgnore
     private final ComPortConnection<J> me;
-    
-    private ComPortStatus status = Offline;
-    private ComPortType type;
     
     @JsonIgnore
     private IResourceItem<?,?> resourceItem;

@@ -4,17 +4,10 @@ import java.util.EnumSet;
 
 public enum ComPortType {
     Scanner,
-    ScannerType2,
-    ScannerType3,
-    ScannerType4,
-    ScannerType5,
-    ScannerType6,
-    ScannerType7,
-    ScannerType8,
     Device,
-    Sim20,
-    Sim20Type2,
-    Lora;
+    Server;
     
-    public static final EnumSet<ComPortType> scanners = EnumSet.of(Scanner, ScannerType2, ScannerType3, ScannerType4, ScannerType5, ScannerType6, ScannerType7, ScannerType8);
+    public static final EnumSet<ComPortType> graderServer = EnumSet.of(ComPortType.Server,ComPortType.Device);
+    
+    public static final EnumSet<ComPortType> scanners = EnumSet.of(Scanner);
 }

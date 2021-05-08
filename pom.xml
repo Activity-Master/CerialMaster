@@ -25,6 +25,11 @@
             <artifactId>nrjavaserial</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.jwebmp.plugins.forms</groupId>
+            <artifactId>jwebmp-quickforms-annotations</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

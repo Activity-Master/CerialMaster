@@ -22,4 +22,8 @@ public interface ICerialMasterService<J extends ICerialMasterService<J>>
 	ComPortConnection<?> registerNewConnection(ComPortConnection<?> comPortConnection);
 
 	List<String> listComPorts();
+	
+	List<String> listRegisteredComPorts();
+	
+	List<String> listAvailableComPorts();
 }

@@ -5,7 +5,6 @@ import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ServerMessage;
 import com.guicedee.activitymaster.fsdm.ActivityMasterService;
-import com.guicedee.activitymaster.fsdm.client.services.ConsoleLogActivityMasterProgressMaster;
 import com.guicedee.activitymaster.fsdm.client.services.IEnterpriseService;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
@@ -61,7 +60,7 @@ public class TestRs
 	    ISystems<?,?> system = get(CerialMasterSystem.class).getSystem(enterprise);
 	
 	
-	    enterpriseService.createNewEnterprise(enterprise, new ConsoleLogActivityMasterProgressMaster());
+	    enterpriseService.createNewEnterprise(enterprise);
 	
 	    UUID identityToken = get(CerialMasterSystem.class).getSystemToken(enterprise);
 	

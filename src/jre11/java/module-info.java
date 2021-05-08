@@ -13,6 +13,8 @@ module com.guicedee.activitymaster.cerialmaster {
 	requires static lombok;
 	requires transitive com.neuronrobotics.nrjavaserial;
 	requires com.guicedee.guicedhazelcast.hibernate;
+	
+	requires com.jwebmp.plugins.quickforms.annotations;
 
 	requires com.guicedee.guicedinjection;
 
