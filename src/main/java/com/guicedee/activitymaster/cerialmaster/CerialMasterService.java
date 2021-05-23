@@ -28,7 +28,6 @@ public class CerialMasterService
 	@Inject
 	private IResourceItemService<?> resourceItemService;
 	
-	
 	@Inject
 	@Named(CerialMasterSystemName)
 	private ISystems<?, ?> system;
@@ -38,7 +37,7 @@ public class CerialMasterService
 	private UUID identityToken;
 	
 	@Getter
-	private final Map<String, ComPortConnection<?>> connections = new ConcurrentHashMap<>();
+	private static final Map<String, ComPortConnection<?>> connections = new ConcurrentHashMap<>();
 	
 	@CacheResult(cacheName = "SerialPortResourceType")
 	@Override
@@ -49,7 +48,7 @@ public class CerialMasterService
 	}
 	
 	@Override
-	@CacheResult(cacheName = "ComPortConnections", skipGet = true)
+	//@CacheResult(cacheName = "ComPortConnections", skipGet = true)
 	public ComPortConnection<?> addOrUpdateConnection(@CacheKey ComPortConnection<?> comPort, @CacheKey ISystems<?, ?> system, @CacheKey UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
@@ -99,7 +98,7 @@ public class CerialMasterService
 	}
 	
 	@Override
-	@CacheResult(cacheName = "ComPortConnections", skipGet = true)
+	//@CacheResult(cacheName = "ComPortConnections", skipGet = true)
 	public ComPortConnection<?> updateStatus(@CacheKey ComPortConnection<?> comPort, @CacheKey ISystems<?, ?> system, @CacheKey UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
@@ -111,7 +110,7 @@ public class CerialMasterService
 	}
 	
 	@Override
-	@CacheResult(cacheName = "ComPortConnections")
+	//@CacheResult(cacheName = "ComPortConnections")
 	public ComPortConnection<?> findComPortConnection(@CacheKey ComPortConnection<?> comPort, @CacheKey ISystems<?, ?> system, @CacheKey UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
@@ -145,7 +144,7 @@ public class CerialMasterService
 		
 		comPort.setComPort(Integer.parseInt(objects[1].toString()));
 		comPort.setType(ComPortType.valueOf(objects[2].toString()));
-		comPort.setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.valueOf(objects[3].toString()));
+		comPort.setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.valueOf(objects[3].toString()),true);
 		comPort.setBaudRate(Integer.parseInt(objects[4].toString()));
 		comPort.setBufferSize(Integer.parseInt(objects[5].toString()));
 		comPort.setDataBits(Integer.parseInt(objects[6].toString()));
@@ -186,11 +185,15 @@ public class CerialMasterService
 	public ComPortConnection<?> registerNewConnection(ComPortConnection<?> connection)
 	{
 		String name = ComPortConnection.COM_NAME + connection.getComPort();
-		if (connections.containsKey(name))
-		{
-			connections.put(name, connection);
-		}
+		connections.put(name, connection);
 		return connections.get(name);
+	}
+	
+	@Override
+	public ComPortConnection<?> getComPortConnection(Integer comPort)
+	{
+		String name = ComPortConnection.COM_NAME + comPort;
+		return connections.getOrDefault(name, null);
 	}
 	
 	@Override

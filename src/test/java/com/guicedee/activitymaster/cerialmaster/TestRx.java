@@ -24,7 +24,7 @@ import static com.guicedee.activitymaster.fsdm.DefaultEnterprise.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
 @Log
-public class TestRs
+public class TestRx
 {
 	static {
 		HazelcastProperties.setStartLocal(true);
@@ -93,17 +93,45 @@ public class TestRs
     
 	public static void main(String[] args)
 	{
-		ComPortConnection<?> server = new ComPortConnection<>(3, Device);
+		ComPortConnection<?> server = new ComPortConnection<>(11, Device);
 		server.getEndOfMessageCharacters()
 		      .add('#');
-		server.setBaudRate(115200);
+		server.setBaudRate(9600);
 		server.open();
-		server.writeMessage(new ServerMessage(server)
+		/*server.writeMessage(new ServerMessage(server)
 		{
 			@Override
 			public String generateMessage()
 			{
 				return "*SID001000000000100000001000100060000000020#\n";
+			}
+			
+			@Override
+			public ServerMessage simulateResponse()
+			{
+				return null;
+			}
+		});*/
+		server.writeMessage(new ServerMessage(server)
+		{
+			@Override
+			public String generateMessage()
+			{
+				return "*ONL002000000000000000000224159231220000000#\n";
+			}
+			
+			@Override
+			public ServerMessage simulateResponse()
+			{
+				return null;
+			}
+		});
+		server.writeMessage(new ServerMessage(server)
+		{
+			@Override
+			public String generateMessage()
+			{
+				return "*ONL003000000000000000000224159231220000000#\n";
 			}
 			
 			@Override
@@ -118,6 +146,20 @@ public class TestRs
 			public String generateMessage()
 			{
 				return "*ONL002000000000000000000224159231220000000#\n";
+			}
+			
+			@Override
+			public ServerMessage simulateResponse()
+			{
+				return null;
+			}
+		});
+		server.writeMessage(new ServerMessage(server)
+		{
+			@Override
+			public String generateMessage()
+			{
+				return "*ONL003000000000000000000224159231220000000#\n";
 			}
 			
 			@Override

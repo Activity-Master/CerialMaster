@@ -14,9 +14,14 @@ public abstract class ServerMessage<J extends ServerMessage<J>>
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	private final ComPortConnection<?> port;
+	private ComPortConnection<?> port;
 
 	private boolean outgoing = true;
+	
+	public ServerMessage()
+	{
+		this(null);
+	}
 
 	public ServerMessage(ComPortConnection<?> port) {
 		this.port = port;
@@ -24,5 +29,5 @@ public abstract class ServerMessage<J extends ServerMessage<J>>
 
 	public abstract String generateMessage();
 
-	public abstract ServerMessage simulateResponse();
+	public abstract ServerMessage<?> simulateResponse();
 }

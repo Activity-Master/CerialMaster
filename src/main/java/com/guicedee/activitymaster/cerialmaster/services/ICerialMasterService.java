@@ -20,7 +20,9 @@ public interface ICerialMasterService<J extends ICerialMasterService<J>>
 	ComPortConnection<?> findComPortConnection(ComPortConnection<?> comPort, ISystems<?,?> system, UUID...identityToken);
 	
 	ComPortConnection<?> registerNewConnection(ComPortConnection<?> comPortConnection);
-
+	
+	ComPortConnection<?> getComPortConnection(Integer comPort);
+	
 	List<String> listComPorts();
 	
 	List<String> listRegisteredComPorts();
