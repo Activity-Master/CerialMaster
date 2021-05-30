@@ -2,6 +2,7 @@ package com.guicedee.activitymaster.cerialmaster.services.dto;
 
 import com.fasterxml.jackson.annotation.*;
 import com.guicedee.activitymaster.cerialmaster.services.*;
+import com.guicedee.activitymaster.fsdm.client.services.IResourceItemService;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.jwebmp.plugins.quickforms.annotations.*;
@@ -36,6 +37,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	private static final long serialVersionUID = 1L;
 	
 	private UUID id;
+	
 	private String logName = "";
 	private transient Logger log;
 	
@@ -66,8 +68,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	@WebField(classes = "col-12 col-md-3")
 	@LabelField(value = "Buffer Size", classes = "col-12 col-md-3")
 	@NumberField
-	private int bufferSize = 2048;
-	
+	private int bufferSize = 4096;
 	
 	@WebFormEndRow
 	@WebFormStartRow
@@ -104,6 +105,9 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	private int comPort;
 	
 	@JsonIgnore
+	private IResourceItem<?,?> resourceItem;
+	
+	@JsonIgnore
 	private transient PortReader reader;
 	
 	private transient boolean reading;
@@ -119,15 +123,22 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	@JsonIgnore
 	private final ComPortConnection<J> me;
 	
-	@JsonIgnore
-	private IResourceItem<?, ?> resourceItem;
-	
 	public J setResourceItem(IResourceItem<?, ?> item)
 	{
 		this.resourceItem = item;
 		setId(item.getId());
 		//noinspection unchecked
 		return (J) this;
+	}
+	
+	public IResourceItem<?, ?> getResourceItem()
+	{
+		if (resourceItem == null && id != null)
+		{
+			resourceItem = GuiceContext.get(IResourceItemService.class)
+			                           .findByUUID(id);
+		}
+		return resourceItem;
 	}
 	
 	public ComPortConnection()
@@ -222,11 +233,11 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		getSerialPortInstance().setFlowControlMode(FLOWCONTROL_NONE);
 		//getSerialPortInstance().setFlowControlMode(FLOWCONTROL_RTSCTS_IN | FLOWCONTROL_RTSCTS_OUT);
 		
-		/*ins = new DataInputStream(getInputStream());
-		outs = new DataOutputStream(getOutputStream());*/
+		ins = new DataInputStream(getInputStream());
+		outs = new DataOutputStream(getOutputStream());
 		
-		ins = new BufferedInputStream(getInputStream());
-		outs = new BufferedOutputStream(getOutputStream());
+	/*	ins = new BufferedInputStream(new DataInputStream(getInputStream()));
+		outs = new BufferedOutputStream(new DataOutputStream(getOutputStream()));*/
 		
 		try
 		{
@@ -296,7 +307,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	 * @param message
 	 * @param in
 	 */
-	private synchronized void writeOrReadMessage(String message, boolean in)
+	private void writeOrReadMessage(String message, boolean in)
 	{
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
 		if (in)
@@ -309,7 +320,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			{
 				outs.write(message.getBytes(StandardCharsets.UTF_8));
 				getLog().log(Level.INFO, "[" + sdf.format(new Date())+ "]-[" + comPort + "] TX : " + message);
-				outs.flush();
+			//	outs.flush();
 			}
 			catch (Exception e)
 			{
@@ -411,7 +422,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	{
 		private StringBuffer readBuffer = new StringBuffer();
 		@Override
-		public synchronized void serialEvent(SerialPortEvent event)
+		public void serialEvent(SerialPortEvent event)
 		{
 			if (event.getEventType() == SerialPortEvent.OUTPUT_BUFFER_EMPTY)
 			{
@@ -497,7 +508,6 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private void processMessage(String message)
 	{
-		//getLog().fine("[" + comPort+ "] RX Raw : " + message);
 		Set<ICleanReceivedMessage> cleanMessages = GuiceContext.instance()
 		                                                       .getLoader(ICleanReceivedMessage.class, ServiceLoader.load(ICleanReceivedMessage.class));
 		for (ICleanReceivedMessage<?> messageReceiver : cleanMessages)
