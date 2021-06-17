@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
+import static com.guicedee.activitymaster.fsdm.client.services.IActivityMasterService.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
 public class CerialMasterService
@@ -48,8 +49,8 @@ public class CerialMasterService
 	}
 	
 	@Override
-	//@CacheResult(cacheName = "ComPortConnections", skipGet = true)
-	public ComPortConnection<?> addOrUpdateConnection(@CacheKey ComPortConnection<?> comPort, @CacheKey ISystems<?, ?> system, @CacheKey UUID... identityToken)
+	@CacheResult(cacheName = "ComPortConnections", skipGet = true)
+	public ComPortConnection<?> addOrUpdateConnection(@CacheKey ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -98,8 +99,8 @@ public class CerialMasterService
 	}
 	
 	@Override
-	//@CacheResult(cacheName = "ComPortConnections", skipGet = true)
-	public ComPortConnection<?> updateStatus(@CacheKey ComPortConnection<?> comPort, @CacheKey ISystems<?, ?> system, @CacheKey UUID... identityToken)
+	@CacheResult(cacheName = "ComPortConnections", skipGet = true)
+	public ComPortConnection<?> updateStatus(@CacheKey ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -110,8 +111,8 @@ public class CerialMasterService
 	}
 	
 	@Override
-	//@CacheResult(cacheName = "ComPortConnections")
-	public ComPortConnection<?> findComPortConnection(@CacheKey ComPortConnection<?> comPort, @CacheKey ISystems<?, ?> system, @CacheKey UUID... identityToken)
+	@CacheResult(cacheName = "ComPortConnections")
+	public ComPortConnection<?> findComPortConnection(@CacheKey ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -144,7 +145,7 @@ public class CerialMasterService
 		
 		comPort.setComPort(Integer.parseInt(objects[1].toString()));
 		comPort.setType(ComPortType.valueOf(objects[2].toString()));
-		comPort.setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.valueOf(objects[3].toString()),true);
+		comPort.setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.valueOf(objects[3].toString()), true);
 		comPort.setBaudRate(Integer.parseInt(objects[4].toString()));
 		comPort.setBufferSize(Integer.parseInt(objects[5].toString()));
 		comPort.setDataBits(Integer.parseInt(objects[6].toString()));
@@ -185,7 +186,10 @@ public class CerialMasterService
 	public ComPortConnection<?> registerNewConnection(ComPortConnection<?> connection)
 	{
 		String name = ComPortConnection.COM_NAME + connection.getComPort();
-		connections.put(name, connection);
+		if (!connections.containsKey(name))
+		{
+			connections.put(name, connection);
+		}
 		return connections.get(name);
 	}
 	
@@ -193,15 +197,47 @@ public class CerialMasterService
 	public ComPortConnection<?> getComPortConnection(Integer comPort)
 	{
 		String name = ComPortConnection.COM_NAME + comPort;
-		return connections.getOrDefault(name, null);
+		ComPortConnection<?> comm = connections.getOrDefault(name, null);
+		if (comm == null)
+		{
+			comm = findComPortConnection(new ComPortConnection<>(comPort, ComPortType.Server),
+					getISystem(CerialMasterSystemName), getISystemToken(CerialMasterSystemName));
+			if (comm != null)
+			{
+				connections.put(name, comm);
+			}
+		}
+		return comm;
 	}
+	
+	@Override
+	public ComPortConnection<?> getScannerPortConnection(Integer comPort)
+	{
+		String name = ComPortConnection.COM_NAME + comPort;
+		ComPortConnection<?> comm = connections.getOrDefault(name, null);
+		if (comm == null)
+		{
+			comm = findComPortConnection(new ComPortConnection<>(comPort, ComPortType.Scanner),
+					getISystem(CerialMasterSystemName), getISystemToken(CerialMasterSystemName));
+			if (comm != null)
+			{
+				connections.put(name, comm);
+			}
+		}
+		return comm;
+	}
+	
+	private static ArrayList<String> comStrings = new ArrayList<>();
 	
 	@Override
 	public List<String> listComPorts()
 	{
-		ArrayList<String> strings = new ArrayList<>(NRSerialPort.getAvailableSerialPorts());
-		strings.sort(String::compareTo);
-		return strings;
+		if (comStrings.isEmpty())
+		{
+			comStrings.addAll(NRSerialPort.getAvailableSerialPorts());
+		}
+		comStrings.sort(String::compareTo);
+		return comStrings;
 	}
 	
 	@Override

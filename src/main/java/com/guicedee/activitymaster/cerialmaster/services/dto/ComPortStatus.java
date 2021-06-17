@@ -7,6 +7,7 @@ public enum ComPortStatus {
     Missing("mdi mdi-help-network font-24 avatar-title d-flex"),
     InUse("mdi mdi-help-network font-24 avatar-title d-flex"),
     Offline("mdi mdi-network-off font-24 avatar-title d-flex"),
+    OperationInProgress("mdi mdi-play-network font-24 avatar-title d-flex"),
     FileTransfer("mdi mdi-play-network font-24 avatar-title d-flex"),
     Simulation("mdi mdi-router-network font-24 avatar-title d-flex"),
     Silent("mdi mdi-security-network font-24 avatar-title d-flex"),

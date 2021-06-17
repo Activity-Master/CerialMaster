@@ -1,6 +1,7 @@
 import com.guicedee.activitymaster.cerialmaster.implementations.*;
 import com.guicedee.activitymaster.cerialmaster.services.IReceiveMessage;
 import com.guicedee.activitymaster.fsdm.client.services.systems.IActivityMasterSystem;
+import com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
 
 module com.guicedee.activitymaster.cerialmaster {
 
@@ -27,6 +28,7 @@ module com.guicedee.activitymaster.cerialmaster {
 	provides IActivityMasterSystem with CerialMasterSystem;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceConfigurator with CerialMasterGuiceConfig;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions with CerialMasterInclusionModule;
+	provides IGuicePostStartup with CerialMasterPostStartup;
 	
 	opens com.guicedee.activitymaster.cerialmaster to com.google.guice;
 	opens com.guicedee.activitymaster.cerialmaster.implementations to com.google.guice;

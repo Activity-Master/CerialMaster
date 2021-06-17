@@ -1,6 +1,7 @@
 package com.guicedee.activitymaster.cerialmaster.services.dto;
 
 import com.fasterxml.jackson.annotation.*;
+import com.google.common.base.Strings;
 import com.guicedee.activitymaster.cerialmaster.services.*;
 import com.guicedee.activitymaster.fsdm.client.services.IResourceItemService;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
@@ -20,6 +21,7 @@ import java.util.logging.Logger;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.*;
+import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType.*;
 import static gnu.io.SerialPort.*;
 
 @Accessors(chain = true)
@@ -31,7 +33,7 @@ import static gnu.io.SerialPort.*;
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 public class ComPortConnection<J extends ComPortConnection<J>>
 		extends NRSerialPort
-		implements Serializable
+		implements Serializable,Comparable<J>
 {
 	@Serial
 	private static final long serialVersionUID = 1L;
@@ -41,7 +43,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	private String logName = "";
 	private transient Logger log;
 	
-	public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Logging, Running, Silent, FileTransfer);
+	public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Logging,OperationInProgress, Running, Silent, FileTransfer);
 	public static final String COM_NAME = "COM";
 	
 	@WebFormStartRow
@@ -153,6 +155,13 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		this.type = type;
 		endOfMessageCharacters.add('\n');
 		endOfMessageCharacters.add('\r');
+		if (scanners.contains(type))
+		{
+			//startOfMessageCharacters.add((char) 1);
+			//startOfMessageCharacters.add((char) 2);
+			endOfMessageCharacters.add((char) 3);
+			endOfMessageCharacters.add((char) 4);
+		}
 		logName = "comports.logs" + comPort;
 		log = Logger.getLogger(logName);
 		me = this;
@@ -417,6 +426,12 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		return parityBitsSet;
 	}
 	
+	@Override
+	public int compareTo(J o)
+	{
+		return Integer.compare(getComPort(), o.getComPort());
+	}
+	
 	public class PortReader
 			implements SerialPortEventListener
 	{
@@ -445,9 +460,11 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 					if (ins.available() > 0)
 					{
 						int i;
+					//	System.out.println("-----");
 						while ((i = ins.read()) != -1)
 						{
 							char c = (char) i;
+						//	System.out.print(c);
 							if (Character.isAlphabetic(c) ||
 							    Character.isDigit(c) ||
 							    allowedCharacters.contains(c) ||
@@ -489,6 +506,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 								}
 							}
 						}
+					//	System.out.println("------------");
+					//	System.out.print(readBuffer.toString());
 					}
 				}
 				catch (IOException e)
@@ -501,10 +520,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 				}
 			}
 		}
-		
 	}
-	
-	
+
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private void processMessage(String message)
 	{
@@ -514,13 +531,16 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		{
 			message = messageReceiver.cleanMessage(message, me);
 		}
-		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
-		getLog().config("[" + sdf.format(new Date())+ "]-["+ comPort + "] RX : " + message);
-		Set<IReceiveMessage> receiveMessages = GuiceContext.instance()
-		                                                   .getLoader(IReceiveMessage.class, ServiceLoader.load(IReceiveMessage.class));
-		for (IReceiveMessage<?> messageReceiver : receiveMessages)
+		if(!Strings.isNullOrEmpty(message))
 		{
-			messageReceiver.receiveMessage(message, me);
+			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
+			getLog().config("[" + sdf.format(new Date()) + "]-[" + comPort + "] RX : " + message);
+			Set<IReceiveMessage> receiveMessages = GuiceContext.instance()
+			                                                   .getLoader(IReceiveMessage.class, ServiceLoader.load(IReceiveMessage.class));
+			for (IReceiveMessage<?> messageReceiver : receiveMessages)
+			{
+				messageReceiver.receiveMessage(message, me);
+			}
 		}
 	}
 	

@@ -23,6 +23,8 @@ public interface ICerialMasterService<J extends ICerialMasterService<J>>
 	
 	ComPortConnection<?> getComPortConnection(Integer comPort);
 	
+	ComPortConnection<?> getScannerPortConnection(Integer comPort);
+	
 	List<String> listComPorts();
 	
 	List<String> listRegisteredComPorts();
