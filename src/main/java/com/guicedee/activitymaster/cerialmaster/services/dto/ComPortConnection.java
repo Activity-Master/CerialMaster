@@ -327,7 +327,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		{
 			try
 			{
-				outs.write(message.getBytes(StandardCharsets.UTF_8));
+				outs.write((message + "\r\n").getBytes(StandardCharsets.UTF_8));
 				getLog().log(Level.INFO, "[" + sdf.format(new Date())+ "]-[" + comPort + "] TX : " + message);
 				outs.flush();
 			}
