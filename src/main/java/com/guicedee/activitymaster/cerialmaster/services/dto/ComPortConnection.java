@@ -33,7 +33,7 @@ import static gnu.io.SerialPort.*;
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 public class ComPortConnection<J extends ComPortConnection<J>>
 		extends NRSerialPort
-		implements Serializable,Comparable<J>
+		implements Serializable, Comparable<J>
 {
 	@Serial
 	private static final long serialVersionUID = 1L;
@@ -43,7 +43,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	private String logName = "";
 	private transient Logger log;
 	
-	public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Logging,OperationInProgress, Running, Silent, FileTransfer);
+	public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Logging, OperationInProgress, Running, Silent, FileTransfer);
 	public static final String COM_NAME = "COM";
 	
 	@WebFormStartRow
@@ -107,7 +107,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	private int comPort;
 	
 	@JsonIgnore
-	private IResourceItem<?,?> resourceItem;
+	private IResourceItem<?, ?> resourceItem;
 	
 	@JsonIgnore
 	private transient PortReader reader;
@@ -182,6 +182,11 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	
 	public void open()
 	{
+		open(false);
+	}
+	
+	public void open(boolean silentStatusUpdate)
+	{
 		if (endOfMessageCharacters.isEmpty())
 		{
 			throw new RuntimeException("Tried to open a com connection without an end of line character set?");
@@ -189,7 +194,14 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		try
 		{
 			connect();
-			setStatus(Silent);
+			if (!silentStatusUpdate)
+			{
+				setStatus(Silent);
+			}
+			else
+			{
+				setStatus(Silent, true);
+			}
 		}
 		catch (NRSerialPortException nre)
 		{
@@ -210,10 +222,10 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		//	getSerialPortInstance().setDTR(true);
 		//	getSerialPortInstance().setRTS(true);
 		getSerialPortInstance().disableReceiveFraming();
-			getSerialPortInstance().disableRs485();
-			getSerialPortInstance().disableReceiveFraming();
-			getSerialPortInstance().disableReceiveThreshold();
-			
+		getSerialPortInstance().disableRs485();
+		getSerialPortInstance().disableReceiveFraming();
+		getSerialPortInstance().disableReceiveThreshold();
+		
 		notifyOnDataAvailable(true);
 		getSerialPortInstance().notifyOnDataAvailable(true);
 	/*	getSerialPortInstance().notifyOnBreakInterrupt(true);
@@ -271,7 +283,30 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		}
 	}
 	
+	public Set<IReceiveMessage<?>> getReceivers()
+	{
+		if (!receivers.containsKey(this))
+		{
+			try
+			{
+				Set<IReceiveMessage> receiveMessages = GuiceContext.instance()
+				                                                   .getLoader(IReceiveMessage.class, ServiceLoader.load(IReceiveMessage.class));
+				receivers.putIfAbsent(this, (Set) receiveMessages);
+			}
+			catch (Throwable T)
+			{
+				log.log(Level.SEVERE, "Cannot register IReceiveMessage(s)", T);
+			}
+		}
+		return receivers.getOrDefault(this, new HashSet<>());
+	}
+	
 	public void close()
+	{
+		close(false);
+	}
+	
+	public void close(boolean silentStatusUpdate)
 	{
 		try
 		{
@@ -301,6 +336,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		{
 			try
 			{
+				receivers.remove(this);
 				disconnect();
 			}
 			catch (Throwable T1)
@@ -308,11 +344,19 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			
 			}
 		}
-		setStatus(ComPortStatus.Offline);
+		if (!silentStatusUpdate)
+		{
+			setStatus(ComPortStatus.Offline);
+		}
+		else
+		{
+			setStatus(ComPortStatus.Offline, true);
+		}
 	}
 	
 	/**
 	 * Thread control between read and write
+	 *
 	 * @param message
 	 * @param in
 	 */
@@ -327,13 +371,16 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		{
 			try
 			{
-				outs.write((message + "\r\n").getBytes(StandardCharsets.UTF_8));
-				getLog().log(Level.INFO, "[" + sdf.format(new Date())+ "]-[" + comPort + "] TX : " + message);
-				outs.flush();
+				if (!Strings.isNullOrEmpty(message))
+				{
+					outs.write((message + "\r\n").getBytes(StandardCharsets.UTF_8));
+					getLog().log(Level.INFO, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
+					outs.flush();
+				}
 			}
 			catch (Exception e)
 			{
-				getLog().log(Level.SEVERE, "[" + sdf.format(new Date())+ "]-["+ comPort + "] TX : " + message);
+				getLog().log(Level.SEVERE, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
 				e.printStackTrace();
 			}
 		}
@@ -343,10 +390,10 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	{
 		try
 		{
-		//	getLog().log(Level.INFO, "[" + comPort + "] TX : " + sm.generateMessage());
+			//	getLog().log(Level.INFO, "[" + comPort + "] TX : " + sm.generateMessage());
 			writeOrReadMessage(sm.generateMessage(), false);
-		//	outs.write(sm.generateMessage().getBytes(StandardCharsets.UTF_8));
-		//	outs.flush();
+			//	outs.write(sm.generateMessage().getBytes(StandardCharsets.UTF_8));
+			//	outs.flush();
 		}
 		catch (Exception e)
 		{
@@ -436,6 +483,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			implements SerialPortEventListener
 	{
 		private StringBuffer readBuffer = new StringBuffer();
+		
 		@Override
 		public void serialEvent(SerialPortEvent event)
 		{
@@ -460,11 +508,11 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 					if (ins.available() > 0)
 					{
 						int i;
-					//	System.out.println("-----");
+						//	System.out.println("-----");
 						while ((i = ins.read()) != -1)
 						{
 							char c = (char) i;
-						//	System.out.print(c);
+							//	System.out.print(c);
 							if (Character.isAlphabetic(c) ||
 							    Character.isDigit(c) ||
 							    allowedCharacters.contains(c) ||
@@ -493,8 +541,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 							{
 								try
 								{
-									writeOrReadMessage(readBuffer.toString(), true);
-								//	processMessage(readBuffer.toString());
+									processMessage(readBuffer.toString());
+									//	processMessage(readBuffer.toString());
 								}
 								catch (Throwable T)
 								{
@@ -506,8 +554,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 								}
 							}
 						}
-					//	System.out.println("------------");
-					//	System.out.print(readBuffer.toString());
+						//	System.out.println("------------");
+						//	System.out.print(readBuffer.toString());
 					}
 				}
 				catch (IOException e)
@@ -521,7 +569,10 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			}
 		}
 	}
-
+	
+	@Getter
+	private static final Map<ComPortConnection<?>, Set<IReceiveMessage<?>>> receivers = new HashMap<>();
+	
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private void processMessage(String message)
 	{
@@ -531,13 +582,14 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		{
 			message = messageReceiver.cleanMessage(message, me);
 		}
-		if(!Strings.isNullOrEmpty(message))
+		
+		if (!Strings.isNullOrEmpty(message))
 		{
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
 			getLog().config("[" + sdf.format(new Date()) + "]-[" + comPort + "] RX : " + message);
-			Set<IReceiveMessage> receiveMessages = GuiceContext.instance()
-			                                                   .getLoader(IReceiveMessage.class, ServiceLoader.load(IReceiveMessage.class));
-			for (IReceiveMessage<?> messageReceiver : receiveMessages)
+			/*Set<IReceiveMessage> receiveMessages = GuiceContext.instance()
+			                                                   .getLoader(IReceiveMessage.class, ServiceLoader.load(IReceiveMessage.class));*/
+			for (IReceiveMessage<?> messageReceiver : getReceivers())
 			{
 				messageReceiver.receiveMessage(message, me);
 			}
