@@ -485,7 +485,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		private StringBuffer readBuffer = new StringBuffer();
 		
 		@Override
-		public void serialEvent(SerialPortEvent event)
+		public synchronized void serialEvent(SerialPortEvent event)
 		{
 			if (event.getEventType() == SerialPortEvent.OUTPUT_BUFFER_EMPTY)
 			{
