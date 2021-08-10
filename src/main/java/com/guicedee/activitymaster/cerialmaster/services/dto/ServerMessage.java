@@ -1,7 +1,8 @@
 package com.guicedee.activitymaster.cerialmaster.services.dto;
 
 import com.fasterxml.jackson.annotation.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.io.Serial;
@@ -9,7 +10,6 @@ import java.io.Serializable;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
 
-@Data
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -21,6 +21,8 @@ public abstract class ServerMessage<J extends ServerMessage<J>>
 	@Serial
 	private static final long serialVersionUID = 1L;
 
+	@Getter
+	@Setter
 	private ComPortConnection<?> port;
 	
 	
@@ -30,7 +32,8 @@ public abstract class ServerMessage<J extends ServerMessage<J>>
 		return getClass().getCanonicalName();
 	}
 	
-	
+	@Getter
+	@Setter
 	private boolean outgoing = true;
 	
 	public ServerMessage()
