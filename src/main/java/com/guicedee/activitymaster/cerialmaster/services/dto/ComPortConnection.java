@@ -3,8 +3,11 @@ package com.guicedee.activitymaster.cerialmaster.services.dto;
 import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.Strings;
 import com.guicedee.activitymaster.cerialmaster.services.*;
+import com.guicedee.activitymaster.fsdm.client.services.IEventService;
 import com.guicedee.activitymaster.fsdm.client.services.IResourceItemService;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.events.IEvent;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.jwebmp.plugins.quickforms.annotations.*;
 import com.jwebmp.plugins.quickforms.annotations.states.*;
@@ -20,8 +23,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
+import static com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService.*;
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.*;
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType.*;
+import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
+import static com.guicedee.activitymaster.fsdm.client.services.IActivityMasterService.*;
 import static gnu.io.SerialPort.*;
 
 @Accessors(chain = true)
@@ -346,46 +352,13 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		}
 		if (!silentStatusUpdate)
 		{
-			setStatus(ComPortStatus.Offline);
+			setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.Offline);
 		}
 		else
 		{
-			setStatus(ComPortStatus.Offline, true);
+			setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.Offline, true);
 		}
 	}
-	
-	/**
-	 * Thread control between read and write
-	 *
-	 * @param message
-	 * @param in
-	 */
-	private void writeOrReadMessage(String message, boolean in)
-	{
-		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
-		if (in)
-		{
-			processMessage(message);
-		}
-		else
-		{
-			try
-			{
-				if (!Strings.isNullOrEmpty(message))
-				{
-					outs.write((message + "\r\n").getBytes(StandardCharsets.UTF_8));
-					getLog().log(Level.INFO, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
-					outs.flush();
-				}
-			}
-			catch (Exception e)
-			{
-				getLog().log(Level.SEVERE, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	public void writeMessage(ServerMessage<?> sm)
 	{
 		try
@@ -573,22 +546,91 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	@Getter
 	private static final Map<ComPortConnection<?>, Set<IReceiveMessage<?>>> receivers = new HashMap<>();
 	
+	
+	/**
+	 * Thread control between read and write
+	 *
+	 * @param message
+	 * @param in
+	 */
+	private void writeOrReadMessage(String message, boolean in)
+	{
+		SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.SSS");
+		if (in)
+		{
+			processMessage(message);
+		}
+		else
+		{
+			try
+			{
+				if (!Strings.isNullOrEmpty(message.trim()))
+				{
+					outs.write((message + "\r\n").getBytes(StandardCharsets.UTF_8));
+					getLog().log(Level.INFO, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
+					
+					outs.flush();
+					
+					IEventService<?> eventService = GuiceContext.get(IEventService.class);
+					ISystems<?, ?> system = getISystem(CerialMasterSystemName);
+					UUID identityToken = getISystemToken(CerialMasterSystemName);
+					
+					IEvent<?, ?> parentEvent = GuiceContext.get(IEvent.class);
+					IEvent<?, ?> event = eventService.createEvent(Message.toString(), system, identityToken);
+					
+					event.addClassification(SendMessageToComPort.toString(), message, system, identityToken);
+					event.addResourceItem(ComPort.toString(), getResourceItem(), getComPort() + "", system, identityToken);
+					if (parentEvent != null && parentEvent.getId() != null)
+					{
+						parentEvent.addChild(event, SendMessageToComPort.toString(), null, system, identityToken);
+					}
+					
+				}
+			}
+			catch (Exception e)
+			{
+				getLog().log(Level.SEVERE, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private void processMessage(String message)
 	{
+		final String originalMessage = message;
 		Set<ICleanReceivedMessage> cleanMessages = GuiceContext.instance()
 		                                                       .getLoader(ICleanReceivedMessage.class, ServiceLoader.load(ICleanReceivedMessage.class));
 		for (ICleanReceivedMessage<?> messageReceiver : cleanMessages)
 		{
 			message = messageReceiver.cleanMessage(message, me);
 		}
+		if(Strings.isNullOrEmpty(message.trim()))
+		{
+			return;
+		}
+		
+		IEventService<?> eventService = GuiceContext.get(IEventService.class);
+		ISystems<?, ?> system = getISystem(CerialMasterSystemName);
+		UUID identityToken = getISystemToken(CerialMasterSystemName);
+		
+		IEvent<?, ?> parentEvent = GuiceContext.get(IEvent.class);
+		IEvent<?, ?> event = eventService.createEvent(Message.toString(), system, identityToken);
+		
+		event.addClassification(MessageReceivedFromComPort.toString(), message, system, identityToken);
+		event.addResourceItem(ComPort.toString(), getResourceItem(), getComPort() + "", system, identityToken);
+		
+		if (parentEvent != null && parentEvent.getId() != null)
+		{
+			parentEvent.addChild(event, MessageReceivedFromComPort.toString(), null, system, identityToken);
+		}
+		
 		
 		if (!Strings.isNullOrEmpty(message))
 		{
-			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
+			SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.SSS");
 			getLog().config("[" + sdf.format(new Date()) + "]-[" + comPort + "] RX : " + message);
-			/*Set<IReceiveMessage> receiveMessages = GuiceContext.instance()
-			                                                   .getLoader(IReceiveMessage.class, ServiceLoader.load(IReceiveMessage.class));*/
 			for (IReceiveMessage<?> messageReceiver : getReceivers())
 			{
 				messageReceiver.receiveMessage(message, me);
@@ -619,7 +661,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			messageReceiver.receiveTerminalMessage(message, T, me);
 		}
 		getMe().close();
-		getMe().setStatus(ComPortStatus.Offline);
+		getMe().setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.Offline);
 	}
 	
 	/**

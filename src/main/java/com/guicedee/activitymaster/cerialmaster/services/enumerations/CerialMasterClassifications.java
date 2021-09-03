@@ -19,6 +19,12 @@ public enum CerialMasterClassifications
 	ComPortAllowedCharacters("A set of characters allowed for receipting", ResourceItemXClassification),
 	ComPortEndOfMessage("A set of characters allowed to register the end of a message", ResourceItemXClassification),
 	
+	SendMessageToComPort("A message that was sent to a com port", EventXClassification),
+	Message("A specific message that must be sent",EventXClassification),
+	RawMessage("A specific message that was received in its raw format",EventXClassification),
+	MessageReceivedFromComPort("A message that was received from a com port",EventXClassification),
+	
+	
 	;
 	
 	private String description;

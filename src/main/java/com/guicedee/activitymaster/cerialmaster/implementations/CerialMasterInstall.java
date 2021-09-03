@@ -19,20 +19,20 @@ import static com.guicedee.guicedinjection.GuiceContext.*;
 public class CerialMasterInstall implements ISystemUpdate
 {
 	@Override
-	public void update(IEnterprise<?,?> enterprise)
+	public void update(IEnterprise<?, ?> enterprise)
 	{
 		IClassificationService<?> classificationService = get(IClassificationService.class);
 		CerialMasterSystem cms = GuiceContext.get(CerialMasterSystem.class);
 		
-		ISystems<?,?> system = cms.getSystem(enterprise);
+		ISystems<?, ?> system = cms.getSystem(enterprise);
 		UUID token = cms.getSystemToken(enterprise);
 		
 		IResourceItemService<?> resourceItemService = get(IResourceItemService.class);
-		resourceItemService.createType(SerialConnectionPort,system);
+		resourceItemService.createType(SerialConnectionPort, system);
 		logProgress("Cerial Master", "Loading Com Port Configurations");
 		
-		classificationService.create(ComPort, system,Hardware);
-		classificationService.create(ServerNumber, system,ComPort);
+		classificationService.create(ComPort, system, Hardware);
+		classificationService.create(ServerNumber, system, ComPort);
 		
 		classificationService.create(ComPortNumber, system, ComPort);
 		classificationService.create(ComPortStatus, system, ComPort);
@@ -46,10 +46,23 @@ public class CerialMasterInstall implements ISystemUpdate
 		classificationService.create(StopBits, system, ComPort);
 		classificationService.create(Parity, system, ComPort);
 		
-		logProgress("Cerial Master", "Loading Com Port Events");
+		
+		classificationService.create(Message, system, ComPort);
+		classificationService.create(SendMessageToComPort, system, Message);
+		classificationService.create(MessageReceivedFromComPort, system, Message);
+		
 		IEventService<?> eventsService = GuiceContext.get(IEventService.class);
+		eventsService.createEventType(SendMessageToComPort, system);
+		eventsService.createEventType(Message, system);
+		eventsService.createEventType(MessageReceivedFromComPort, system);
+		
+		logProgress("Cerial Master", "Loading Com Port Events");
 		eventsService.createEventType(RegisteredANewConnection.toString(), system, token);
 		eventsService.createEventType(ClosedANewConnection.toString(), system, token);
+		
+		resourceItemService.createType(Message, system);
+		resourceItemService.createType(SendMessageToComPort, system);
+		resourceItemService.createType(MessageReceivedFromComPort, system);
 		
 		logProgress("Cerial Master", "Completed Com Ports");
 	}
