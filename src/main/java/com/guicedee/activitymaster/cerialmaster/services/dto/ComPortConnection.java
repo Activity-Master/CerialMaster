@@ -372,8 +372,17 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		{
 			getLog().log(Level.SEVERE, "Unable to write message - " + sm.generateMessage(), e);
 			processMessageTerminal(e.getMessage(), e);
-			close();
-			setStatus(GeneralException);
+		//	close();
+			try
+			{
+				wait(1000);
+			}
+			catch (InterruptedException ex)
+			{
+				ex.printStackTrace();
+			}
+		//	open();
+		//	writeMessage(sm);
 		}
 	}
 	
@@ -488,6 +497,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 							//	System.out.print(c);
 							if (Character.isAlphabetic(c) ||
 							    Character.isDigit(c) ||
+							    '.' == c ||
 							    allowedCharacters.contains(c) ||
 							    startOfMessageCharacters.contains(c))
 							{

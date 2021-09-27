@@ -257,8 +257,8 @@ public class CerialMasterService
 	public List<String> listAvailableComPorts()
 	{
 		List<String> strings = listComPorts();
-		List<String> strings1 = listRegisteredComPorts();
-		strings.removeAll(strings1);
+		//List<String> strings1 = listRegisteredComPorts();
+		//strings.removeAll(strings1);
 		return strings;
 	}
 	
