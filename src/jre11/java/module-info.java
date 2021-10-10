@@ -15,6 +15,8 @@ module com.guicedee.activitymaster.cerialmaster {
 	requires transitive com.neuronrobotics.nrjavaserial;
 	requires com.guicedee.guicedhazelcast.hibernate;
 	
+	requires org.apache.logging.log4j.core;
+	
 	requires com.jwebmp.plugins.quickforms.annotations;
 
 	requires com.guicedee.guicedinjection;

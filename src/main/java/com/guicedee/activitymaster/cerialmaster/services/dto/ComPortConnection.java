@@ -3,12 +3,10 @@ package com.guicedee.activitymaster.cerialmaster.services.dto;
 import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.Strings;
 import com.guicedee.activitymaster.cerialmaster.services.*;
-import com.guicedee.activitymaster.fsdm.client.services.IEventService;
 import com.guicedee.activitymaster.fsdm.client.services.IResourceItemService;
-import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.events.IEvent;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
-import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.guicedinjection.GuiceContext;
+import com.guicedee.logger.Log4j2Utils;
 import com.jwebmp.plugins.quickforms.annotations.*;
 import com.jwebmp.plugins.quickforms.annotations.states.*;
 import gnu.io.*;
@@ -18,16 +16,15 @@ import lombok.experimental.Accessors;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
-import static com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService.*;
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.*;
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType.*;
-import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
-import static com.guicedee.activitymaster.fsdm.client.services.IActivityMasterService.*;
 import static gnu.io.SerialPort.*;
 
 @Accessors(chain = true)
@@ -280,7 +277,14 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		}
 		try
 		{
-			addEventListener(reader = new PortReader());
+			if (reader == null)
+			{
+				addEventListener(reader = new PortReader());
+			}
+			else
+			{
+				addEventListener(reader);
+			}
 		}
 		catch (TooManyListenersException e)
 		{
@@ -359,6 +363,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.Offline, true);
 		}
 	}
+	
 	public void writeMessage(ServerMessage<?> sm)
 	{
 		try
@@ -372,7 +377,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		{
 			getLog().log(Level.SEVERE, "Unable to write message - " + sm.generateMessage(), e);
 			processMessageTerminal(e.getMessage(), e);
-		//	close();
+			//	close();
 			try
 			{
 				wait(1000);
@@ -381,8 +386,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			{
 				ex.printStackTrace();
 			}
-		//	open();
-		//	writeMessage(sm);
+			//	open();
+			//	writeMessage(sm);
 		}
 	}
 	
@@ -556,6 +561,11 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	@Getter
 	private static final Map<ComPortConnection<?>, Set<IReceiveMessage<?>>> receivers = new HashMap<>();
 	
+	public static String getDateString()
+	{
+		return DateTimeFormatter.ofPattern("yyyy-MM-dd")
+		                        .format(LocalDateTime.now());
+	}
 	
 	/**
 	 * Thread control between read and write
@@ -563,9 +573,9 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	 * @param message
 	 * @param in
 	 */
-	private void writeOrReadMessage(String message, boolean in)
+	public void writeOrReadMessage(String message, boolean in)
 	{
-		SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.SSS");
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
 		if (in)
 		{
 			processMessage(message);
@@ -577,28 +587,24 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 				if (!Strings.isNullOrEmpty(message.trim()))
 				{
 					outs.write((message + "\r\n").getBytes(StandardCharsets.UTF_8));
-					getLog().log(Level.INFO, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
+					
+					getLog().log(Level.FINE, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
+					var comporttxrxlogger = Log4j2Utils.createLog4j2RollingLog("comport_" + getComPort(),
+							getDateString() + "rxtx_comport_" + getComPort(), "%d{ABSOLUTE} %m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+					comporttxrxlogger.info("TX " + message);
+					
+					var comportlogger = Log4j2Utils.createLog4j2RollingLog("comport_" + getComPort(),
+							getDateString() + "_comport_" + getComPort(), "%m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+					comportlogger.info(message);
 					
 					outs.flush();
-					
-					IEventService<?> eventService = GuiceContext.get(IEventService.class);
-					ISystems<?, ?> system = getISystem(CerialMasterSystemName);
-					UUID identityToken = getISystemToken(CerialMasterSystemName);
-					
-					IEvent<?, ?> parentEvent = GuiceContext.get(IEvent.class);
-					IEvent<?, ?> event = eventService.createEvent(Message.toString(), system, identityToken);
-					
-					event.addClassification(SendMessageToComPort.toString(), message, system, identityToken);
-					event.addResourceItem(ComPort.toString(), getResourceItem(), getComPort() + "", system, identityToken);
-					if (parentEvent != null && parentEvent.getId() != null)
-					{
-						parentEvent.addChild(event, SendMessageToComPort.toString(), null, system, identityToken);
-					}
-					
 				}
 			}
 			catch (Exception e)
 			{
+				var comportlogger = Log4j2Utils.createLog4j2RollingLog("comport_send_error_" + getComPort(),
+						getDateString() + "_comport_send_error_" + getComPort(), "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+				comportlogger.info(message);
 				getLog().log(Level.SEVERE, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
 				e.printStackTrace();
 			}
@@ -610,18 +616,34 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	private void processMessage(String message)
 	{
 		final String originalMessage = message;
+		
+		var rawlogger = Log4j2Utils.createLog4j2RollingLog("rawreceive_comport_" + getComPort(),
+				getDateString() + "_rawreceive_comport_" + getComPort(), "%m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+		rawlogger.info(message);
+		
 		Set<ICleanReceivedMessage> cleanMessages = GuiceContext.instance()
 		                                                       .getLoader(ICleanReceivedMessage.class, ServiceLoader.load(ICleanReceivedMessage.class));
 		for (ICleanReceivedMessage<?> messageReceiver : cleanMessages)
 		{
 			message = messageReceiver.cleanMessage(message, me);
 		}
-		if(Strings.isNullOrEmpty(message.trim()))
+		if (Strings.isNullOrEmpty(message.trim()))
 		{
 			return;
 		}
 		
-		IEventService<?> eventService = GuiceContext.get(IEventService.class);
+		var cleanlogger = Log4j2Utils.createLog4j2RollingLog("receive_comport_" + getComPort(),
+				getDateString() + "_receive_comport_" + getComPort(), "%m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+		cleanlogger.info(message);
+		
+		var comporttxrxlogger = Log4j2Utils.createLog4j2RollingLog("comport_" + getComPort(),
+				getDateString() + "rxtx_comport_" + getComPort(), "%d{ABSOLUTE} %m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+		comporttxrxlogger.info("RX " + message);
+		
+		var comportlogger = Log4j2Utils.createLog4j2RollingLog("comport_" + getComPort(),
+				getDateString() + "_comport_" + getComPort(), "%m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+		comportlogger.info(message);
+/*		IEventService<?> eventService = GuiceContext.get(IEventService.class);
 		ISystems<?, ?> system = getISystem(CerialMasterSystemName);
 		UUID identityToken = getISystemToken(CerialMasterSystemName);
 		
@@ -634,13 +656,12 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		if (parentEvent != null && parentEvent.getId() != null)
 		{
 			parentEvent.addChild(event, MessageReceivedFromComPort.toString(), null, system, identityToken);
-		}
-		
+		}*/
 		
 		if (!Strings.isNullOrEmpty(message))
 		{
-			SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.SSS");
-			getLog().config("[" + sdf.format(new Date()) + "]-[" + comPort + "] RX : " + message);
+			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
+			getLog().fine("[" + sdf.format(new Date()) + "]-[" + comPort + "] RX : " + message);
 			for (IReceiveMessage<?> messageReceiver : getReceivers())
 			{
 				messageReceiver.receiveMessage(message, me);
@@ -657,6 +678,10 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		{
 			messageReceiver.receiveErrorMessage(message, T, me);
 		}
+		var comporterrorlogger = Log4j2Utils.createLog4j2RollingLog("comport_error_" + getComPort(),
+				getDateString() + "_comport_error_" + getComPort(), "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+		comporterrorlogger.fatal(message, T);
+		
 		getLog().log(Level.FINE, "Message Exception", T);
 		getLog().log(Level.SEVERE, "Error in receiving string from COM-port: " + T + " - " + message);
 	}
@@ -664,14 +689,16 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private void processMessageTerminal(String message, Throwable T)
 	{
+		var comporterrorlogger = Log4j2Utils.createLog4j2RollingLog("comport_error_" + getComPort(),
+				getDateString() + "_comport_error_" + getComPort(), "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+		comporterrorlogger.fatal(message, T);
+		
 		Set<ITerminalReceiveMessage> messageReceivers = GuiceContext.instance()
 		                                                            .getLoader(ITerminalReceiveMessage.class, ServiceLoader.load(ITerminalReceiveMessage.class));
 		for (ITerminalReceiveMessage<?> messageReceiver : messageReceivers)
 		{
 			messageReceiver.receiveTerminalMessage(message, T, me);
 		}
-		getMe().close();
-		getMe().setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.Offline);
 	}
 	
 	/**
