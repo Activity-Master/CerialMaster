@@ -16,7 +16,6 @@ import lombok.experimental.Accessors;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
@@ -564,7 +563,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	public static String getDateString()
 	{
 		return DateTimeFormatter.ofPattern("yyyy-MM-dd")
-		                        .format(LocalDateTime.now());
+		                        .format(com.entityassist.RootEntity.getNow());
 	}
 	
 	/**

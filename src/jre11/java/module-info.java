@@ -25,6 +25,7 @@ module com.guicedee.activitymaster.cerialmaster {
 	
 	requires static com.guicedee.guicedhazelcast;
 	requires com.guicedee.activitymaster.fsdm.client;
+	requires com.entityassist;
 	
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with CerialMasterModule;
 	provides IActivityMasterSystem with CerialMasterSystem;
