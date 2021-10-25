@@ -34,7 +34,7 @@ import static gnu.io.SerialPort.*;
 @JsonIgnoreProperties(ignoreUnknown = true, value = {"inspection"})
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 public class ComPortConnection<J extends ComPortConnection<J>>
-		extends NRSerialPort
+		extends NRSerialPort<J>
 		implements Serializable, Comparable<J>
 {
 	@Serial
@@ -115,6 +115,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	private transient PortReader reader;
 	
 	private transient boolean reading;
+	private transient boolean simulated;
 	
 	public J setBaudRate(int rate)
 	{
@@ -182,6 +183,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	@JsonIgnore
 	private transient OutputStream outs;
 	
+	private transient SimulatedInputStream simIn;
+	
 	public void open()
 	{
 		open(false);
@@ -204,9 +207,74 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			{
 				setStatus(Silent, true);
 			}
+			getSerialPortInstance().disableReceiveFraming();
+			getSerialPortInstance().disableRs485();
+			getSerialPortInstance().disableReceiveFraming();
+			getSerialPortInstance().disableReceiveThreshold();
+			
+			notifyOnDataAvailable(true);
+			getSerialPortInstance().notifyOnDataAvailable(true);
+			getSerialPortInstance().enableReceiveThreshold(50);
+			getSerialPortInstance().setInputBufferSize(512000);
+			getSerialPortInstance().setOutputBufferSize(512000);
+			getSerialPortInstance().setFlowControlMode(FLOWCONTROL_NONE);
+			
+			ins = new DataInputStream(getInputStream());
+			outs = new DataOutputStream(getOutputStream());
+			try
+			{
+				getSerialPortInstance().setSerialPortParams(baudRate,
+						dataBits,
+						stopBits,
+						parity);
+			}
+			catch (UnsupportedCommOperationException e)
+			{
+				getLog().log(Level.SEVERE, "Cannot set parameters for the serial port", e);
+				processMessageTerminal("Cannot set com port properties", e);
+			}
+			simulated = false;
+			try
+			{
+				if (reader == null)
+				{
+					addEventListener(reader = new PortReader());
+				}
+				else
+				{
+					addEventListener(reader);
+				}
+			}
+			catch (TooManyListenersException e)
+			{
+				getLog().log(Level.SEVERE, "Reader has too many listeners", e);
+				processMessageTerminal("Reader has too many listeners", e);
+			}
 		}
 		catch (NRSerialPortException nre)
 		{
+			simulated = true;
+			simIn = new SimulatedInputStream();
+			ins = simIn;
+			outs = new SimulatedOutputStream();
+			
+			try
+			{
+				if (reader == null)
+				{
+					addEventListener(reader = new PortReader());
+				}
+				else
+				{
+					addEventListener(reader);
+				}
+			}
+			catch (TooManyListenersException e)
+			{
+				getLog().log(Level.SEVERE, "Reader has too many listeners", e);
+				processMessageTerminal("Reader has too many listeners", e);
+			}
+			
 			switch (nre.getMessage())
 			{
 				case "No Port":
@@ -217,79 +285,12 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 					return;
 				default:
 					getLog().log(Level.SEVERE, "Unknown Exception", nre);
-					setStatus(GeneralException);
+					setStatus(Simulation);
 					return;
 			}
 		}
-		//	getSerialPortInstance().setDTR(true);
-		//	getSerialPortInstance().setRTS(true);
-		getSerialPortInstance().disableReceiveFraming();
-		getSerialPortInstance().disableRs485();
-		getSerialPortInstance().disableReceiveFraming();
-		getSerialPortInstance().disableReceiveThreshold();
 		
-		notifyOnDataAvailable(true);
-		getSerialPortInstance().notifyOnDataAvailable(true);
-	/*	getSerialPortInstance().notifyOnBreakInterrupt(true);
-		getSerialPortInstance().notifyOnFramingError(true);
-		getSerialPortInstance().notifyOnOutputEmpty(true);
-		getSerialPortInstance().notifyOnCarrierDetect(true);
-		getSerialPortInstance().notifyOnParityError(true);
-		getSerialPortInstance().notifyOnDSR(true);
-		getSerialPortInstance().notifyOnCTS(true);*/
-		//	getSerialPortInstance().notifyOnOverrunError(true);
-	/*	try
-		{
-			getSerialPortInstance().enableReceiveFraming('\n');
-			
-			getSerialPortInstance().enableReceiveTimeout(3500);
-			
-			
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}*/
-		getSerialPortInstance().enableReceiveThreshold(50);
-		getSerialPortInstance().setInputBufferSize(512000);
-		getSerialPortInstance().setOutputBufferSize(512000);
-		getSerialPortInstance().setFlowControlMode(FLOWCONTROL_NONE);
-		//getSerialPortInstance().setFlowControlMode(FLOWCONTROL_RTSCTS_IN | FLOWCONTROL_RTSCTS_OUT);
 		
-		ins = new DataInputStream(getInputStream());
-		outs = new DataOutputStream(getOutputStream());
-		
-	/*	ins = new BufferedInputStream(new DataInputStream(getInputStream()));
-		outs = new BufferedOutputStream(new DataOutputStream(getOutputStream()));*/
-		
-		try
-		{
-			getSerialPortInstance().setSerialPortParams(baudRate,
-					dataBits,
-					stopBits,
-					parity);
-		}
-		catch (UnsupportedCommOperationException e)
-		{
-			getLog().log(Level.SEVERE, "Cannot set parameters for the serial port", e);
-			processMessageTerminal("Cannot set com port properties", e);
-		}
-		try
-		{
-			if (reader == null)
-			{
-				addEventListener(reader = new PortReader());
-			}
-			else
-			{
-				addEventListener(reader);
-			}
-		}
-		catch (TooManyListenersException e)
-		{
-			getLog().log(Level.SEVERE, "Reader has too many listeners", e);
-			processMessageTerminal("Reader has too many listeners", e);
-		}
 	}
 	
 	public Set<IReceiveMessage<?>> getReceivers()
@@ -463,6 +464,59 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	public int compareTo(J o)
 	{
 		return Integer.compare(getComPort(), o.getComPort());
+	}
+	
+	public static class SimulatedInputStream extends  InputStream {
+		private final List<Character> message = new ArrayList<>();
+		
+		public SimulatedInputStream writeText(String message)
+		{
+			for (char c : message.toCharArray())
+			{
+				getMessage().add(c);
+			}
+			return this;
+		}
+		
+		public List<Character> getMessage()
+		{
+			return message;
+		}
+		
+		@Override
+		public int read() throws IOException
+		{
+			ListIterator<Character> characterListIterator = message.listIterator();
+			if(characterListIterator.hasNext())
+			{
+				char c = characterListIterator.next();
+				return c;
+			}
+			return 0;
+		}
+		
+		@Override
+		public int available() throws IOException
+		{
+			return getMessage().size();
+		}
+		
+		
+		@Override
+		public synchronized void reset() throws IOException
+		{
+			getMessage().clear();
+			super.reset();
+		}
+	}
+	
+	public static class SimulatedOutputStream extends OutputStream
+	{
+		@Override
+		public void write(int b) throws IOException
+		{
+			//throw away message logged elsewhere
+		}
 	}
 	
 	public class PortReader
@@ -718,5 +772,10 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	public String getLogName()
 	{
 		return logName;
+	}
+	
+	public boolean isSimulated()
+	{
+		return simulated;
 	}
 }
