@@ -253,28 +253,6 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		}
 		catch (NRSerialPortException nre)
 		{
-			simulated = true;
-			simIn = new SimulatedInputStream();
-			ins = simIn;
-			outs = new SimulatedOutputStream();
-			
-			try
-			{
-				if (reader == null)
-				{
-					addEventListener(reader = new PortReader());
-				}
-				else
-				{
-					addEventListener(reader);
-				}
-			}
-			catch (TooManyListenersException e)
-			{
-				getLog().log(Level.SEVERE, "Reader has too many listeners", e);
-				processMessageTerminal("Reader has too many listeners", e);
-			}
-			
 			switch (nre.getMessage())
 			{
 				case "No Port":
