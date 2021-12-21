@@ -50,6 +50,7 @@ public class CerialMasterService
 	
 	@Override
 	@CacheResult(cacheName = "ComPortConnections", skipGet = true)
+	//@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
 	public ComPortConnection<?> addOrUpdateConnection(@CacheKey ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
@@ -62,7 +63,7 @@ public class CerialMasterService
 		comPortResourceItem.addOrUpdateClassification(ComPortNumber, comPort.getComPort() + "", system, identityToken);
 		comPortResourceItem.addOrUpdateClassification(ComPortDeviceType, comPort.getType()
 		                                                                        .toString(), system, identityToken);
-		comPortResourceItem.addOrUpdateClassification(ComPortStatus, comPort.getStatus()
+		comPortResourceItem.addOrUpdateClassification(ComPortStatus, comPort.getComPortStatus()
 		                                                                    .toString(), system, identityToken);
 		comPortResourceItem.addOrUpdateClassification(BaudRate, comPort.getBaudRate() + "", system, identityToken);
 		comPortResourceItem.addOrUpdateClassification(BufferSize, comPort.getBufferSize() + "", system, identityToken);
@@ -100,12 +101,13 @@ public class CerialMasterService
 	
 	@Override
 	@CacheResult(cacheName = "ComPortConnections", skipGet = true)
+	//@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
 	public ComPortConnection<?> updateStatus(@CacheKey ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
 		IResourceItem<?, ?> comPortResourceItem = resourceService.findByClassification(comPortResourceItemType.getName(), ComPortNumber.toString(), comPort.getComPort() + "", system, identityToken);
-		comPortResourceItem.addOrUpdateClassification(ComPortStatus, comPort.getStatus()
+		comPortResourceItem.addOrUpdateClassification(ComPortStatus, comPort.getComPortStatus()
 		                                                                    .toString(), system, identityToken);
 		return comPort;
 	}
@@ -145,7 +147,7 @@ public class CerialMasterService
 		
 		comPort.setComPort(Integer.parseInt(objects[1].toString()));
 		comPort.setType(ComPortType.valueOf(objects[2].toString()));
-		comPort.setStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.valueOf(objects[3].toString()), true);
+		comPort.setComPortStatus(com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.valueOf(objects[3].toString()), true);
 		comPort.setBaudRate(Integer.parseInt(objects[4].toString()));
 		comPort.setBufferSize(Integer.parseInt(objects[5].toString()));
 		comPort.setDataBits(Integer.parseInt(objects[6].toString()));
