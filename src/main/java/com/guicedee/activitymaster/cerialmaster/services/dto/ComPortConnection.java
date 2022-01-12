@@ -2,19 +2,18 @@ package com.guicedee.activitymaster.cerialmaster.services.dto;
 
 import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.Strings;
-import com.guicedee.activitymaster.cerialmaster.ComPortIdleMonitor;
+import com.google.common.collect.EvictingQueue;
 import com.guicedee.activitymaster.cerialmaster.services.*;
 import com.guicedee.activitymaster.fsdm.client.services.IResourceItemService;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.guicedinjection.interfaces.JobService;
-import com.guicedee.logger.Log4j2Utils;
 import com.jwebmp.plugins.quickforms.annotations.*;
 import com.jwebmp.plugins.quickforms.annotations.states.*;
 import gnu.io.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Log4j2Utils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +21,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +51,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	public static final EnumSet<ComPortStatus> onlineServerStatus = EnumSet.of(Simulation, Idle, Opening, Logging, OperationInProgress, Running, Silent, FileTransfer);
 	
 	public static final String COM_NAME = "COM";
+	
+	private Integer maxLength;
 	
 	@WebFormStartRow
 	@WebField(classes = "col-12 col-md-2")
@@ -102,6 +102,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	@LabelField(value = "Status", classes = "col-12 col-md-3")
 	@WebReadOnly
 	@SelectField
+	@JsonProperty("comPortStatus")
+	@JsonAlias({"status", "comPortStatus"})
 	private ComPortStatus comPortStatus = Offline;
 	
 	@WebIgnore
@@ -216,10 +218,19 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			}
 			
 			connect();
+			//	Thread.sleep(100);
 			
-			JobService.getInstance()
-			          .addPollingJob("ComPortLastReceivedStatusPolling", new ComPortIdleMonitor(), 5, TimeUnit.MINUTES);
+			//JobService.getInstance()
+			//          .addPollingJob("ComPortLastReceivedStatusPolling", new ComPortIdleMonitor(), 5, TimeUnit.MINUTES);
+			//	JobService.getInstance()
+			//          .addPollingJob("ComPortRestartReadingPolling", new ComPortRestarter(this),60, 15, TimeUnit.SECONDS);
+			
 			getLog().log(Level.INFO, "Created Com Port Status Monitor - " + comPort);
+			
+			if (getSerialPortInstance() == null)
+			{
+				throw new NRSerialPortException("No Port Internal error");
+			}
 			
 			getSerialPortInstance().disableReceiveFraming();
 			getSerialPortInstance().disableRs485();
@@ -260,7 +271,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			}
 			catch (TooManyListenersException e)
 			{
-				getLog().log(Level.SEVERE, "Reader has too many listeners", e);
+				getLog().log(Level.WARNING, "Reader has too many listeners");
 				processMessageTerminal("Reader has too many listeners", e);
 			}
 			if (!silentStatusUpdate)
@@ -274,10 +285,14 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		}
 		catch (NRSerialPortException nre)
 		{
+			getLog().log(Level.SEVERE, "Unable to port it - ", nre);
 			switch (nre.getMessage())
 			{
 				case "No Port":
 					setComPortStatus(Missing);
+					return;
+				case "No Port Internal error":
+					setComPortStatus(GeneralException);
 					return;
 				case "Port in Use":
 					setComPortStatus(InUse);
@@ -286,6 +301,11 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 					getLog().log(Level.SEVERE, "Unknown Exception", nre);
 					setComPortStatus(GeneralException);
 			}
+		}
+		catch (Throwable nre)
+		{
+			getLog().log(Level.SEVERE, "Unknown Exception", nre);
+			setComPortStatus(GeneralException);
 		}
 	}
 	
@@ -528,77 +548,70 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			}
 			else if (event.getEventType() == SerialPortEvent.HARDWARE_ERROR)
 			{
-				close();
-				setComPortStatus(GeneralException);
+				//	close();
+				//	setComPortStatus(GeneralException);
 			}
 			else if (event.getEventType() == SerialPortEvent.DATA_AVAILABLE && event.getNewValue())
 			{
 				try
 				{
 					reading = true;
-					if (ins.available() > 0)
-					{
-						int i;
-						while ((i = ins.read()) != -1)
-						{
-							char c = (char) i;
-							if (Character.isAlphabetic(c) ||
-							    Character.isDigit(c) ||
-							    '.' == c ||
-							    ',' == c ||
-							    allowedCharacters.contains(c) ||
-							    startOfMessageCharacters.contains(c))
-							{
-								readBuffer.append(c);
-								if (!startOfMessageCharacters.isEmpty())
-								{
-									boolean startCorrect = false;
-									for (Character startOfMessageCharacter : startOfMessageCharacters)
-									{
-										if (readBuffer.toString()
-										              .startsWith(startOfMessageCharacter + ""))
-										{
-											startCorrect = true;
-											break;
-										}
-									}
-									if (!startCorrect)
-									{
-										readBuffer = new StringBuffer();
-									}
-								}
-							}
-							if (endOfMessageCharacters.contains(c))
-							{
-								try
-								{
-									String message = readBuffer.toString();
-									message = StringUtils.strip(message);
-									message = StringUtils.trim(message);
-									if (!Strings.isNullOrEmpty(message))
-									{
-										writeOrReadMessage(message, true);
-									}
-								}
-								catch (Throwable T)
-								{
-									processMessageException(readBuffer.toString(), T);
-								}
-								finally
-								{
-									readBuffer = new StringBuffer();
-								}
-							}
-						}
-					}
+					readByte();
 				}
-				catch (IOException e)
+				catch (Throwable e)
 				{
 					getLog().log(Level.SEVERE, "Cannot read com port, IO Error", e);
 				}
 				finally
 				{
 					reading = false;
+				}
+			}
+		}
+		
+		private void readByte() throws IOException
+		{
+			if (ins.available() > 0)
+			{
+				int i;
+				while ((i = ins.read()) != -1)
+				{
+					char c = (char) i;
+					if(startOfMessageCharacters.contains(c))
+					{
+						readBuffer = new StringBuffer();
+					}
+					if (Character.isAlphabetic(c) ||
+					    Character.isDigit(c) ||
+					    '.' == c ||
+					    ',' == c ||
+					    allowedCharacters.contains(c)
+					)
+					{
+						readBuffer.append(c);
+					}
+					if (endOfMessageCharacters.contains(c) || (maxLength != null && readBuffer.length() >= maxLength))
+					{
+						//	System.out.println("end of message char - " + c + " size - " +  readBuffer.length() + " / " + maxLength);
+						try
+						{
+							String message = readBuffer.toString();
+							message = StringUtils.strip(message);
+							message = StringUtils.trim(message);
+							if (!Strings.isNullOrEmpty(message))
+							{
+								writeOrReadMessage(message, true);
+							}
+						}
+						catch (Throwable T)
+						{
+							processMessageException(readBuffer.toString(), T);
+						}
+						finally
+						{
+							readBuffer = new StringBuffer();
+						}
+					}
 				}
 			}
 		}
@@ -612,6 +625,9 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		return DateTimeFormatter.ofPattern("yyyy-MM-dd")
 		                        .format(com.entityassist.RootEntity.getNow());
 	}
+	
+	@JsonIgnore
+	private final EvictingQueue<String> lastMessages = com.google.common.collect.EvictingQueue.create(6);
 	
 	/**
 	 * Thread control between read and write
@@ -628,7 +644,16 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			var comporttxrxlogger = Log4j2Utils.createLog4j2RollingLog("comport_" + getComPort(),
 					getDateString() + "rxtx_comport_" + getComPort(), "%d{ABSOLUTE} %m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
 			comporttxrxlogger.info("RX " + message);
-			processMessage(message);
+			if (lastMessages.stream()
+			                .anyMatch(a -> a.equals(message.trim())))
+			{
+			//	System.out.println("Connection null - com port - " + comPort);
+			}
+			else
+			{
+				lastMessages.add(message);
+				processMessage(message);
+			}
 		}
 		else
 		{
@@ -636,17 +661,23 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			{
 				if (!Strings.isNullOrEmpty(message.trim()))
 				{
-					outs.write((message + "\r\n").getBytes(StandardCharsets.UTF_8));
-					getLog().log(Level.FINE, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
-					var comporttxrxlogger = Log4j2Utils.createLog4j2RollingLog("comport_" + getComPort(),
-							getDateString() + "rxtx_comport_" + getComPort(), "%d{ABSOLUTE} %m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
-					comporttxrxlogger.info("TX " + message);
+					if(outs == null )
+					{
 					
-					var comportlogger = Log4j2Utils.createLog4j2RollingLog("comport_" + getComPort(),
-							getDateString() + "_comport_" + getComPort(), "%m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
-					comportlogger.info(message);
-					
-					outs.flush();
+					}else
+					{
+						outs.write((message + "\r\n").getBytes(StandardCharsets.UTF_8));
+						getLog().log(Level.FINE, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
+						var comporttxrxlogger = Log4j2Utils.createLog4j2RollingLog("comport_" + getComPort(),
+								getDateString() + "rxtx_comport_" + getComPort(), "%d{ABSOLUTE} %m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+						comporttxrxlogger.info("TX " + message);
+						
+						var comportlogger = Log4j2Utils.createLog4j2RollingLog("comport_" + getComPort(),
+								getDateString() + "_comport_" + getComPort(), "%m%n", "%d{yy-MM-dd}", org.apache.logging.log4j.Level.INFO);
+						comportlogger.info(message);
+						
+						outs.flush();
+					}
 				}
 			}
 			catch (Exception e)
@@ -660,13 +691,12 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		}
 	}
 	
-	
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private void processMessage(String message)
 	{
 		lastMessageReceivedTime = LocalDateTime.now();
 		
-		if(getComPortStatus() != Idle || getComPortStatus() != Running)
+		if (getComPortStatus() != Idle || getComPortStatus() != Running)
 		{
 			setComPortStatus(Running);
 		}
@@ -724,7 +754,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		comporterrorlogger.fatal(message, T);
 		
 		getLog().log(Level.FINE, "Message Exception", T);
-		getLog().log(Level.SEVERE, "Error in receiving string from COM-port: " + T + " - " + message);
+		getLog().log(Level.SEVERE, "Error in receiving string from COM-port: " + T + " - " + message, T);
 	}
 	
 	@SuppressWarnings({"rawtypes", "unchecked"})

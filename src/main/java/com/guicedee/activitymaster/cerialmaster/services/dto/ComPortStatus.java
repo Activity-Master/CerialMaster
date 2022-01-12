@@ -2,6 +2,8 @@ package com.guicedee.activitymaster.cerialmaster.services.dto;
 
 import lombok.Getter;
 
+import java.util.EnumSet;
+
 public enum ComPortStatus
 {
 	GeneralException("mdi mdi-help-network-outline font-24 avatar-title d-flex", "bg-danger", "text-danger"),
@@ -23,6 +25,10 @@ public enum ComPortStatus
 	private String backgroundClass;
 	@Getter
 	private String foregroundClass;
+	
+	public static final EnumSet<ComPortStatus> pauseOperations = EnumSet.of(GeneralException,Missing,InUse,Offline,OperationInProgress,FileTransfer,Opening) ;
+	public static final EnumSet<ComPortStatus> portActive = EnumSet.of(Silent,Idle,Logging,Running,Simulation);
+	public static final EnumSet<ComPortStatus> portOffline = EnumSet.of(GeneralException,Missing,InUse,Offline);
 	
 	ComPortStatus(String icon, String backgroundClass, String foregroundClass)
 	{

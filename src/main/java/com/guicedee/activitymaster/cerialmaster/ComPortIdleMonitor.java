@@ -1,6 +1,10 @@
 package com.guicedee.activitymaster.cerialmaster;
 
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
+import com.guicedee.guicedinjection.GuiceContext;
+import com.guicedee.guicedservlets.services.scopes.CallScoper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,39 +26,48 @@ public class ComPortIdleMonitor implements Runnable
 	@Override
 	public void run()
 	{
-		if (connection != null)
+		CallScoper scoper = GuiceContext.get(Key.get(CallScoper.class, Names.named("callScope")));
+		scoper.enter();
+		try
 		{
-			if (!onlineServerStatus.contains(connection.getComPortStatus()))
+			if (connection != null)
 			{
-				if (connection.getLastMessageReceivedTime() != null)
+				if (!onlineServerStatus.contains(connection.getComPortStatus()))
 				{
-					connection.setLastMessageReceivedTime(null);
-				}
-			}
-			else
-			{
-				//online
-				if (connection.getLastMessageReceivedTime() != null)
-				{
-					if (LocalDateTime.now()
-					                 .minus(timeToIdle)
-					                 .isAfter(connection.getLastMessageReceivedTime()))
+					if (connection.getLastMessageReceivedTime() != null)
 					{
-						connection.setComPortStatus(Idle);
+						connection.setLastMessageReceivedTime(null);
 					}
-					else
+				}
+				else
+				{
+					//online
+					if (connection.getLastMessageReceivedTime() != null)
 					{
-						if (connection.getComPortStatus() != Running)
+						if (LocalDateTime.now()
+						                 .minus(timeToIdle)
+						                 .isAfter(connection.getLastMessageReceivedTime()))
 						{
-							connection.setComPortStatus(Running);
+							connection.setComPortStatus(Idle);
+						}
+						else
+						{
+							if (connection.getComPortStatus() != Running)
+							{
+								connection.setComPortStatus(Running);
+							}
 						}
 					}
-				}
-				else if (connection.getComPortStatus() != Silent)
-				{
-					connection.setComPortStatus(Silent);
+					else if (connection.getComPortStatus() != Silent)
+					{
+						connection.setComPortStatus(Silent);
+					}
 				}
 			}
+		}
+		finally
+		{
+			scoper.exit();
 		}
 	}
 	
