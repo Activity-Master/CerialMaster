@@ -23,6 +23,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.*;
@@ -126,6 +128,8 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	private transient boolean simulated;
 	
 	private LocalDateTime lastMessageReceivedTime;
+	
+	private Pattern matchingPattern;
 	
 	public J setBaudRate(int rate)
 	{
@@ -574,10 +578,11 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			if (ins.available() > 0)
 			{
 				int i;
+				nextchar:
 				while ((i = ins.read()) != -1)
 				{
 					char c = (char) i;
-					if(startOfMessageCharacters.contains(c))
+					if (startOfMessageCharacters.contains(c))
 					{
 						readBuffer = new StringBuffer();
 					}
@@ -590,7 +595,31 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 					{
 						readBuffer.append(c);
 					}
-					if (endOfMessageCharacters.contains(c) || (maxLength != null && readBuffer.length() >= maxLength))
+					
+					boolean found = false;
+					if (matchingPattern != null)
+					{
+						Matcher matcher = matchingPattern.matcher(readBuffer.toString());
+						while (matcher.find())
+						{
+							found = true;
+							String message = matcher.group(0);
+							try
+							{
+								message = matcher.group(0);
+								if (!Strings.isNullOrEmpty(message))
+								{
+									writeOrReadMessage(message, true);
+								}
+							}
+							finally
+							{
+								readBuffer = new StringBuffer();
+								continue nextchar;
+							}
+						}
+					}
+					else if ((endOfMessageCharacters.contains(c) || (maxLength != null && readBuffer.length() >= maxLength)))
 					{
 						//	System.out.println("end of message char - " + c + " size - " +  readBuffer.length() + " / " + maxLength);
 						try
@@ -602,6 +631,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 							{
 								writeOrReadMessage(message, true);
 							}
+							
 						}
 						catch (Throwable T)
 						{
@@ -627,7 +657,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	}
 	
 	@JsonIgnore
-	private final EvictingQueue<String> lastMessages = com.google.common.collect.EvictingQueue.create(6);
+	private static final EvictingQueue<String> lastMessages = com.google.common.collect.EvictingQueue.create(100);
 	
 	/**
 	 * Thread control between read and write
@@ -647,7 +677,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			if (lastMessages.stream()
 			                .anyMatch(a -> a.equals(message.trim())))
 			{
-			//	System.out.println("Connection null - com port - " + comPort);
+				//	System.out.println("Connection null - com port - " + comPort);
 			}
 			else
 			{
@@ -661,10 +691,11 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 			{
 				if (!Strings.isNullOrEmpty(message.trim()))
 				{
-					if(outs == null )
+					if (outs == null)
 					{
 					
-					}else
+					}
+					else
 					{
 						outs.write((message + "\r\n").getBytes(StandardCharsets.UTF_8));
 						getLog().log(Level.FINE, "[" + sdf.format(new Date()) + "]-[" + comPort + "] TX : " + message);
@@ -816,6 +847,17 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	public ComPortConnection<J> setLastMessageReceivedTime(LocalDateTime lastMessageReceivedTime)
 	{
 		this.lastMessageReceivedTime = lastMessageReceivedTime;
+		return this;
+	}
+	
+	public Pattern getMatchingPattern()
+	{
+		return matchingPattern;
+	}
+	
+	public ComPortConnection<J> setMatchingPattern(Pattern matchingPattern)
+	{
+		this.matchingPattern = matchingPattern;
 		return this;
 	}
 }
