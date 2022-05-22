@@ -7,11 +7,7 @@ import com.guicedee.activitymaster.cerialmaster.services.*;
 import com.guicedee.activitymaster.fsdm.client.services.IResourceItemService;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.jwebmp.plugins.quickforms.annotations.*;
-import com.jwebmp.plugins.quickforms.annotations.states.*;
 import gnu.io.*;
-import lombok.*;
-import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Log4j2Utils;
 
@@ -31,10 +27,6 @@ import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatu
 import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType.*;
 import static gnu.io.SerialPort.*;
 
-@Accessors(chain = true)
-@Getter
-@Setter
-@EqualsAndHashCode(of = "comPort", callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true, value = {"inspection"})
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
@@ -56,66 +48,30 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	
 	private Integer maxLength;
 	
-	@WebFormStartRow
-	@WebField(classes = "col-12 col-md-2")
-	@LabelField(value = "Start Chars", classes = "col-12 col-md-2")
-	@TextField
 	private Set<Character> startOfMessageCharacters = new HashSet<>();
-	@WebField(classes = "col-12 col-md-2")
-	@LabelField(value = "End Chars", classes = "col-12 col-md-2")
-	@TextField
+	
 	private Set<Character> endOfMessageCharacters = new HashSet<>();
 	
-	@WebField(classes = "col-12 col-md-2")
-	@LabelField(value = "Allowed Chars", classes = "col-12 col-md-2")
-	@TextField
 	private Set<Character> allowedCharacters = new HashSet<>();
 	
-	@WebFormEndRow
-	@WebFormStartRow
-	@LabelField(value = "Baud Rate", classes = "col-12 col-md-3")
-	@WebField(classes = "col-12 col-md-3")
-	@NumberField
 	private int baudRate = 9600;
-	@WebField(classes = "col-12 col-md-3")
-	@LabelField(value = "Buffer Size", classes = "col-12 col-md-3")
-	@NumberField
+	
+	
 	private int bufferSize = 4096;
 	
-	@WebFormEndRow
-	@WebFormStartRow
-	@WebField(classes = "col-12 col-md-3")
-	@LabelField(value = "Data Bits", classes = "col-12 col-md-3")
-	@NumberField
 	private int dataBits = DATABITS_8;
-	@WebField(classes = "col-12 col-md-3")
-	@LabelField(value = "Stop Bits", classes = "col-12 col-md-3")
-	@NumberField
+	
 	private int stopBits = STOPBITS_1;
-	@WebField(classes = "col-12 col-md-3")
-	@LabelField(value = "Parity", classes = "col-12 col-md-3")
-	@NumberField
+	
+	
 	private int parity = PARITY_NONE;
 	
-	@WebFormEndRow
-	@WebFormStartRow
-	@WebIgnore
-	@WebField(classes = "col-12 col-md-3")
-	@LabelField(value = "Status", classes = "col-12 col-md-3")
-	@WebReadOnly
-	@SelectField
 	@JsonProperty("comPortStatus")
 	@JsonAlias({"status", "comPortStatus"})
 	private ComPortStatus comPortStatus = Offline;
 	
-	@WebIgnore
-	@WebField(classes = "col-12 col-md-3")
-	@LabelField(value = "Type", classes = "col-12 col-md-3")
-	@SelectField
 	private ComPortType type;
 	
-	@WebReadOnly
-	@WebIgnore
 	private int comPort;
 	
 	@JsonIgnore
@@ -384,15 +340,15 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		}
 	}
 	
-	public void writeMessage(ServerMessage<?> sm)
+	public void writeMessage(String sm)
 	{
 		try
 		{
-			writeOrReadMessage(sm.generateMessage(), false);
+			writeOrReadMessage(sm, false);
 		}
 		catch (Exception e)
 		{
-			getLog().log(Level.SEVERE, "Unable to write message - " + sm.generateMessage(), e);
+			getLog().log(Level.SEVERE, "Unable to write message - " + sm, e);
 			processMessageTerminal(e.getMessage(), e);
 			try
 			{
@@ -647,7 +603,209 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		}
 	}
 	
-	@Getter
+	public UUID getId()
+	{
+		return id;
+	}
+	
+	public ComPortConnection<J> setId(UUID id)
+	{
+		this.id = id;
+		return this;
+	}
+	
+	public ComPortConnection<J> setLogName(String logName)
+	{
+		this.logName = logName;
+		return this;
+	}
+	
+	public ComPortConnection<J> setLog(Logger log)
+	{
+		this.log = log;
+		return this;
+	}
+	
+	public Integer getMaxLength()
+	{
+		return maxLength;
+	}
+	
+	public ComPortConnection<J> setMaxLength(Integer maxLength)
+	{
+		this.maxLength = maxLength;
+		return this;
+	}
+	
+	public Set<Character> getStartOfMessageCharacters()
+	{
+		return startOfMessageCharacters;
+	}
+	
+	public ComPortConnection<J> setStartOfMessageCharacters(Set<Character> startOfMessageCharacters)
+	{
+		this.startOfMessageCharacters = startOfMessageCharacters;
+		return this;
+	}
+	
+	public Set<Character> getEndOfMessageCharacters()
+	{
+		return endOfMessageCharacters;
+	}
+	
+	public ComPortConnection<J> setEndOfMessageCharacters(Set<Character> endOfMessageCharacters)
+	{
+		this.endOfMessageCharacters = endOfMessageCharacters;
+		return this;
+	}
+	
+	public Set<Character> getAllowedCharacters()
+	{
+		return allowedCharacters;
+	}
+	
+	public ComPortConnection<J> setAllowedCharacters(Set<Character> allowedCharacters)
+	{
+		this.allowedCharacters = allowedCharacters;
+		return this;
+	}
+	
+	public int getBaudRate()
+	{
+		return baudRate;
+	}
+	
+	public int getBufferSize()
+	{
+		return bufferSize;
+	}
+	
+	public ComPortConnection<J> setBufferSize(int bufferSize)
+	{
+		this.bufferSize = bufferSize;
+		return this;
+	}
+	
+	public int getDataBits()
+	{
+		return dataBits;
+	}
+	
+	public ComPortConnection<J> setDataBits(int dataBits)
+	{
+		this.dataBits = dataBits;
+		return this;
+	}
+	
+	public int getStopBits()
+	{
+		return stopBits;
+	}
+	
+	public ComPortConnection<J> setStopBits(int stopBits)
+	{
+		this.stopBits = stopBits;
+		return this;
+	}
+	
+	public int getParity()
+	{
+		return parity;
+	}
+	
+	public ComPortConnection<J> setParity(int parity)
+	{
+		this.parity = parity;
+		return this;
+	}
+	
+	public ComPortStatus getComPortStatus()
+	{
+		return comPortStatus;
+	}
+	
+	public ComPortType getType()
+	{
+		return type;
+	}
+	
+	public ComPortConnection<J> setType(ComPortType type)
+	{
+		this.type = type;
+		return this;
+	}
+	
+	public int getComPort()
+	{
+		return comPort;
+	}
+	
+	public PortReader getReader()
+	{
+		return reader;
+	}
+	
+	public ComPortConnection<J> setReader(PortReader reader)
+	{
+		this.reader = reader;
+		return this;
+	}
+	
+	public boolean isReading()
+	{
+		return reading;
+	}
+	
+	public ComPortConnection<J> setReading(boolean reading)
+	{
+		this.reading = reading;
+		return this;
+	}
+	
+	public ComPortConnection<J> setSimulated(boolean simulated)
+	{
+		this.simulated = simulated;
+		return this;
+	}
+	
+	public ComPortConnection<J> getMe()
+	{
+		return me;
+	}
+	
+	public InputStream getIns()
+	{
+		return ins;
+	}
+	
+	public ComPortConnection<J> setIns(InputStream ins)
+	{
+		this.ins = ins;
+		return this;
+	}
+	
+	public OutputStream getOuts()
+	{
+		return outs;
+	}
+	
+	public ComPortConnection<J> setOuts(OutputStream outs)
+	{
+		this.outs = outs;
+		return this;
+	}
+	
+	public SimulatedInputStream getSimIn()
+	{
+		return simIn;
+	}
+	
+	public ComPortConnection<J> setSimIn(SimulatedInputStream simIn)
+	{
+		this.simIn = simIn;
+		return this;
+	}
+	
 	private static final Map<ComPortConnection<?>, Set<IReceiveMessage<?>>> receivers = new HashMap<>();
 	
 	public static String getDateString()

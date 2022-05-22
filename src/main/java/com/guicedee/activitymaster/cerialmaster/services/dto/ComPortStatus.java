@@ -1,7 +1,5 @@
 package com.guicedee.activitymaster.cerialmaster.services.dto;
 
-import lombok.Getter;
-
 import java.util.EnumSet;
 
 public enum ComPortStatus
@@ -19,11 +17,10 @@ public enum ComPortStatus
 	Logging("mdi mdi-upload-network font-24 avatar-title d-flex", "bg-info", "text-info"),
 	Running("mdi mdi-play-network font-24 avatar-title d-flex", "bg-success", "text-success");
 	
-	@Getter
 	private String icon;
-	@Getter
+	
 	private String backgroundClass;
-	@Getter
+	
 	private String foregroundClass;
 	
 	public static final EnumSet<ComPortStatus> pauseOperations = EnumSet.of(GeneralException,Missing,InUse,Offline,OperationInProgress,FileTransfer,Opening) ;
@@ -35,5 +32,38 @@ public enum ComPortStatus
 		this.icon = icon;
 		this.backgroundClass = backgroundClass;
 		this.foregroundClass = foregroundClass;
+	}
+	
+	public String getIcon()
+	{
+		return icon;
+	}
+	
+	public ComPortStatus setIcon(String icon)
+	{
+		this.icon = icon;
+		return this;
+	}
+	
+	public String getBackgroundClass()
+	{
+		return backgroundClass;
+	}
+	
+	public ComPortStatus setBackgroundClass(String backgroundClass)
+	{
+		this.backgroundClass = backgroundClass;
+		return this;
+	}
+	
+	public String getForegroundClass()
+	{
+		return foregroundClass;
+	}
+	
+	public ComPortStatus setForegroundClass(String foregroundClass)
+	{
+		this.foregroundClass = foregroundClass;
+		return this;
 	}
 }

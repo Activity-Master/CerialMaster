@@ -4,29 +4,23 @@ import com.guicedee.activitymaster.fsdm.client.services.systems.IActivityMasterS
 import com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
 
 module com.guicedee.activitymaster.cerialmaster {
-
+	
+	exports com.guicedee.activitymaster.cerialmaster.implementations;
 	exports com.guicedee.activitymaster.cerialmaster.services;
 	exports com.guicedee.activitymaster.cerialmaster.services.enumerations;
 	exports com.guicedee.activitymaster.cerialmaster.services.dto;
 	exports com.guicedee.activitymaster.cerialmaster;
 	exports com.guicedee.activitymaster.cerialmaster.services.exceptions;
 	
-	requires static lombok;
 	requires transitive com.neuronrobotics.nrjavaserial;
-	requires com.guicedee.guicedhazelcast.hibernate;
 	
 	requires org.apache.logging.log4j.core;
-	
-	requires com.jwebmp.plugins.quickforms.annotations;
-
 	requires com.guicedee.guicedinjection;
 
 	requires com.google.guice;
 	
-	requires static com.guicedee.guicedhazelcast;
 	requires com.guicedee.activitymaster.fsdm.client;
 	requires com.entityassist;
-	requires com.guicedee.guicedservlets;
 	
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with CerialMasterModule;
 	provides IActivityMasterSystem with CerialMasterSystem;
@@ -35,7 +29,6 @@ module com.guicedee.activitymaster.cerialmaster {
 	provides IGuicePostStartup with CerialMasterPostStartup;
 	
 	opens com.guicedee.activitymaster.cerialmaster to com.google.guice;
-	exports com.guicedee.activitymaster.cerialmaster.implementations;
 	opens com.guicedee.activitymaster.cerialmaster.implementations to com.google.guice;
 	opens com.guicedee.activitymaster.cerialmaster.services to com.google.guice,com.fasterxml.jackson.databind;
 	opens com.guicedee.activitymaster.cerialmaster.services.dto to com.google.guice,com.fasterxml.jackson.databind;

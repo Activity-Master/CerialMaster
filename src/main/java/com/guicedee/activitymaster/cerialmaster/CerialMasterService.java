@@ -11,9 +11,6 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resou
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItemType;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import gnu.io.NRSerialPort;
-import jakarta.cache.annotation.CacheKey;
-import jakarta.cache.annotation.CacheResult;
-import lombok.Getter;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,10 +34,13 @@ public class CerialMasterService
 	@Named(CerialMasterSystemName)
 	private UUID identityToken;
 	
-	@Getter
 	private static final Map<String, ComPortConnection<?>> connections = new ConcurrentHashMap<>();
 	
-	@CacheResult(cacheName = "SerialPortResourceType")
+	public static Map<String, ComPortConnection<?>> getConnections()
+	{
+		return connections;
+	}
+	
 	@Override
 	public IResourceItemType<?, ?> getSerialConnectionType(ISystems<?, ?> system, UUID... identityToken)
 	{
@@ -49,9 +49,8 @@ public class CerialMasterService
 	}
 	
 	@Override
-	@CacheResult(cacheName = "ComPortConnections", skipGet = true)
 	//@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
-	public ComPortConnection<?> addOrUpdateConnection(@CacheKey ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
+	public ComPortConnection<?> addOrUpdateConnection( ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -100,9 +99,8 @@ public class CerialMasterService
 	}
 	
 	@Override
-	@CacheResult(cacheName = "ComPortConnections", skipGet = true)
 	//@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
-	public ComPortConnection<?> updateStatus(@CacheKey ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
+	public ComPortConnection<?> updateStatus( ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -113,8 +111,7 @@ public class CerialMasterService
 	}
 	
 	@Override
-	@CacheResult(cacheName = "ComPortConnections")
-	public ComPortConnection<?> findComPortConnection(@CacheKey ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
+	public ComPortConnection<?> findComPortConnection(ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);

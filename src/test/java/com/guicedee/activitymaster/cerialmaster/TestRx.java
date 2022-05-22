@@ -3,7 +3,6 @@ package com.guicedee.activitymaster.cerialmaster;
 import com.guicedee.activitymaster.cerialmaster.implementations.CerialMasterSystem;
 import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
 import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.services.dto.ServerMessage;
 import com.guicedee.activitymaster.fsdm.ActivityMasterService;
 import com.guicedee.activitymaster.fsdm.client.services.IEnterpriseService;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
@@ -12,7 +11,6 @@ import com.guicedee.guicedhazelcast.HazelcastProperties;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedpersistence.readers.hibernateproperties.HibernateEntityManagerProperties;
 import com.guicedee.logger.LogFactory;
-import lombok.extern.java.Log;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -23,7 +21,6 @@ import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType.
 import static com.guicedee.activitymaster.fsdm.DefaultEnterprise.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
-@Log
 public class TestRx
 {
 	static {
@@ -112,61 +109,6 @@ public class TestRx
 				return null;
 			}
 		});*/
-		server.writeMessage(new ServerMessage(server)
-		{
-			@Override
-			public String generateMessage()
-			{
-				return "*ONL002000000000000000000224159231220000000#\n";
-			}
-			
-			@Override
-			public ServerMessage simulateResponse()
-			{
-				return null;
-			}
-		});
-		server.writeMessage(new ServerMessage(server)
-		{
-			@Override
-			public String generateMessage()
-			{
-				return "*ONL003000000000000000000224159231220000000#\n";
-			}
-			
-			@Override
-			public ServerMessage simulateResponse()
-			{
-				return null;
-			}
-		});
-		server.writeMessage(new ServerMessage(server)
-		{
-			@Override
-			public String generateMessage()
-			{
-				return "*ONL002000000000000000000224159231220000000#\n";
-			}
-			
-			@Override
-			public ServerMessage simulateResponse()
-			{
-				return null;
-			}
-		});
-		server.writeMessage(new ServerMessage(server)
-		{
-			@Override
-			public String generateMessage()
-			{
-				return "*ONL003000000000000000000224159231220000000#\n";
-			}
-			
-			@Override
-			public ServerMessage simulateResponse()
-			{
-				return null;
-			}
-		});
+		
 	}
 }
