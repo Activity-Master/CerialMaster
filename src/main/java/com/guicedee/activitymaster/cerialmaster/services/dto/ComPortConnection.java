@@ -37,7 +37,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 	@Serial
 	private static final long serialVersionUID = 1L;
 	
-	private UUID id;
+	private java.lang.String id;
 	
 	private String logName = "";
 	private transient Logger log;
@@ -111,7 +111,7 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		if (resourceItem == null && id != null)
 		{
 			resourceItem = GuiceContext.get(IResourceItemService.class)
-			                           .findByUUID(id);
+			                           .findByUUID(UUID.fromString(id));
 		}
 		return resourceItem;
 	}
@@ -603,12 +603,12 @@ public class ComPortConnection<J extends ComPortConnection<J>>
 		}
 	}
 	
-	public UUID getId()
+	public java.lang.String getId()
 	{
 		return id;
 	}
 	
-	public ComPortConnection<J> setId(UUID id)
+	public ComPortConnection<J> setId(java.lang.String id)
 	{
 		this.id = id;
 		return this;

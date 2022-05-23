@@ -5,19 +5,19 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resou
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 
 import java.util.List;
-import java.util.UUID;
+
 
 public interface ICerialMasterService<J extends ICerialMasterService<J>>
 {
 	String CerialMasterSystemName = "Cerial Master System";
 	
-	IResourceItemType<?,?> getSerialConnectionType(ISystems<?,?> system, UUID...identityToken);
+	IResourceItemType<?,?> getSerialConnectionType(ISystems<?,?> system, java.util.UUID... identityToken);
 	
-	ComPortConnection<?> addOrUpdateConnection(ComPortConnection<?> comPort, ISystems<?,?> system, UUID...identityToken);
+	ComPortConnection<?> addOrUpdateConnection(ComPortConnection<?> comPort, ISystems<?,?> system, java.util.UUID... identityToken);
 	
-	ComPortConnection<?> updateStatus(ComPortConnection<?> comPort, ISystems<?,?> system, UUID...identityToken);
+	ComPortConnection<?> updateStatus(ComPortConnection<?> comPort, ISystems<?,?> system, java.util.UUID... identityToken);
 	
-	ComPortConnection<?> findComPortConnection(ComPortConnection<?> comPort, ISystems<?,?> system, UUID...identityToken);
+	ComPortConnection<?> findComPortConnection(ComPortConnection<?> comPort, ISystems<?,?> system, java.util.UUID... identityToken);
 	
 	ComPortConnection<?> registerNewConnection(ComPortConnection<?> comPortConnection);
 	

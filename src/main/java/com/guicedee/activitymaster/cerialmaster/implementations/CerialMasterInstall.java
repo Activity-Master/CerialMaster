@@ -7,8 +7,6 @@ import com.guicedee.activitymaster.fsdm.client.services.systems.ISystemUpdate;
 import com.guicedee.activitymaster.fsdm.client.services.systems.SortedUpdate;
 import com.guicedee.guicedinjection.GuiceContext;
 
-import java.util.UUID;
-
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterEventTypes.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
@@ -25,7 +23,7 @@ public class CerialMasterInstall implements ISystemUpdate
 		CerialMasterSystem cms = GuiceContext.get(CerialMasterSystem.class);
 		
 		ISystems<?, ?> system = cms.getSystem(enterprise);
-		UUID token = cms.getSystemToken(enterprise);
+		java.util.UUID identityToken = cms.getSystemToken(enterprise);
 		
 		IResourceItemService<?> resourceItemService = get(IResourceItemService.class);
 		resourceItemService.createType(SerialConnectionPort, system);
@@ -57,8 +55,8 @@ public class CerialMasterInstall implements ISystemUpdate
 		eventsService.createEventType(MessageReceivedFromComPort, system);
 		
 		logProgress("Cerial Master", "Loading Com Port Events");
-		eventsService.createEventType(RegisteredANewConnection.toString(), system, token);
-		eventsService.createEventType(ClosedANewConnection.toString(), system, token);
+		eventsService.createEventType(RegisteredANewConnection.toString(), system, identityToken);
+		eventsService.createEventType(ClosedANewConnection.toString(), system, identityToken);
 		
 		resourceItemService.createType(Message, system);
 		resourceItemService.createType(SendMessageToComPort, system);

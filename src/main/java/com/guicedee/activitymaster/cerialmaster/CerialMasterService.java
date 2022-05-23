@@ -42,7 +42,7 @@ public class CerialMasterService
 	}
 	
 	@Override
-	public IResourceItemType<?, ?> getSerialConnectionType(ISystems<?, ?> system, UUID... identityToken)
+	public IResourceItemType<?, ?> getSerialConnectionType(ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
 		return resourceService.findResourceItemType(SerialConnectionPort.toString(), system, identityToken);
@@ -50,7 +50,7 @@ public class CerialMasterService
 	
 	@Override
 	//@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
-	public ComPortConnection<?> addOrUpdateConnection( ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
+	public ComPortConnection<?> addOrUpdateConnection( ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -100,7 +100,7 @@ public class CerialMasterService
 	
 	@Override
 	//@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
-	public ComPortConnection<?> updateStatus( ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
+	public ComPortConnection<?> updateStatus( ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -111,7 +111,7 @@ public class CerialMasterService
 	}
 	
 	@Override
-	public ComPortConnection<?> findComPortConnection(ComPortConnection<?> comPort, ISystems<?, ?> system, UUID... identityToken)
+	public ComPortConnection<?> findComPortConnection(ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
