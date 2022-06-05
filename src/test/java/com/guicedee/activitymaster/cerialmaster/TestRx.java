@@ -1,8 +1,8 @@
 package com.guicedee.activitymaster.cerialmaster;
 
+import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
+import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.activitymaster.cerialmaster.implementations.CerialMasterSystem;
-import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
-import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
 import com.guicedee.activitymaster.fsdm.ActivityMasterService;
 import com.guicedee.activitymaster.fsdm.client.services.IEnterpriseService;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortType.*;
+import static com.guicedee.activitymaster.cerialmaster.client.ComPortType.*;
 import static com.guicedee.activitymaster.fsdm.DefaultEnterprise.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 

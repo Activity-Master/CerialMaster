@@ -6,10 +6,9 @@ import com.guicedee.activitymaster.fsdm.client.services.ISystemsService;
 import com.guicedee.activitymaster.fsdm.client.services.administration.ActivityMasterDefaultSystem;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
-import com.guicedee.activitymaster.fsdm.client.services.systems.IActivityMasterProgressMonitor;
 import com.guicedee.activitymaster.fsdm.client.services.systems.IActivityMasterSystem;
 
-import static com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService.*;
+import static com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService.*;
 
 public class CerialMasterSystem
 		extends ActivityMasterDefaultSystem<CerialMasterSystem>

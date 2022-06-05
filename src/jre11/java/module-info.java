@@ -1,5 +1,4 @@
 import com.guicedee.activitymaster.cerialmaster.implementations.*;
-import com.guicedee.activitymaster.cerialmaster.services.IReceiveMessage;
 import com.guicedee.activitymaster.fsdm.client.services.systems.IActivityMasterSystem;
 import com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
 
@@ -8,7 +7,6 @@ module com.guicedee.activitymaster.cerialmaster {
 	exports com.guicedee.activitymaster.cerialmaster.implementations;
 	exports com.guicedee.activitymaster.cerialmaster.services;
 	exports com.guicedee.activitymaster.cerialmaster.services.enumerations;
-	exports com.guicedee.activitymaster.cerialmaster.services.dto;
 	exports com.guicedee.activitymaster.cerialmaster;
 	exports com.guicedee.activitymaster.cerialmaster.services.exceptions;
 	
@@ -16,11 +14,13 @@ module com.guicedee.activitymaster.cerialmaster {
 	
 	requires org.apache.logging.log4j.core;
 	requires com.guicedee.guicedinjection;
+	requires com.guicedee.guicedpersistence;
 
 	requires com.google.guice;
 	
 	requires com.guicedee.activitymaster.fsdm.client;
 	requires com.entityassist;
+	requires com.guicedee.activitymaster.cerialmaster.client;
 	
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with CerialMasterModule;
 	provides IActivityMasterSystem with CerialMasterSystem;
@@ -31,14 +31,6 @@ module com.guicedee.activitymaster.cerialmaster {
 	opens com.guicedee.activitymaster.cerialmaster to com.google.guice;
 	opens com.guicedee.activitymaster.cerialmaster.implementations to com.google.guice;
 	opens com.guicedee.activitymaster.cerialmaster.services to com.google.guice,com.fasterxml.jackson.databind;
-	opens com.guicedee.activitymaster.cerialmaster.services.dto to com.google.guice,com.fasterxml.jackson.databind;
+	
 	opens com.guicedee.activitymaster.cerialmaster.services.enumerations to com.google.guice,com.fasterxml.jackson.databind;
-	
-	
-	uses IReceiveMessage;
-    uses com.guicedee.activitymaster.cerialmaster.services.IErrorReceiveMessage;
-	uses com.guicedee.activitymaster.cerialmaster.services.ITerminalReceiveMessage;
-    uses com.guicedee.activitymaster.cerialmaster.services.ICleanReceivedMessage;
-    uses com.guicedee.activitymaster.cerialmaster.services.IComPortStatusChanged;
-
 }

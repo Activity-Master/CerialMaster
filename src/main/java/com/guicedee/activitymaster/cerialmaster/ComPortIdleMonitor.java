@@ -1,13 +1,13 @@
 package com.guicedee.activitymaster.cerialmaster;
 
-import com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection;
+import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortConnection.*;
-import static com.guicedee.activitymaster.cerialmaster.services.dto.ComPortStatus.*;
+import static com.guicedee.activitymaster.cerialmaster.client.ComPortConnection.*;
+import static com.guicedee.activitymaster.cerialmaster.client.ComPortStatus.*;
 
 public class ComPortIdleMonitor implements Runnable
 {

@@ -17,7 +17,11 @@
         <dependency>
             <groupId>com.guicedee.activitymaster</groupId>
             <artifactId>activity-master</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.guicedee.activitymaster</groupId>
+            <artifactId>cerial-master-client</artifactId>
         </dependency>
 
         <dependency>

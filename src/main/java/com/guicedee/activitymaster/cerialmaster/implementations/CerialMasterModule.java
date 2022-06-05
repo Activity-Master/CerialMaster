@@ -2,7 +2,7 @@ package com.guicedee.activitymaster.cerialmaster.implementations;
 
 import com.google.inject.*;
 import com.guicedee.activitymaster.cerialmaster.CerialMasterService;
-import com.guicedee.activitymaster.cerialmaster.services.ICerialMasterService;
+import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.guicedinjection.interfaces.IGuiceModule;
 
 public class CerialMasterModule
