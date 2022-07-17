@@ -12,7 +12,7 @@ public class CerialMasterPostStartup implements IGuicePostStartup<CerialMasterPo
 	@Override
 	public void postLoad()
 	{
-		log.info("Loading available Serial Ports");
+		//log.info("Loading available Serial Ports");
 		//cerialMasterService.listComPorts();
 	}
 }
