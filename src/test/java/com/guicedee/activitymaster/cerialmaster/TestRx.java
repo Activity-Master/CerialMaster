@@ -9,7 +9,6 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enter
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.guicedhazelcast.HazelcastProperties;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.guicedpersistence.readers.hibernateproperties.HibernateEntityManagerProperties;
 import com.guicedee.logger.LogFactory;
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +45,7 @@ public class TestRx
 	@Test
     public void testComDetailsPersistence()
     {
-	    HibernateEntityManagerProperties.getDefaultProperties().setShowSql(true);
+	   // HibernateEntityManagerProperties.getDefaultProperties().setShowSql(false);
 	    
 	    ComPortConnection<?> server = new ComPortConnection<>(5, Device);
 	    
