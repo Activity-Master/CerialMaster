@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import static com.guicedee.activitymaster.cerialmaster.client.ComPortType.*;
 import static com.guicedee.activitymaster.fsdm.DefaultEnterprise.*;
+import static com.guicedee.activitymaster.fsdm.cerialmaster.types.classifications.ComPortType.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
 public class TestRx

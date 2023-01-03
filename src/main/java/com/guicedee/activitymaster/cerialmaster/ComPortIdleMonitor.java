@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 import static com.guicedee.activitymaster.cerialmaster.client.ComPortConnection.*;
-import static com.guicedee.activitymaster.cerialmaster.client.ComPortStatus.*;
+import static com.guicedee.activitymaster.fsdm.cerialmaster.types.classifications.ComPortStatus.*;
 
 public class ComPortIdleMonitor implements Runnable
 {

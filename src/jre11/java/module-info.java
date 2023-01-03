@@ -21,6 +21,8 @@ module com.guicedee.activitymaster.cerialmaster {
 	requires com.guicedee.activitymaster.fsdm.client;
 	requires com.entityassist;
 	requires com.guicedee.activitymaster.cerialmaster.client;
+	requires com.guicedee.activitymaster.fsdm.client.types;
+	requires com.guicedee.activitymaster.fsdm.cerialmaster.types;
 	
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with CerialMasterModule;
 	provides IActivityMasterSystem with CerialMasterSystem;

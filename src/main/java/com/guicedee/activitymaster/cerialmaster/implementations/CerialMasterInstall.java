@@ -10,7 +10,7 @@ import com.guicedee.guicedinjection.GuiceContext;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterEventTypes.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
-import static com.guicedee.activitymaster.fsdm.client.services.classifications.ResourceItemClassifications.*;
+import static com.guicedee.activitymaster.fsdm.client.types.classifications.ResourceItemClassifications.*;
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
 @SortedUpdate(sortOrder = 500, taskCount = 3)
