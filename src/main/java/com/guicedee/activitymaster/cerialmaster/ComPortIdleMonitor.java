@@ -12,7 +12,7 @@ import static com.guicedee.activitymaster.cerialmaster.client.ComPortStatus.*;
 public class ComPortIdleMonitor implements Runnable
 {
 	private ComPortConnection<?> connection;
-	private static Duration timeToIdle = Duration.of(10, ChronoUnit.MINUTES);
+	private Duration timeToIdle = Duration.of(10, ChronoUnit.MINUTES);
 	
 	public ComPortConnection<?> getConnection()
 	{
@@ -25,14 +25,14 @@ public class ComPortIdleMonitor implements Runnable
 		return this;
 	}
 	
-	public static Duration getTimeToIdle()
+	public Duration getTimeToIdle()
 	{
 		return timeToIdle;
 	}
 	
-	public static void setTimeToIdle(Duration timeToIdle)
+	public void setTimeToIdle(Duration timeToIdle)
 	{
-		ComPortIdleMonitor.timeToIdle = timeToIdle;
+		this.timeToIdle = timeToIdle;
 	}
 	
 	@Override
