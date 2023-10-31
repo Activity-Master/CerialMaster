@@ -2,6 +2,7 @@ package com.guicedee.activitymaster.cerialmaster;
 
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
+import com.guicedee.activitymaster.cerialmaster.client.services.IReceiveMessage;
 import com.guicedee.activitymaster.cerialmaster.implementations.CerialMasterSystem;
 import com.guicedee.activitymaster.fsdm.ActivityMasterService;
 import com.guicedee.activitymaster.fsdm.client.services.IEnterpriseService;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import static com.guicedee.activitymaster.cerialmaster.client.ComPortType.*;
@@ -89,25 +91,27 @@ public class TestRx
     
 	public static void main(String[] args)
 	{
-		ComPortConnection<?> server = new ComPortConnection<>(11, Device);
+		ComPortConnection<?> server = new ComPortConnection<>(5, Device);
 		server.getEndOfMessageCharacters()
 		      .add('#');
 		server.setBaudRate(9600);
 		server.open();
-		/*server.writeMessage(new ServerMessage(server)
+		for (IReceiveMessage<?> receiver : server.getReceivers())
 		{
-			@Override
-			public String generateMessage()
-			{
-				return "*SID001000000000100000001000100060000000020#\n";
-			}
-			
-			@Override
-			public ServerMessage simulateResponse()
-			{
-				return null;
-			}
-		});*/
+			System.out.println("Receiver : " + receiver);
+		}
+		server.writeMessage("Check\n");
+		
+		try
+		{
+			TimeUnit.SECONDS.sleep(5L);
+			String received = CerialKillerTestMessageReceiver.received;
+			System.out.println("Message received? : " + received);
+		}
+		catch (InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
 		
 	}
 }

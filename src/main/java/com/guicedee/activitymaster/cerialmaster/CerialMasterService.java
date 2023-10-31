@@ -118,6 +118,7 @@ public class CerialMasterService
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
+
 		IResourceItem<?, ?> comPortResourceItem = resourceService.findByClassification(comPortResourceItemType.getName(), ComPortNumber.toString(), comPort.getComPort() + "", system, identityToken);
 		if (comPortResourceItem == null)
 		{
