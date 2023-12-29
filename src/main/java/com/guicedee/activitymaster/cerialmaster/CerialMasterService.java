@@ -16,6 +16,8 @@ import gnu.io.NRSerialPort;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
@@ -53,7 +55,7 @@ public class CerialMasterService
 	
 	@Override
 	@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
-	public ComPortConnection<?> addOrUpdateConnection( ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
+	public ComPortConnection<?> addOrUpdateConnection(ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -90,12 +92,22 @@ public class CerialMasterService
 			comPortResourceItem.addOrUpdateClassification(ComPortAllowedCharacters, "", system, identityToken);
 		}
 		StringBuilder endOfMessageChars = new StringBuilder();
+		if (comPort.getEndOfMessageCharacters()
+		           .isEmpty())
+		{
+			Logger.getLogger("CerialMaster")
+			      .log(Level.WARNING, "No End of Message Characters for com port " + comPort);
+			comPort.getEndOfMessageCharacters().add((char)3);
+			comPort.getEndOfMessageCharacters().add((char)4);
+		}
+		
 		for (Character allowedCharacter : comPort.getEndOfMessageCharacters())
 		{
 			endOfMessageChars.append(allowedCharacter)
 			                 .append("^");
 		}
 		endOfMessageChars.deleteCharAt(endOfMessageChars.length() - 1);
+		
 		comPortResourceItem.addOrUpdateClassification(ComPortEndOfMessage, endOfMessageChars.toString(), system, identityToken);
 		
 		return comPort;
@@ -103,7 +115,7 @@ public class CerialMasterService
 	
 	@Override
 	@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
-	public ComPortConnection<?> updateStatus( ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
+	public ComPortConnection<?> updateStatus(ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -112,13 +124,14 @@ public class CerialMasterService
 		                                                                    .toString(), system, identityToken);
 		return comPort;
 	}
+	
 	@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
 	@Override
 	public ComPortConnection<?> findComPortConnection(ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
 		IResourceItemService<?> resourceService = get(IResourceItemService.class);
-
+		
 		IResourceItem<?, ?> comPortResourceItem = resourceService.findByClassification(comPortResourceItemType.getName(), ComPortNumber.toString(), comPort.getComPort() + "", system, identityToken);
 		if (comPortResourceItem == null)
 		{
@@ -213,6 +226,7 @@ public class CerialMasterService
 		}
 		return comm;
 	}
+	
 	@Transactional(entityManagerAnnotation = ActivityMasterDB.class)
 	@Override
 	public ComPortConnection<?> getScannerPortConnection(Integer comPort)
