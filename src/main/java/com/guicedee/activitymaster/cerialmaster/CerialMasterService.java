@@ -96,9 +96,12 @@ public class CerialMasterService
 		           .isEmpty())
 		{
 			Logger.getLogger("CerialMaster")
-			      .log(Level.WARNING, "No End of Message Characters for com port " + comPort);
+			      .log(Level.WARNING, "No End of Message Characters for com port " + comPort.getComPort());
 			comPort.getEndOfMessageCharacters().add((char)3);
 			comPort.getEndOfMessageCharacters().add((char)4);
+			comPort.getEndOfMessageCharacters().add('\n');
+			comPort.getEndOfMessageCharacters().add('\r');
+			comPort.getEndOfMessageCharacters().add('#');
 		}
 		
 		for (Character allowedCharacter : comPort.getEndOfMessageCharacters())

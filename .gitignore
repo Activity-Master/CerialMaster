@@ -30,3 +30,4 @@ ActivityMasterClient.rar
 /.idea/modules.xml
 /.idea/saveactions_settings.xml
 /.idea/vcs.xml
+*.log

@@ -1,6 +1,9 @@
 package com.guicedee.activitymaster.cerialmaster;
 
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -9,31 +12,14 @@ import java.time.temporal.ChronoUnit;
 import static com.guicedee.activitymaster.cerialmaster.client.ComPortConnection.*;
 import static com.guicedee.activitymaster.cerialmaster.client.ComPortStatus.*;
 
+@Getter
+@Setter
+@Accessors(chain = true)
 public class ComPortIdleMonitor implements Runnable
 {
 	private ComPortConnection<?> connection;
-	private static Duration timeToIdle = Duration.of(10, ChronoUnit.MINUTES);
+	private Duration timeToIdle = Duration.of(10, ChronoUnit.MINUTES);
 	
-	public ComPortConnection<?> getConnection()
-	{
-		return connection;
-	}
-	
-	public ComPortIdleMonitor setConnection(ComPortConnection<?> connection)
-	{
-		this.connection = connection;
-		return this;
-	}
-	
-	public static Duration getTimeToIdle()
-	{
-		return timeToIdle;
-	}
-	
-	public static void setTimeToIdle(Duration timeToIdle)
-	{
-		ComPortIdleMonitor.timeToIdle = timeToIdle;
-	}
 	
 	@Override
 	public void run()
@@ -50,7 +36,7 @@ public class ComPortIdleMonitor implements Runnable
 			else
 			{
 				//online
-				if (connection.getLastMessageReceivedTime() != null)
+				if (connection.getLastMessageReceivedTime() != null && connection.getComPortStatus() != Idle)
 				{
 					if (LocalDateTime.now()
 					                 .minus(timeToIdle)
@@ -58,21 +44,9 @@ public class ComPortIdleMonitor implements Runnable
 					{
 						connection.setComPortStatus(Idle);
 					}
-					else
-					{
-						if (connection.getComPortStatus() != Running)
-						{
-							connection.setComPortStatus(Running);
-						}
-					}
-				}
-				else if (connection.getComPortStatus() != Silent)
-				{
-					connection.setComPortStatus(Silent);
 				}
 			}
 		}
-		
 	}
 	
 }

@@ -2,11 +2,7 @@ package com.guicedee.activitymaster.cerialmaster;
 
 import com.guicedee.guicedhazelcast.HazelcastProperties;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.logger.LogFactory;
-
 import org.junit.jupiter.api.Test;
-
-import java.util.logging.Level;
 
 public class CerialMasterServiceTest
 {
@@ -26,15 +22,15 @@ public class CerialMasterServiceTest
                 .setAnnotationScanning(true)
                 .setPathScanning(true);
 
-        LogFactory.configureConsoleColourOutput(Level.FINE);
+      //  LogFactory.configureConsoleColourOutput(Level.FINE);
         //	LogColourFormatter.setRenderBlack(false);
-        LogFactory.configureDefaultLogHiding();
+     //   LogFactory.configureDefaultLogHiding();
     }
 
     @Test
     public void testListComPorts() {
 
-        LogFactory.configureConsoleColourOutput(Level.FINE);
+     //   LogFactory.configureConsoleColourOutput(Level.FINE);
         CerialMasterService cks = GuiceContext.get(CerialMasterService.class);
         System.out.println(cks.listComPorts());
     }

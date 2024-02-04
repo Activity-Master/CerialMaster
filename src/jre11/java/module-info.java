@@ -20,6 +20,7 @@ module com.guicedee.activitymaster.cerialmaster {
 	
 	requires com.guicedee.activitymaster.fsdm.client;
 	requires com.entityassist;
+	requires static lombok;
 	requires com.guicedee.activitymaster.cerialmaster.client;
 	
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with CerialMasterModule;

@@ -10,13 +10,11 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enter
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.guicedhazelcast.HazelcastProperties;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.logger.LogFactory;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 import static com.guicedee.activitymaster.cerialmaster.client.ComPortType.*;
 import static com.guicedee.activitymaster.fsdm.DefaultEnterprise.*;
@@ -39,9 +37,9 @@ public class TestRx
 		            .setAnnotationScanning(true)
 		            .setPathScanning(true);
 		
-		LogFactory.configureConsoleColourOutput(Level.FINE);
+	//	LogFactory.configureConsoleColourOutput(Level.FINE);
 		//	LogColourFormatter.setRenderBlack(false);
-		LogFactory.configureDefaultLogHiding();
+	//	LogFactory.configureDefaultLogHiding();
 	}
 	
 	@Test

@@ -1,18 +1,17 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
 import com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
-import com.guicedee.logger.LogFactory;
+import lombok.extern.java.Log;
 
-import java.util.logging.Logger;
-
+@Log
 public class CerialMasterPostStartup implements IGuicePostStartup<CerialMasterPostStartup>
 {
-	private static final Logger log = LogFactory.getLog(CerialMasterPostStartup.class);
-
 	@Override
 	public void postLoad()
 	{
+		
 		//log.info("Loading available Serial Ports");
 		//cerialMasterService.listComPorts();
+		
 	}
 }
