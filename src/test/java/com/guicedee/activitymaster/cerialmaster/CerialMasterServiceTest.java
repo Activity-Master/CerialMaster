@@ -31,7 +31,7 @@ public class CerialMasterServiceTest
     public void testListComPorts() {
 
      //   LogFactory.configureConsoleColourOutput(Level.FINE);
-        CerialMasterService cks = GuiceContext.get(CerialMasterService.class);
+        CerialMasterService cks = com.guicedee.client.IGuiceContext.get(CerialMasterService.class);
         System.out.println(cks.listComPorts());
     }
 

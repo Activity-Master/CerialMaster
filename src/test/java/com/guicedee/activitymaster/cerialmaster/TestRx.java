@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.guicedee.activitymaster.cerialmaster.client.ComPortType.*;
 import static com.guicedee.activitymaster.fsdm.DefaultEnterprise.*;
-import static com.guicedee.guicedinjection.GuiceContext.*;
+import static com.guicedee.client.IGuiceContext.*;
 
 public class TestRx
 {

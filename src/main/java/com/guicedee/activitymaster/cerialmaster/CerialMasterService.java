@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
 import static com.guicedee.activitymaster.fsdm.client.services.IActivityMasterService.*;
-import static com.guicedee.guicedinjection.GuiceContext.*;
+import static com.guicedee.client.IGuiceContext.*;
 
 public class CerialMasterService
 		implements ICerialMasterService<CerialMasterService>

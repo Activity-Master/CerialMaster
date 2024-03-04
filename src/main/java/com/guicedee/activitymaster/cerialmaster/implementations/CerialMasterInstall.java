@@ -5,13 +5,12 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enter
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.activitymaster.fsdm.client.services.systems.ISystemUpdate;
 import com.guicedee.activitymaster.fsdm.client.services.systems.SortedUpdate;
-import com.guicedee.guicedinjection.GuiceContext;
 
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterEventTypes.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
 import static com.guicedee.activitymaster.fsdm.client.services.classifications.ResourceItemClassifications.*;
-import static com.guicedee.guicedinjection.GuiceContext.*;
+import static com.guicedee.client.IGuiceContext.*;
 
 @SortedUpdate(sortOrder = 500, taskCount = 3)
 public class CerialMasterInstall implements ISystemUpdate
@@ -20,7 +19,7 @@ public class CerialMasterInstall implements ISystemUpdate
 	public void update(IEnterprise<?, ?> enterprise)
 	{
 		IClassificationService<?> classificationService = get(IClassificationService.class);
-		CerialMasterSystem cms = GuiceContext.get(CerialMasterSystem.class);
+		CerialMasterSystem cms = com.guicedee.client.IGuiceContext.get(CerialMasterSystem.class);
 		
 		ISystems<?, ?> system = cms.getSystem(enterprise);
 		java.util.UUID identityToken = cms.getSystemToken(enterprise);
@@ -49,7 +48,7 @@ public class CerialMasterInstall implements ISystemUpdate
 		classificationService.create(SendMessageToComPort, system, Message);
 		classificationService.create(MessageReceivedFromComPort, system, Message);
 		
-		IEventService<?> eventsService = GuiceContext.get(IEventService.class);
+		IEventService<?> eventsService = com.guicedee.client.IGuiceContext.get(IEventService.class);
 		eventsService.createEventType(SendMessageToComPort, system);
 		eventsService.createEventType(Message, system);
 		eventsService.createEventType(MessageReceivedFromComPort, system);
