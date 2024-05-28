@@ -1,22 +1,20 @@
 package com.guicedee.activitymaster.cerialmaster;
 
-import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.inject.persist.Transactional;
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.ComPortType;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.activitymaster.fsdm.client.services.IResourceItemService;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItemType;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
+import com.guicedee.cerial.enumerations.ComPortType;
 import gnu.io.NRSerialPort;
+import lombok.Getter;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
@@ -37,12 +35,8 @@ public class CerialMasterService
 	@Named(CerialMasterSystemName)
 	private UUID identityToken;
 	
-	private static final Map<String, ComPortConnection<?>> connections = new ConcurrentHashMap<>();
-	
-	public static Map<String, ComPortConnection<?>> getConnections()
-	{
-		return connections;
-	}
+	@Getter
+	private static final Map<Integer, ComPortConnection<?>> connections = new ConcurrentHashMap<>();
 	
 	@Transactional()
 	@Override
@@ -64,53 +58,15 @@ public class CerialMasterService
 		
 		comPortResourceItem.addOrUpdateClassification(ComPort, "", system, identityToken);
 		comPortResourceItem.addOrUpdateClassification(ComPortNumber, comPort.getComPort() + "", system, identityToken);
-		comPortResourceItem.addOrUpdateClassification(ComPortDeviceType, comPort.getType()
+		comPortResourceItem.addOrUpdateClassification(ComPortDeviceType, comPort.getComPortType()
 		                                                                        .toString(), system, identityToken);
 		comPortResourceItem.addOrUpdateClassification(ComPortStatus, comPort.getComPortStatus()
 		                                                                    .toString(), system, identityToken);
-		comPortResourceItem.addOrUpdateClassification(BaudRate, comPort.getBaudRate() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(BaudRate, comPort.getBaudRate().toInt() + "", system, identityToken);
 		comPortResourceItem.addOrUpdateClassification(BufferSize, comPort.getBufferSize() + "", system, identityToken);
-		comPortResourceItem.addOrUpdateClassification(DataBits, comPort.getDataBits() + "", system, identityToken);
-		comPortResourceItem.addOrUpdateClassification(StopBits, comPort.getStopBits() + "", system, identityToken);
-		comPortResourceItem.addOrUpdateClassification(Parity, comPort.getParity() + "", system, identityToken);
-		
-		if (!comPort.getAllowedCharacters()
-		            .isEmpty())
-		{
-			StringBuilder allowedChars = new StringBuilder();
-			for (Character allowedCharacter : comPort.getAllowedCharacters())
-			{
-				allowedChars.append(allowedCharacter)
-				            .append("^");
-			}
-			allowedChars.deleteCharAt(allowedChars.length() - 1);
-			comPortResourceItem.addOrUpdateClassification(ComPortAllowedCharacters, allowedChars.toString(), system, identityToken);
-		}
-		else
-		{
-			comPortResourceItem.addOrUpdateClassification(ComPortAllowedCharacters, "", system, identityToken);
-		}
-		StringBuilder endOfMessageChars = new StringBuilder();
-		if (comPort.getEndOfMessageCharacters()
-		           .isEmpty())
-		{
-			Logger.getLogger("CerialMaster")
-			      .log(Level.WARNING, "No End of Message Characters for com port " + comPort.getComPort());
-			comPort.getEndOfMessageCharacters().add((char)3);
-			comPort.getEndOfMessageCharacters().add((char)4);
-			comPort.getEndOfMessageCharacters().add('\n');
-			comPort.getEndOfMessageCharacters().add('\r');
-			comPort.getEndOfMessageCharacters().add('#');
-		}
-		
-		for (Character allowedCharacter : comPort.getEndOfMessageCharacters())
-		{
-			endOfMessageChars.append(allowedCharacter)
-			                 .append("^");
-		}
-		endOfMessageChars.deleteCharAt(endOfMessageChars.length() - 1);
-		
-		comPortResourceItem.addOrUpdateClassification(ComPortEndOfMessage, endOfMessageChars.toString(), system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(DataBits, comPort.getDataBits().toInt() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(StopBits, comPort.getStopBits().toInt() + "", system, identityToken);
+		comPortResourceItem.addOrUpdateClassification(Parity, comPort.getParity().toInt() + "", system, identityToken);
 		
 		return comPort;
 	}
@@ -162,68 +118,39 @@ public class CerialMasterService
 		                         .orElseThrow();
 		
 		comPort.setComPort(Integer.parseInt(objects[1].toString()));
-		comPort.setType(ComPortType.valueOf(objects[2].toString()));
-		comPort.setComPortStatus(com.guicedee.activitymaster.cerialmaster.client.ComPortStatus.valueOf(objects[3].toString()), true);
-		comPort.setBaudRate(Integer.parseInt(objects[4].toString()));
+		comPort.setComPortType(ComPortType.valueOf(objects[2].toString()));
+		comPort.setComPortStatus(com.guicedee.cerial.enumerations.ComPortStatus.valueOf(objects[3].toString()), true);
+		comPort.setBaudRate(com.guicedee.cerial.enumerations.BaudRate.from(Integer.parseInt(objects[4].toString()) + ""));
 		comPort.setBufferSize(Integer.parseInt(objects[5].toString()));
-		comPort.setDataBits(Integer.parseInt(objects[6].toString()));
-		comPort.setStopBits(Integer.parseInt(objects[7].toString()));
-		comPort.setParity(Integer.parseInt(objects[8].toString()));
+		comPort.setDataBits(com.guicedee.cerial.enumerations.DataBits.fromString(Integer.parseInt(objects[6].toString()) + ""));
+		comPort.setStopBits(com.guicedee.cerial.enumerations.StopBits.from(Integer.parseInt(objects[7].toString()) + ""));
+		comPort.setParity(com.guicedee.cerial.enumerations.Parity.from(Integer.parseInt(objects[8].toString())));
 		
-		String allowedChars = objects[9].toString();
-		if (!Strings.isNullOrEmpty(allowedChars))
-		{
-			comPort.getAllowedCharacters()
-			       .clear();
-			Set<Character> chars = new HashSet<>();
-			for (String s : allowedChars.split("\\^"))
-			{
-				chars.add(s.charAt(0));
-			}
-			
-			comPort.getAllowedCharacters()
-			       .addAll(chars);
-		}
-		String eolChars = objects[10].toString();
-		if (!Strings.isNullOrEmpty(eolChars))
-		{
-			comPort.getEndOfMessageCharacters()
-			       .clear();
-			Set<Character> chars = new HashSet<>();
-			for (String s : eolChars.split("\\^"))
-			{
-				chars.add(s.charAt(0));
-			}
-			comPort.getEndOfMessageCharacters()
-			       .addAll(chars);
-		}
 		return comPort;
 	}
 	
 	@Override
 	public ComPortConnection<?> registerNewConnection(ComPortConnection<?> connection)
 	{
-		String name = ComPortConnection.COM_NAME + connection.getComPort();
-		if (!connections.containsKey(name))
+		if (!connections.containsKey(connection.getComPort()))
 		{
-			connections.put(name, connection);
+			connections.put(connection.getComPort(), connection);
 		}
-		return connections.get(name);
+		return connections.get(connection.getComPort());
 	}
 	
 	@Transactional()
 	@Override
 	public ComPortConnection<?> getComPortConnection(Integer comPort)
 	{
-		String name = ComPortConnection.COM_NAME + comPort;
-		ComPortConnection<?> comm = connections.getOrDefault(name, null);
+		ComPortConnection<?> comm = connections.getOrDefault(comPort, null);
 		if (comm == null)
 		{
 			comm = findComPortConnection(new ComPortConnection<>(comPort, ComPortType.Server),
 					getISystem(CerialMasterSystemName), getISystemToken(CerialMasterSystemName));
 			if (comm != null)
 			{
-				connections.put(name, comm);
+				connections.put(comPort, comm);
 			}
 		}
 		return comm;
@@ -233,15 +160,14 @@ public class CerialMasterService
 	@Override
 	public ComPortConnection<?> getScannerPortConnection(Integer comPort)
 	{
-		String name = ComPortConnection.COM_NAME + comPort;
-		ComPortConnection<?> comm = connections.getOrDefault(name, null);
+		ComPortConnection<?> comm = connections.getOrDefault(comPort, null);
 		if (comm == null)
 		{
 			comm = findComPortConnection(new ComPortConnection<>(comPort, ComPortType.Scanner),
 					getISystem(CerialMasterSystemName), getISystemToken(CerialMasterSystemName));
 			if (comm != null)
 			{
-				connections.put(name, comm);
+				connections.put(comPort, comm);
 			}
 		}
 		return comm;
@@ -254,7 +180,7 @@ public class CerialMasterService
 	{
 		if (comStrings.isEmpty())
 		{
-			comStrings.addAll(NRSerialPort.getAvailableSerialPorts());
+			comStrings.addAll(NRSerialPort.getAllWindowsPorts());
 		}
 		comStrings.sort(String::compareTo);
 		return comStrings;

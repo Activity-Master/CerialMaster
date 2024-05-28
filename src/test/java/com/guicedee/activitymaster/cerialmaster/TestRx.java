@@ -8,6 +8,7 @@ import com.guicedee.activitymaster.fsdm.ActivityMasterService;
 import com.guicedee.activitymaster.fsdm.client.services.IEnterpriseService;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
+import com.guicedee.cerial.enumerations.Parity;
 import com.guicedee.guicedhazelcast.HazelcastProperties;
 import com.guicedee.guicedinjection.GuiceContext;
 import org.junit.jupiter.api.Test;
@@ -16,8 +17,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static com.guicedee.activitymaster.cerialmaster.client.ComPortType.*;
 import static com.guicedee.activitymaster.fsdm.DefaultEnterprise.*;
+import static com.guicedee.cerial.enumerations.BaudRate.*;
+import static com.guicedee.cerial.enumerations.ComPortType.*;
 import static com.guicedee.client.IGuiceContext.*;
 
 public class TestRx
@@ -75,10 +77,10 @@ public class TestRx
 			    search = service.addOrUpdateConnection(search, system, identityToken);
 		    }
 		
-		    search.setType(Device);
-		    search.setBaudRate(115200);
+		    search.setComPortType(Device);
+		    search.setBaudRate($115200);
 		    search.setBufferSize(512000);
-		    search.setParity(0);
+		    search.setParity(Parity.None);
 		
 		    search = service.addOrUpdateConnection(search,system,identityToken);
 		
@@ -90,15 +92,15 @@ public class TestRx
 	public static void main(String[] args)
 	{
 		ComPortConnection<?> server = new ComPortConnection<>(5, Device);
-		server.getEndOfMessageCharacters()
-		      .add('#');
-		server.setBaudRate(9600);
-		server.open();
+
+		server.setBaudRate($9600);
+		
+		server.connect();
 		for (IReceiveMessage<?> receiver : server.getReceivers())
 		{
 			System.out.println("Receiver : " + receiver);
 		}
-		server.writeMessage("Check\n");
+		server.write("Check");
 		
 		try
 		{
