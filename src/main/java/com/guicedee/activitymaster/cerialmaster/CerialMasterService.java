@@ -112,7 +112,6 @@ public class CerialMasterService
 				                                           Parity.toString(),
 				                                           ComPortAllowedCharacters.toString(),
 				                                           ComPortEndOfMessage.toString());
-		
 		Object[] objects = values.stream()
 		                         .findFirst()
 		                         .orElseThrow();
@@ -124,7 +123,7 @@ public class CerialMasterService
 		comPort.setBufferSize(Integer.parseInt(objects[5].toString()));
 		comPort.setDataBits(com.guicedee.cerial.enumerations.DataBits.fromString(Integer.parseInt(objects[6].toString()) + ""));
 		comPort.setStopBits(com.guicedee.cerial.enumerations.StopBits.from(Integer.parseInt(objects[7].toString()) + ""));
-		comPort.setParity(com.guicedee.cerial.enumerations.Parity.from(Integer.parseInt(objects[8].toString())));
+		comPort.setParity(com.guicedee.cerial.enumerations.Parity.from(objects[8].toString()));
 		
 		return comPort;
 	}
