@@ -1,8 +1,8 @@
 package com.guicedee.activitymaster.cerialmaster;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.google.inject.persist.Transactional;
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.activitymaster.fsdm.client.services.IResourceItemService;
@@ -21,6 +21,7 @@ import static com.guicedee.activitymaster.cerialmaster.services.enumerations.Cer
 import static com.guicedee.activitymaster.fsdm.client.services.IActivityMasterService.*;
 import static com.guicedee.client.IGuiceContext.*;
 
+@Singleton
 public class CerialMasterService
 		implements ICerialMasterService<CerialMasterService>
 {
@@ -38,7 +39,6 @@ public class CerialMasterService
 	@Getter
 	private static final Map<Integer, ComPortConnection<?>> connections = new ConcurrentHashMap<>();
 	
-	@Transactional()
 	@Override
 	public IResourceItemType<?, ?> getSerialConnectionType(ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
@@ -47,7 +47,6 @@ public class CerialMasterService
 	}
 	
 	@Override
-	@Transactional()
 	public ComPortConnection<?> addOrUpdateConnection(ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
@@ -72,7 +71,7 @@ public class CerialMasterService
 	}
 	
 	@Override
-	@Transactional()
+	
 	public ComPortConnection<?> updateStatus(ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
 		IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
@@ -83,7 +82,7 @@ public class CerialMasterService
 		return comPort;
 	}
 	
-	@Transactional()
+	
 	@Override
 	public ComPortConnection<?> findComPortConnection(ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
 	{
@@ -138,7 +137,7 @@ public class CerialMasterService
 		return connections.get(connection.getComPort());
 	}
 	
-	@Transactional()
+	
 	@Override
 	public ComPortConnection<?> getComPortConnection(Integer comPort)
 	{
@@ -155,7 +154,7 @@ public class CerialMasterService
 		return comm;
 	}
 	
-	@Transactional()
+	
 	@Override
 	public ComPortConnection<?> getScannerPortConnection(Integer comPort)
 	{
@@ -185,7 +184,7 @@ public class CerialMasterService
 		return comStrings;
 	}
 	
-	@Transactional()
+	
 	@Override
 	public List<String> listRegisteredComPorts()
 	{
