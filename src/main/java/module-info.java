@@ -8,7 +8,7 @@ module com.guicedee.activitymaster.cerialmaster {
 	exports com.guicedee.activitymaster.cerialmaster.services.enumerations;
 	exports com.guicedee.activitymaster.cerialmaster;
 	
-	requires transitive com.neuronrobotics.nrjavaserial;
+	//requires transitive com.neuronrobotics.nrjavaserial;
 	
 	requires org.apache.logging.log4j.core;
 	requires com.guicedee.guicedinjection;

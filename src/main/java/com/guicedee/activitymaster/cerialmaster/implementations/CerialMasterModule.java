@@ -1,5 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
+import com.fazecast.jSerialComm.SerialPort;
 import com.google.inject.*;
 import com.guicedee.activitymaster.cerialmaster.CerialMasterService;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
@@ -24,6 +25,10 @@ public class CerialMasterModule
 		
 		expose(genericKey);
 		expose(ICerialMasterService.class);
-		
+
+		for (SerialPort commPort : SerialPort.getCommPorts()) {
+			System.out.println("Available COM Port : " + commPort.getSystemPortName());
+		}
+
 	}
 }
