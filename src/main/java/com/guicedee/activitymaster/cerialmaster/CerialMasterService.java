@@ -13,11 +13,14 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resou
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.cerial.enumerations.ComPortType;
 import lombok.Getter;
+import lombok.extern.java.Log;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialMasterClassifications.*;
 import static com.guicedee.activitymaster.cerialmaster.services.enumerations.CerialResourceItemTypes.*;
@@ -25,6 +28,7 @@ import static com.guicedee.activitymaster.fsdm.client.services.IActivityMasterSe
 import static com.guicedee.client.IGuiceContext.*;
 
 @Singleton
+@Log
 public class CerialMasterService
         implements ICerialMasterService<CerialMasterService> {
     @Inject
@@ -38,8 +42,6 @@ public class CerialMasterService
     @Named(CerialMasterSystemName)
     private UUID identityToken;
 
-    @Getter
-    private static final Map<Integer, ComPortConnection<?>> connections = new ConcurrentHashMap<>();
 
     @Override
     public IResourceItemType<?, ?> getSerialConnectionType(ISystems<?, ?> system, java.util.UUID... identityToken) {
@@ -55,7 +57,19 @@ public class CerialMasterService
         var comPortResourceItem = resourceService.create(comPortResourceItemType.getName(), resourceItemKey.toString(),
                 comPort.getComPort() + "", system, identityToken);
 
-        comPortResourceItem.whenCompleteAsync(TransactionalBiConsumer.of((resourceItem, error) -> {
+        comPortResourceItem.whenCompleteAsync(TransactionalBiConsumer.of((resourceItemIn, error) -> {
+            if (error != null)
+            {
+                log.log(Level.SEVERE,"Error creating Com Port Resource Item", error);
+                return;
+            }
+            var resourceItem = resourceService.findByUUID(UUID.fromString(resourceItemIn.getId()));
+
+            if (resourceItem == null) {
+                log.log(Level.SEVERE,"Error retrieving resource item by uuid - " + resourceItemKey, error);
+                return;
+            }
+
             resourceItem.addOrUpdateClassification(ComPort, "", system, identityToken);
             resourceItem.addOrUpdateClassification(ComPortNumber, comPort.getComPort() + "", system, identityToken);
             resourceItem.addOrUpdateClassification(ComPortDeviceType, comPort.getComPortType()
@@ -69,10 +83,8 @@ public class CerialMasterService
             resourceItem.addOrUpdateClassification(Parity, comPort.getParity().toInt() + "", system, identityToken);
         }));
         try {
-            comPortResourceItem.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+            comPortResourceItem.get(30, TimeUnit.SECONDS);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         comPort.setId(resourceItemKey.toString());
@@ -126,47 +138,31 @@ public class CerialMasterService
         comPort.setComPort(Integer.parseInt(objects[1].toString()));
         comPort.setComPortType(ComPortType.valueOf(objects[2].toString()));
         comPort.setComPortStatus(com.guicedee.cerial.enumerations.ComPortStatus.valueOf(objects[3].toString()), true);
-        comPort.setBaudRate(com.guicedee.cerial.enumerations.BaudRate.from(Integer.parseInt(objects[4].toString()) + ""));
-        comPort.setBufferSize(Integer.parseInt(objects[5].toString()));
-        comPort.setDataBits(com.guicedee.cerial.enumerations.DataBits.fromString(Integer.parseInt(objects[6].toString()) + ""));
-        comPort.setStopBits(com.guicedee.cerial.enumerations.StopBits.from(Integer.parseInt(objects[7].toString()) + ""));
-        comPort.setParity(com.guicedee.cerial.enumerations.Parity.from(objects[8].toString()));
+        comPort.setBaudRate(com.guicedee.cerial.enumerations.BaudRate.from(Integer.parseInt(objects[4] == null ? "9600" : objects[4].toString()) + ""));
+        comPort.setBufferSize(Integer.parseInt(objects[5] == null ? "4096" : objects[5].toString()));
+        comPort.setDataBits(com.guicedee.cerial.enumerations.DataBits.fromString(Integer.parseInt(objects[6] == "8" ? "": objects[6].toString()) + ""));
+        comPort.setStopBits(com.guicedee.cerial.enumerations.StopBits.from(Integer.parseInt(objects[7] == null ? "1" : objects[7].toString()) + ""));
+        comPort.setParity(com.guicedee.cerial.enumerations.Parity.from(objects[8] == null ? "None" : objects[8].toString()));
 
         return comPort;
     }
 
     @Override
-    public ComPortConnection<?> registerNewConnection(ComPortConnection<?> connection) {
-        if (!connections.containsKey(connection.getComPort())) {
-            connections.put(connection.getComPort(), connection);
-        }
-        return connections.get(connection.getComPort());
-    }
-
-
-    @Override
     public ComPortConnection<?> getComPortConnection(Integer comPort) {
-        ComPortConnection<?> comm = connections.getOrDefault(comPort, null);
+        ComPortConnection<?> comm = null;
         if (comm == null) {
             comm = findComPortConnection(new ComPortConnection<>(comPort, ComPortType.Server),
                     getISystem(CerialMasterSystemName), getISystemToken(CerialMasterSystemName));
-            if (comm != null) {
-                connections.put(comPort, comm);
-            }
         }
         return comm;
     }
 
-
     @Override
     public ComPortConnection<?> getScannerPortConnection(Integer comPort) {
-        ComPortConnection<?> comm = connections.getOrDefault(comPort, null);
+        ComPortConnection<?> comm = null;
         if (comm == null) {
             comm = findComPortConnection(new ComPortConnection<>(comPort, ComPortType.Scanner),
                     getISystem(CerialMasterSystemName), getISystemToken(CerialMasterSystemName));
-            if (comm != null) {
-                connections.put(comPort, comm);
-            }
         }
         return comm;
     }
