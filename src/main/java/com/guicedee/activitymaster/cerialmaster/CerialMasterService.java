@@ -12,6 +12,9 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resou
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItemType;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.cerial.enumerations.ComPortType;
+import com.guicedee.guicedpersistence.lambda.TransactionalCallable;
+import com.guicedee.guicedpersistence.lambda.TransactionalConsumer;
+import io.vertx.core.Vertx;
 import lombok.Getter;
 import lombok.extern.java.Log;
 
@@ -42,6 +45,8 @@ public class CerialMasterService
     @Named(CerialMasterSystemName)
     private UUID identityToken;
 
+    @Inject
+    private Vertx vertx;
 
     @Override
     public IResourceItemType<?, ?> getSerialConnectionType(ISystems<?, ?> system, java.util.UUID... identityToken) {
@@ -57,36 +62,28 @@ public class CerialMasterService
         var comPortResourceItem = resourceService.create(comPortResourceItemType.getName(), resourceItemKey.toString(),
                 comPort.getComPort() + "", system, identityToken);
 
-        comPortResourceItem.whenCompleteAsync(TransactionalBiConsumer.of((resourceItemIn, error) -> {
-            if (error != null)
-            {
-                log.log(Level.SEVERE,"Error creating Com Port Resource Item", error);
-                return;
-            }
-            var resourceItem = resourceService.findByUUID(UUID.fromString(resourceItemIn.getId()));
+        comPortResourceItem.thenAccept((resourceItemIn) -> {
+            vertx.executeBlocking(TransactionalCallable.of(()->{
+                var resourceItem = resourceService.findByUUID(UUID.fromString(resourceItemIn.getId()));
+                if (resourceItem == null) {
+                    log.log(Level.SEVERE,"Error retrieving resource item by uuid - " + resourceItemKey);
+                    return null;
+                }
 
-            if (resourceItem == null) {
-                log.log(Level.SEVERE,"Error retrieving resource item by uuid - " + resourceItemKey, error);
-                return;
-            }
-
-            resourceItem.addOrUpdateClassification(ComPort, "", system, identityToken);
-            resourceItem.addOrUpdateClassification(ComPortNumber, comPort.getComPort() + "", system, identityToken);
-            resourceItem.addOrUpdateClassification(ComPortDeviceType, comPort.getComPortType()
-                    .toString(), system, identityToken);
-            resourceItem.addOrUpdateClassification(ComPortStatus, comPort.getComPortStatus()
-                    .toString(), system, identityToken);
-            resourceItem.addOrUpdateClassification(BaudRate, comPort.getBaudRate().toInt() + "", system, identityToken);
-            resourceItem.addOrUpdateClassification(BufferSize, comPort.getBufferSize() + "", system, identityToken);
-            resourceItem.addOrUpdateClassification(DataBits, comPort.getDataBits().toInt() + "", system, identityToken);
-            resourceItem.addOrUpdateClassification(StopBits, comPort.getStopBits().toInt() + "", system, identityToken);
-            resourceItem.addOrUpdateClassification(Parity, comPort.getParity().toInt() + "", system, identityToken);
-        }));
-        try {
-            comPortResourceItem.get(30, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+                resourceItem.addOrUpdateClassification(ComPort, "", system, identityToken);
+                resourceItem.addOrUpdateClassification(ComPortNumber, comPort.getComPort() + "", system, identityToken);
+                resourceItem.addOrUpdateClassification(ComPortDeviceType, comPort.getComPortType()
+                        .toString(), system, identityToken);
+                resourceItem.addOrUpdateClassification(ComPortStatus, comPort.getComPortStatus()
+                        .toString(), system, identityToken);
+                resourceItem.addOrUpdateClassification(BaudRate, comPort.getBaudRate().toInt() + "", system, identityToken);
+                resourceItem.addOrUpdateClassification(BufferSize, comPort.getBufferSize() + "", system, identityToken);
+                resourceItem.addOrUpdateClassification(DataBits, comPort.getDataBits().toInt() + "", system, identityToken);
+                resourceItem.addOrUpdateClassification(StopBits, comPort.getStopBits().toInt() + "", system, identityToken);
+                resourceItem.addOrUpdateClassification(Parity, comPort.getParity().toInt() + "", system, identityToken);
+                return null;
+            }));
+        });
         comPort.setId(resourceItemKey.toString());
         return comPort;
     }

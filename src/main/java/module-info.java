@@ -21,8 +21,9 @@ module com.guicedee.activitymaster.cerialmaster {
 	requires static lombok;
 	requires com.guicedee.activitymaster.cerialmaster.client;
 	requires com.guicedee.cerial;
-	
-	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with CerialMasterModule;
+    requires io.vertx.core;
+
+    provides com.guicedee.guicedinjection.interfaces.IGuiceModule with CerialMasterModule;
 	provides IActivityMasterSystem with CerialMasterSystem;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceConfigurator with CerialMasterGuiceConfig;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions with CerialMasterInclusionModule;
