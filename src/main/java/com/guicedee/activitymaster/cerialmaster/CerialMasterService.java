@@ -17,6 +17,7 @@ import com.guicedee.guicedpersistence.lambda.TransactionalConsumer;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.WorkerExecutor;
 import lombok.Getter;
 import lombok.extern.java.Log;
 
@@ -50,6 +51,13 @@ public class CerialMasterService
     @Inject
     private Vertx vertx;
 
+    private WorkerExecutor workerExecutor;
+    @Inject
+    private void setup()
+    {
+        workerExecutor = vertx.createSharedWorkerExecutor("cerial-worker-executor",20);
+    }
+
     @Override
     public IResourceItemType<?, ?> getSerialConnectionType(ISystems<?, ?> system, java.util.UUID... identityToken) {
         IResourceItemService<?> resourceService = get(IResourceItemService.class);
@@ -73,7 +81,7 @@ public class CerialMasterService
                 comPort.getComPort() + "", system, identityToken);
 
         comPortResourceItem.thenAccept((resourceItemIn) -> {
-            vertx.executeBlocking(TransactionalCallable.of(()->{
+            workerExecutor.executeBlocking(TransactionalCallable.of(()->{
                 var resourceItem = resourceService.findByUUID(UUID.fromString(resourceItemIn.getId()));
                 if (resourceItem == null) {
                     log.log(Level.SEVERE,"Error retrieving resource item by uuid - " + resourceItemKey);
@@ -91,7 +99,7 @@ public class CerialMasterService
                 resourceItem.addOrUpdateClassification(StopBits, comPort.getStopBits().toInt() + "", system, identityToken);
                 resourceItem.addOrUpdateClassification(Parity, comPort.getParity().toInt() + "", system, identityToken);
                 return null;
-            })
+            },true),false
             ).onComplete((result) -> {
                 if (result.succeeded())
                 {
