@@ -14,6 +14,8 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.syste
 import com.guicedee.cerial.enumerations.ComPortType;
 import com.guicedee.guicedpersistence.lambda.TransactionalCallable;
 import com.guicedee.guicedpersistence.lambda.TransactionalConsumer;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -55,10 +57,18 @@ public class CerialMasterService
     }
 
     @Override
-    public ComPortConnection<?> addOrUpdateConnection(ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
+    public Future<ComPortConnection<?>> addOrUpdateConnection(ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
+
+        if (comPort == null)
+        {
+            return Future.failedFuture("ComPort is null");
+        }
+        Promise<ComPortConnection<?>> promise = Promise.promise();
+
         IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
         IResourceItemService<?> resourceService = get(IResourceItemService.class);
         UUID resourceItemKey = UUID.randomUUID();
+        comPort.setId(resourceItemKey.toString());
         var comPortResourceItem = resourceService.create(comPortResourceItemType.getName(), resourceItemKey.toString(),
                 comPort.getComPort() + "", system, identityToken);
 
@@ -69,7 +79,6 @@ public class CerialMasterService
                     log.log(Level.SEVERE,"Error retrieving resource item by uuid - " + resourceItemKey);
                     return null;
                 }
-
                 resourceItem.addOrUpdateClassification(ComPort, "", system, identityToken);
                 resourceItem.addOrUpdateClassification(ComPortNumber, comPort.getComPort() + "", system, identityToken);
                 resourceItem.addOrUpdateClassification(ComPortDeviceType, comPort.getComPortType()
@@ -82,10 +91,19 @@ public class CerialMasterService
                 resourceItem.addOrUpdateClassification(StopBits, comPort.getStopBits().toInt() + "", system, identityToken);
                 resourceItem.addOrUpdateClassification(Parity, comPort.getParity().toInt() + "", system, identityToken);
                 return null;
-            }));
+            })
+            ).onComplete((result) -> {
+                if (result.succeeded())
+                {
+                    promise.complete(comPort);
+                }else {
+                    log.log(Level.SEVERE,"Error updating resource item - " + resourceItemKey);
+                    promise.fail(result.cause());
+                }
+            });
         });
-        comPort.setId(resourceItemKey.toString());
-        return comPort;
+
+        return promise.future();
     }
 
     @Override

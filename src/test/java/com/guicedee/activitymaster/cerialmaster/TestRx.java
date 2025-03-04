@@ -74,7 +74,7 @@ public class TestRx
 		    if(search == null)
 		    {
 			    search = new ComPortConnection<>(portNumber, Device);
-			    search = service.addOrUpdateConnection(search, system, identityToken);
+			    search = service.addOrUpdateConnection(search, system, identityToken).result();
 		    }
 		
 		    search.setComPortType(Device);
@@ -82,7 +82,7 @@ public class TestRx
 		    search.setBufferSize(512000);
 		    search.setParity(Parity.None);
 		
-		    search = service.addOrUpdateConnection(search,system,identityToken);
+		    search = service.addOrUpdateConnection(search,system,identityToken).result();
 		
 		    search = service.findComPortConnection(search, system, identityToken);
 		    System.out.println(search);
