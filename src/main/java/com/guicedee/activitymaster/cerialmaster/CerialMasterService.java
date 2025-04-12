@@ -79,8 +79,8 @@ public class CerialMasterService
         IResourceItemType<?, ?> comPortResourceItemType = getSerialConnectionType(system, identityToken);
         IResourceItemService<?> resourceService = get(IResourceItemService.class);
         UUID resourceItemKey = UUID.randomUUID();
-        comPort.setId(resourceItemKey.toString());
-        var comPortResourceItem = resourceService.create(comPortResourceItemType.getName(), resourceItemKey.toString(),
+        comPort.setId(resourceItemKey);
+        var comPortResourceItem = resourceService.create(comPortResourceItemType.getName(), resourceItemKey,
                 comPort.getComPort() + "", system, identityToken);
         comPortResourceItem.onComplete(handler -> {
             if (handler.failed() || handler.result() == null)
@@ -92,7 +92,7 @@ public class CerialMasterService
                 comPort.setId(handler.result().getId());
                 promise.complete(comPort);
                 workerExecutor.executeBlocking(TransactionalCallable.of(() -> {
-                            var resourceItem = resourceService.findByUUID(UUID.fromString(handler.result().getId()));
+                            var resourceItem = resourceService.findByUUID(handler.result().getId());
                             if (resourceItem == null)
                             {
                                 log.error("Error retrieving resource item by uuid - " + resourceItemKey);
