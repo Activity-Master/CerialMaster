@@ -86,6 +86,7 @@ public class CerialMasterService
             if (handler.failed() || handler.result() == null)
             {
                 log.error("Error creating resource item - {}", resourceItemKey, handler.cause());
+                promise.fail(handler.cause());
             }
             else
             {
