@@ -38,70 +38,74 @@ public class TestRx
 		            .setFieldInfo(true)
 		            .setAnnotationScanning(true)
 		            .setPathScanning(true);
-		
+
 	//	LogFactory.configureConsoleColourOutput(Level.FINE);
 		//	LogColourFormatter.setRenderBlack(false);
 	//	LogFactory.configureDefaultLogHiding();
 	}
-	
+
 	@Test
     public void testComDetailsPersistence()
     {
 	   // HibernateEntityManagerProperties.getDefaultProperties().setShowSql(false);
-	    
+
 	    ComPortConnection<?> server = new ComPortConnection<>(5, Device);
-	    
+
 	    IEnterpriseService enterpriseService = get(IEnterpriseService.class);
 	    IEnterprise<?,?> enterprise = enterpriseService.getEnterprise(TestEnterprise.name());
 	    ActivityMasterService mSystem = get(ActivityMasterService.class);
-	
+
 	    ISystems<?,?> system = get(CerialMasterSystem.class).getSystem(enterprise);
-	
-	
+
+
 	    enterpriseService.createNewEnterprise(enterprise);
-	
+
 	    UUID identityToken = get(CerialMasterSystem.class).getSystemToken(enterprise);
-	
-	    ICerialMasterService<?> service = get(ICerialMasterService.class);
-	    List<String> strings = service.listComPorts();
-	    
-	    System.out.println("Trying to load/find com ports from db");
-	    for (String string : strings)
-	    {
-		    int portNumber = Integer.parseInt(string.replace("COM", ""));
-		    ComPortConnection<?> search = new ComPortConnection<>(portNumber, Device);
-		    search = service.findComPortConnection(search, system, identityToken);
-		    if(search == null)
-		    {
-			    search = new ComPortConnection<>(portNumber, Device);
-			    search = service.addOrUpdateConnection(search, system, identityToken).result();
-		    }
-		
-		    search.setComPortType(Device);
-		    search.setBaudRate($115200);
-		    search.setBufferSize(512000);
-		    search.setParity(Parity.None);
-		
-		    search = service.addOrUpdateConnection(search,system,identityToken).result();
-		
-		    search = service.findComPortConnection(search, system, identityToken);
+
+     ICerialMasterService<?> service = get(ICerialMasterService.class);
+     List<String> strings = service.listComPorts().toCompletionStage().toCompletableFuture().join();
+
+     System.out.println("Trying to load/find com ports from db");
+     for (String string : strings)
+     {
+ 	    int portNumber = Integer.parseInt(string.replace("COM", ""));
+ 	    ComPortConnection<?> search = new ComPortConnection<>(portNumber, Device);
+ 	    search = service.findComPortConnection(search, system, identityToken)
+                 .toCompletionStage().toCompletableFuture().join();
+ 	    if(search == null)
+ 	    {
+ 		    search = new ComPortConnection<>(portNumber, Device);
+ 		    search = service.addOrUpdateConnection(search, system, identityToken)
+                     .toCompletionStage().toCompletableFuture().join();
+ 	    }
+
+ 	    search.setComPortType(Device);
+ 	    search.setBaudRate($115200);
+ 	    search.setBufferSize(512000);
+ 	    search.setParity(Parity.None);
+
+ 	    search = service.addOrUpdateConnection(search, system, identityToken)
+                 .toCompletionStage().toCompletableFuture().join();
+
+ 	    search = service.findComPortConnection(search, system, identityToken)
+                 .toCompletionStage().toCompletableFuture().join();
 		    System.out.println(search);
 	    }
     }
-    
+
 	public static void main(String[] args)
 	{
 		ComPortConnection<?> server = new ComPortConnection<>(5, Device);
 
 		server.setBaudRate($9600);
-		
+
 		server.connect();
 		for (IReceiveMessage<?> receiver : server.getReceivers())
 		{
 			System.out.println("Receiver : " + receiver);
 		}
 		server.write("Check");
-		
+
 		try
 		{
 			TimeUnit.SECONDS.sleep(5L);
@@ -112,6 +116,6 @@ public class TestRx
 		{
 			throw new RuntimeException(e);
 		}
-		
+
 	}
 }
