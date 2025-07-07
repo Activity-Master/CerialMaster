@@ -12,7 +12,7 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resou
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItemType;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.cerial.enumerations.ComPortType;
-import com.guicedee.guicedpersistence.lambda.TransactionalCallable;
+import com.guicedee.activitymaster.fsdm.db.entityassist.TransactionalCallable;
 import com.guicedee.guicedpersistence.lambda.TransactionalConsumer;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
