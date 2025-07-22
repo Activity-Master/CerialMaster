@@ -7,16 +7,11 @@ module com.guicedee.activitymaster.cerialmaster {
 	exports com.guicedee.activitymaster.cerialmaster.services;
 	exports com.guicedee.activitymaster.cerialmaster.services.enumerations;
 	exports com.guicedee.activitymaster.cerialmaster;
-	
-	//requires transitive com.neuronrobotics.nrjavaserial;
-	
-	requires org.apache.logging.log4j.core;
-	requires com.guicedee.guicedinjection;
-	requires com.guicedee.guicedpersistence;
 
+	requires org.apache.logging.log4j.core;
 	requires com.google.guice;
 	
-	requires com.guicedee.activitymaster.fsdm.client;
+	requires  transitive com.guicedee.activitymaster.fsdm.client;
 	requires com.entityassist;
 	requires static lombok;
 	requires com.guicedee.activitymaster.cerialmaster.client;
