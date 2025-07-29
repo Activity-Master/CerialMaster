@@ -99,17 +99,23 @@ public class CerialMasterInstall implements ISystemUpdate
 																															   .onItem()
 																															   .invoke(p -> log.debug("✅ Created Parity classification")));
 
-																							  log.info("🔄 Running {} port configuration classification creation operations in parallel", portConfigOperations.size());
+																							  log.info("🔄 Creating port configuration classifications sequentially");
 
-																							  // Run all port configuration operations in parallel
-																							  return Uni.combine()
-																											 .all()
-																											 .unis(portConfigOperations)
-																											 .discardItems()
-																											 .onItem()
-																											 .invoke(() -> log.info("✅ Completed all port configuration classifications"))
-																											 .onFailure()
-																											 .invoke(error -> log.error("❌ Error creating port configuration classifications: {}", error.getMessage(), error));
+																							  // Start with a completed Uni to begin the chain
+																							  Uni<Void> sequentialChain = Uni.createFrom().voidItem();
+																							  
+																							  // Process each port configuration operation sequentially by chaining operations
+																							  for (Uni<?> operation : portConfigOperations) {
+																							      final Uni<?> currentOperation = operation; // Create final reference for lambda
+																							      sequentialChain = sequentialChain.chain(() -> currentOperation.replaceWithVoid());
+																							  }
+																							  
+																							  // Return the sequential chain
+																							  return sequentialChain
+																							      .onItem()
+																							      .invoke(() -> log.info("✅ Completed all port configuration classifications sequentially"))
+																							      .onFailure()
+																							      .invoke(error -> log.error("❌ Error creating port configuration classifications: {}", error.getMessage(), error));
 																						  })
 																						  .chain(() -> {
 																							  log.info("📨 Creating Message classification...");
@@ -129,51 +135,50 @@ public class CerialMasterInstall implements ISystemUpdate
 																																 .onItem()
 																																 .invoke(mrfcp -> log.debug("✅ Created MessageReceivedFromComPort classification")));
 
-																							  log.info("🔄 Running {} message classification creation operations in parallel", messageClassOperations.size());
+																							  log.info("🔄 Creating message classifications sequentially");
 
-																							  // Run all message classification operations in parallel
-																							  return Uni.combine()
-																											 .all()
-																											 .unis(messageClassOperations)
-																											 .discardItems()
-																											 .onItem()
-																											 .invoke(() -> log.info("✅ Completed all message classifications"))
-																											 .onFailure()
-																											 .invoke(error -> log.error("❌ Error creating message classifications: {}", error.getMessage(), error));
+																							  // Start with a completed Uni to begin the chain
+																							  Uni<Void> sequentialChain = Uni.createFrom().voidItem();
+																							  
+																							  // Process each message classification operation sequentially by chaining operations
+																							  for (Uni<?> operation : messageClassOperations) {
+																							      final Uni<?> currentOperation = operation; // Create final reference for lambda
+																							      sequentialChain = sequentialChain.chain(() -> currentOperation.replaceWithVoid());
+																							  }
+																							  
+																							  // Return the sequential chain
+																							  return sequentialChain
+																							      .onItem()
+																							      .invoke(() -> log.info("✅ Completed all message classifications sequentially"))
+																							      .onFailure()
+																							      .invoke(error -> log.error("❌ Error creating message classifications: {}", error.getMessage(), error));
 																						  })
 																						  .chain(() -> {
 																							  log.info("🎯 Creating event types...");
 																							  IEventService<?> eventsService = get(IEventService.class);
 
-																							  // Convert synchronous createEventType calls to reactive pattern
+																							  // Use proper reactive calls to createEventType
+																							  log.debug("📝 Creating event types sequentially...");
+																							  
+																							  // Create SendMessageToComPort event type
 																							  log.debug("📝 Creating SendMessageToComPort event type...");
-																							  return Uni.createFrom()
-																											 .item(() -> {
-																												 eventsService.createEventType(session, SendMessageToComPort, system);
-																												 return "SendMessageToComPort";
-																											 })
-																											 .onItem()
-																											 .invoke(eventType -> log.debug("✅ Created {} event type", eventType))
-																											 .chain(() -> {
-																												 log.debug("📝 Creating Message event type...");
-																												 return Uni.createFrom()
-																																.item(() -> {
-																																	eventsService.createEventType(session, Message, system);
-																																	return "Message";
-																																})
-																																.onItem()
-																																.invoke(eventType -> log.debug("✅ Created {} event type", eventType));
-																											 })
-																											 .chain(() -> {
-																												 log.debug("📝 Creating MessageReceivedFromComPort event type...");
-																												 return Uni.createFrom()
-																																.item(() -> {
-																																	eventsService.createEventType(session, MessageReceivedFromComPort, system);
-																																	return "MessageReceivedFromComPort";
-																																})
-																																.onItem()
-																																.invoke(eventType -> log.debug("✅ Created {} event type", eventType));
-																											 });
+																							  return eventsService.createEventType(session, SendMessageToComPort, system)
+																							      .onItem()
+																							      .invoke(eventType -> log.debug("✅ Created SendMessageToComPort event type"))
+																							      .chain(() -> {
+																							          // Create Message event type
+																							          log.debug("📝 Creating Message event type...");
+																							          return eventsService.createEventType(session, Message, system)
+																							              .onItem()
+																							              .invoke(eventType -> log.debug("✅ Created Message event type"));
+																							      })
+																							      .chain(() -> {
+																							          // Create MessageReceivedFromComPort event type
+																							          log.debug("📝 Creating MessageReceivedFromComPort event type...");
+																							          return eventsService.createEventType(session, MessageReceivedFromComPort, system)
+																							              .onItem()
+																							              .invoke(eventType -> log.debug("✅ Created MessageReceivedFromComPort event type"));
+																							      });
 																						  })
 																						  .chain(() -> {
 																							  logProgress("Cerial Master", "Loading Com Port Events");
@@ -181,25 +186,21 @@ public class CerialMasterInstall implements ISystemUpdate
 
 																							  IEventService<?> eventsService = get(IEventService.class);
 
-																							  // Convert synchronous createEventType calls to reactive pattern
+																							  // Use proper reactive calls to createEventType
+																							  log.debug("📝 Creating connection event types sequentially...");
+																							  
+																							  // Create RegisteredANewConnection event type
 																							  log.debug("📝 Creating RegisteredANewConnection event type...");
-																							  return Uni.createFrom()
-																											 .item(() -> {
-																												 eventsService.createEventType(session, RegisteredANewConnection.toString(), system, identityToken);
-																												 return "RegisteredANewConnection";
-																											 })
-																											 .onItem()
-																											 .invoke(eventType -> log.debug("✅ Created {} event type", eventType))
-																											 .chain(() -> {
-																												 log.debug("📝 Creating ClosedANewConnection event type...");
-																												 return Uni.createFrom()
-																																.item(() -> {
-																																	eventsService.createEventType(session, ClosedANewConnection.toString(), system, identityToken);
-																																	return "ClosedANewConnection";
-																																})
-																																.onItem()
-																																.invoke(eventType -> log.debug("✅ Created {} event type", eventType));
-																											 });
+																							  return eventsService.createEventType(session, RegisteredANewConnection.toString(), system, identityToken)
+																							      .onItem()
+																							      .invoke(eventType -> log.debug("✅ Created RegisteredANewConnection event type"))
+																							      .chain(() -> {
+																							          // Create ClosedANewConnection event type
+																							          log.debug("📝 Creating ClosedANewConnection event type...");
+																							          return eventsService.createEventType(session, ClosedANewConnection.toString(), system, identityToken)
+																							              .onItem()
+																							              .invoke(eventType -> log.debug("✅ Created ClosedANewConnection event type"));
+																							      });
 																						  })
 																						  .chain(() -> {
 																							  log.info("📦 Creating resource item types in parallel...");
@@ -216,17 +217,23 @@ public class CerialMasterInstall implements ISystemUpdate
 																																	 .onItem()
 																																	 .invoke(mrfcp -> log.debug("✅ Created MessageReceivedFromComPort resource item type")));
 
-																							  log.info("🔄 Running {} resource item type creation operations in parallel", resourceItemTypeOperations.size());
+																							  log.info("🔄 Creating resource item types sequentially");
 
-																							  // Run all resource item type operations in parallel
-																							  return Uni.combine()
-																											 .all()
-																											 .unis(resourceItemTypeOperations)
-																											 .discardItems()
-																											 .onItem()
-																											 .invoke(() -> log.info("✅ Completed all resource item types"))
-																											 .onFailure()
-																											 .invoke(error -> log.error("❌ Error creating resource item types: {}", error.getMessage(), error));
+																							  // Start with a completed Uni to begin the chain
+																							  Uni<Void> sequentialChain = Uni.createFrom().voidItem();
+																							  
+																							  // Process each resource item type operation sequentially by chaining operations
+																							  for (Uni<?> operation : resourceItemTypeOperations) {
+																							      final Uni<?> currentOperation = operation; // Create final reference for lambda
+																							      sequentialChain = sequentialChain.chain(() -> currentOperation.replaceWithVoid());
+																							  }
+																							  
+																							  // Return the sequential chain
+																							  return sequentialChain
+																							      .onItem()
+																							      .invoke(() -> log.info("✅ Completed all resource item types sequentially"))
+																							      .onFailure()
+																							      .invoke(error -> log.error("❌ Error creating resource item types: {}", error.getMessage(), error));
 																						  })
 																						  .invoke(() -> {
 																							  logProgress("Cerial Master", "Completed Com Ports");
