@@ -2,7 +2,6 @@ package com.guicedee.activitymaster.cerialmaster.implementations;
 
 import com.guicedee.activitymaster.fsdm.client.services.*;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
-import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.activitymaster.fsdm.client.services.systems.ISystemUpdate;
 import com.guicedee.activitymaster.fsdm.client.services.systems.SortedUpdate;
 import io.smallrye.mutiny.Uni;
@@ -37,12 +36,12 @@ public class CerialMasterInstall implements ISystemUpdate
 		log.debug("🔍 Retrieving CerialMaster system configuration...");
 		
 		// Get system and token reactively using IActivityMasterService static methods
-		return getISystem(CerialMasterSystemName, enterprise)
+		return getISystem(session, CerialMasterSystemName, enterprise)
 			.onItem().invoke(system -> log.debug("✅ Retrieved CerialMaster system: {}", system.getDescription()))
 			.onFailure().invoke(error -> log.error("❌ Failed to retrieve CerialMaster system: {}", 
 				error.getMessage(), error))
 			.chain(system -> 
-				getISystemToken(CerialMasterSystemName, enterprise)
+				getISystemToken(session, CerialMasterSystemName, enterprise)
 					.onItem().invoke(token -> log.debug("✅ Retrieved system token: {}", token))
 					.onFailure().invoke(error -> log.error("❌ Failed to retrieve system token: {}", 
 						error.getMessage(), error))

@@ -33,6 +33,9 @@ public class CerialMasterService
     @Inject
     private IResourceItemService<?> resourceItemService;
 
+    // TODO: Remove these injected fields after full migration to reactive pattern
+    // These fields are being replaced by calls to getISystem and getISystemToken
+    // They are kept temporarily as fallbacks during the migration
     @Inject
     @Named(CerialMasterSystemName)
     private ISystems<?, ?> system;
@@ -430,17 +433,8 @@ public class CerialMasterService
     public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.Session session, Integer comPort)
     {
         log.debug("🔍 Getting COM port connection for port {} using external session (backward compatibility)", comPort);
-        return findComPortConnection(
-                session,
-                new ComPortConnection<>(comPort, ComPortType.Server),
-                system,
-                identityToken
-        )
-                       .onItem()
-                       .invoke(connection -> log.debug("✅ Retrieved COM port connection for port {}", comPort))
-                       .onFailure()
-                       .invoke(error -> log.error("❌ Failed to get COM port connection for port {}: {}",
-                               comPort, error.getMessage(), error));
+        // Call the overloaded method with null enterprise to use the reactive pattern
+        return getComPortConnection(session, comPort, null);
     }
 
     @Override
@@ -453,14 +447,14 @@ public class CerialMasterService
             return getComPortConnection(session, comPort);
         }
 
-        return getISystem(CerialMasterSystemName, enterprise)
+        return getISystem(session, CerialMasterSystemName, enterprise)
                        .onItem()
                        .invoke(systemCtx -> log.debug("✅ Retrieved CerialMaster system for COM port {}", comPort))
                        .onFailure()
                        .invoke(error -> log.error("❌ Failed to retrieve CerialMaster system for COM port {}: {}",
                                comPort, error.getMessage(), error))
                        .chain(systemCtx ->
-                                      getISystemToken(CerialMasterSystemName, enterprise)
+                                      getISystemToken(session, CerialMasterSystemName, enterprise)
                                               .onItem()
                                               .invoke(token -> log.debug("✅ Retrieved system token for COM port {}", comPort))
                                               .chain(token -> findComPortConnection(
@@ -481,17 +475,8 @@ public class CerialMasterService
     public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.Session session, Integer comPort)
     {
         log.debug("🔍 Getting scanner port connection for port {} using external session (backward compatibility)", comPort);
-        return findComPortConnection(
-                session,
-                new ComPortConnection<>(comPort, ComPortType.Scanner),
-                system,
-                identityToken
-        )
-                       .onItem()
-                       .invoke(connection -> log.debug("✅ Retrieved scanner port connection for port {}", comPort))
-                       .onFailure()
-                       .invoke(error -> log.error("❌ Failed to get scanner port connection for port {}: {}",
-                               comPort, error.getMessage(), error));
+        // Call the overloaded method with null enterprise to use the reactive pattern
+        return getScannerPortConnection(session, comPort, null);
     }
 
     @Override
@@ -504,14 +489,14 @@ public class CerialMasterService
             return getScannerPortConnection(session, comPort);
         }
 
-        return getISystem(CerialMasterSystemName, enterprise)
+        return getISystem(session, CerialMasterSystemName, enterprise)
                        .onItem()
                        .invoke(systemCtx -> log.debug("✅ Retrieved CerialMaster system for scanner port {}", comPort))
                        .onFailure()
                        .invoke(error -> log.error("❌ Failed to retrieve CerialMaster system for scanner port {}: {}",
                                comPort, error.getMessage(), error))
                        .chain(systemCtx ->
-                                      getISystemToken(CerialMasterSystemName, enterprise)
+                                      getISystemToken(session, CerialMasterSystemName, enterprise)
                                               .onItem()
                                               .invoke(token -> log.debug("✅ Retrieved system token for scanner port {}", comPort))
                                               .chain(token -> findComPortConnection(
@@ -559,31 +544,54 @@ public class CerialMasterService
     public Uni<List<String>> listRegisteredComPorts(Mutiny.Session session)
     {
         log.debug("🔍 Listing registered COM ports using external session: {}", session.hashCode());
-
-        return resourceItemService.findByClassificationAll(
-                        session, SerialConnectionPort.toString(),
-                        ComPortNumber.toString(),
-                        null,
-                        system,
-                        identityToken
-                )
-                       .onItem()
-                       .invoke(items -> log.debug("✅ Found {} registered COM port resources", items.size()))
-                       .onFailure()
-                       .invoke(error -> log.error("❌ Failed to find registered COM ports: {}", error.getMessage(), error))
-                       .chain(resourceItems -> {
-                           List<String> portNames = new ArrayList<>();
-                           for (var iResourceItem : resourceItems)
-                           {
-                               String portName = "COM" + iResourceItem.getValue();
-                               portNames.add(portName);
-                               log.debug("🔗 Found registered COM port: {}", portName);
-                           }
-                           portNames.sort(String::compareTo);
-                           log.debug("📤 Returning {} registered COM ports: {}", portNames.size(), portNames);
-                           return Uni.createFrom()
-                                          .item((List<String>) portNames);
-                       });
+    
+        // Get enterprise from session context or use a default one
+        IEnterprise<?, ?> enterprise = null;
+    
+        // Use reactive pattern with getISystem and getISystemToken
+        return getISystem(session, CerialMasterSystemName, enterprise)
+            .onItem()
+            .invoke(systemCtx -> log.debug("✅ Retrieved CerialMaster system for listing registered COM ports"))
+            .onFailure()
+            .recoverWithItem(() -> {
+                log.warn("⚠️ Failed to retrieve CerialMaster system, falling back to injected system");
+                return system;
+            })
+            .chain(systemCtx ->
+                getISystemToken(session, CerialMasterSystemName, enterprise)
+                    .onItem()
+                    .invoke(token -> log.debug("✅ Retrieved system token for listing registered COM ports"))
+                    .onFailure()
+                    .recoverWithItem(() -> {
+                        log.warn("⚠️ Failed to retrieve system token, falling back to injected token");
+                        return identityToken;
+                    })
+                    .chain(token -> 
+                        resourceItemService.findByClassificationAll(
+                            session, SerialConnectionPort.toString(),
+                            ComPortNumber.toString(),
+                            null,
+                            systemCtx,
+                            token
+                        )
+                    )
+            )
+            .onItem()
+            .invoke(items -> log.debug("✅ Found {} registered COM port resources", items.size()))
+            .onFailure()
+            .invoke(error -> log.error("❌ Failed to find registered COM ports: {}", error.getMessage(), error))
+            .chain(resourceItems -> {
+                List<String> portNames = new ArrayList<>();
+                for (var iResourceItem : resourceItems)
+                {
+                    String portName = "COM" + iResourceItem.getValue();
+                    portNames.add(portName);
+                    log.debug("🔗 Found registered COM port: {}", portName);
+                }
+                portNames.sort(String::compareTo);
+                log.debug("📤 Returning {} registered COM ports: {}", portNames.size(), portNames);
+                return Uni.createFrom().item((List<String>) portNames);
+            });
     }
 
 
