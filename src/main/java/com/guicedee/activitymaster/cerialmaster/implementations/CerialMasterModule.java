@@ -25,10 +25,5 @@ public class CerialMasterModule
 		
 		expose(genericKey);
 		expose(ICerialMasterService.class);
-
-		for (SerialPort commPort : SerialPort.getCommPorts()) {
-			System.out.println("Available COM Port : " + commPort.getSystemPortName());
-		}
-
 	}
 }

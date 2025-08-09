@@ -3,7 +3,6 @@ package com.guicedee.activitymaster.cerialmaster;
 import com.fazecast.jSerialComm.SerialPort;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 
@@ -14,7 +13,6 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.syste
 import com.guicedee.cerial.enumerations.ComPortType;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.Vertx;
-import io.vertx.core.WorkerExecutor;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.reactive.mutiny.Mutiny;
 
@@ -33,27 +31,11 @@ public class CerialMasterService
     @Inject
     private IResourceItemService<?> resourceItemService;
 
-    // TODO: Remove these injected fields after full migration to reactive pattern
-    // These fields are being replaced by calls to getISystem and getISystemToken
-    // They are kept temporarily as fallbacks during the migration
-    @Inject
-    @Named(CerialMasterSystemName)
-    private ISystems<?, ?> system;
-
-    @Inject
-    @Named(CerialMasterSystemName)
-    private UUID identityToken;
+    // Direct injections removed as part of migration to reactive pattern
+    // Now using IActivityMasterSystem.getISystem and getISystemToken methods
 
     @Inject
     private Vertx vertx;
-
-    private WorkerExecutor workerExecutor;
-
-    @Inject
-    private void setup()
-    {
-        workerExecutor = vertx.createSharedWorkerExecutor("cerial-worker-executor", 20);
-    }
 
     @Override
     public Uni<IResourceItemType<?, ?>> getSerialConnectionType(Mutiny.Session session, ISystems<?, ?> system, java.util.UUID... identityToken)
@@ -115,27 +97,23 @@ public class CerialMasterService
                            IResourceItemService<?> resourceService = get(IResourceItemService.class);
                            return resourceService.findByUUID(session, result.getId())
                                           .chain(resourceItemResult -> {
-                                              // Create list of classification operations to run in parallel
-                                              List<Uni<?>> classificationOperations = new ArrayList<>();
+                                              log.info("🔄 Running classification operations sequentially for COM port {}", comPort.getComPort());
 
-                                              classificationOperations.add(
-                                                      resourceItemResult.addOrUpdateClassification(session, ComPort, "", system, identityToken)
-                                                              .onItem()
-                                                              .invoke(() -> log.debug("✅ ComPort classification added"))
-                                                              .onFailure()
-                                                              .invoke(error -> log.error("❌ Failed to add ComPort classification: {}", error.getMessage()))
-                                              );
-
-                                              classificationOperations.add(
-                                                      resourceItemResult.addOrUpdateClassification(session, ComPortNumber, comPort.getComPort() + "", system, identityToken)
+                                              // Run all classification operations sequentially by chaining them
+                                              return resourceItemResult.addOrUpdateClassification(session, ComPort, "", system, identityToken)
+                                                      .onItem()
+                                                      .invoke(() -> log.debug("✅ ComPort classification added"))
+                                                      .onFailure()
+                                                      .invoke(error -> log.error("❌ Failed to add ComPort classification: {}", error.getMessage()))
+                                                      
+                                                      .chain(() -> resourceItemResult.addOrUpdateClassification(session, ComPortNumber, comPort.getComPort() + "", system, identityToken)
                                                               .onItem()
                                                               .invoke(() -> log.debug("✅ ComPortNumber classification added"))
                                                               .onFailure()
                                                               .invoke(error -> log.error("❌ Failed to add ComPortNumber classification: {}", error.getMessage()))
-                                              );
-
-                                              classificationOperations.add(
-                                                      resourceItemResult.addOrUpdateClassification(session,
+                                                      )
+                                                      
+                                                      .chain(() -> resourceItemResult.addOrUpdateClassification(session,
                                                                       ComPortDeviceType,
                                                                       comPort.getComPortType()
                                                                               .toString(),
@@ -145,10 +123,9 @@ public class CerialMasterService
                                                               .invoke(() -> log.debug("✅ ComPortDeviceType classification added"))
                                                               .onFailure()
                                                               .invoke(error -> log.error("❌ Failed to add ComPortDeviceType classification: {}", error.getMessage()))
-                                              );
-
-                                              classificationOperations.add(
-                                                      resourceItemResult.addOrUpdateClassification(session,
+                                                      )
+                                                      
+                                                      .chain(() -> resourceItemResult.addOrUpdateClassification(session,
                                                                       ComPortStatus,
                                                                       comPort.getComPortStatus()
                                                                               .toString(),
@@ -158,10 +135,9 @@ public class CerialMasterService
                                                               .invoke(() -> log.debug("✅ ComPortStatus classification added"))
                                                               .onFailure()
                                                               .invoke(error -> log.error("❌ Failed to add ComPortStatus classification: {}", error.getMessage()))
-                                              );
-
-                                              classificationOperations.add(
-                                                      resourceItemResult.addOrUpdateClassification(session,
+                                                      )
+                                                      
+                                                      .chain(() -> resourceItemResult.addOrUpdateClassification(session,
                                                                       BaudRate,
                                                                       comPort.getBaudRate()
                                                                               .toInt() + "",
@@ -171,18 +147,16 @@ public class CerialMasterService
                                                               .invoke(() -> log.debug("✅ BaudRate classification added"))
                                                               .onFailure()
                                                               .invoke(error -> log.error("❌ Failed to add BaudRate classification: {}", error.getMessage()))
-                                              );
-
-                                              classificationOperations.add(
-                                                      resourceItemResult.addOrUpdateClassification(session, BufferSize, comPort.getBufferSize() + "", system, identityToken)
+                                                      )
+                                                      
+                                                      .chain(() -> resourceItemResult.addOrUpdateClassification(session, BufferSize, comPort.getBufferSize() + "", system, identityToken)
                                                               .onItem()
                                                               .invoke(() -> log.debug("✅ BufferSize classification added"))
                                                               .onFailure()
                                                               .invoke(error -> log.error("❌ Failed to add BufferSize classification: {}", error.getMessage()))
-                                              );
-
-                                              classificationOperations.add(
-                                                      resourceItemResult.addOrUpdateClassification(session,
+                                                      )
+                                                      
+                                                      .chain(() -> resourceItemResult.addOrUpdateClassification(session,
                                                                       DataBits,
                                                                       comPort.getDataBits()
                                                                               .toInt() + "",
@@ -192,10 +166,9 @@ public class CerialMasterService
                                                               .invoke(() -> log.debug("✅ DataBits classification added"))
                                                               .onFailure()
                                                               .invoke(error -> log.error("❌ Failed to add DataBits classification: {}", error.getMessage()))
-                                              );
-
-                                              classificationOperations.add(
-                                                      resourceItemResult.addOrUpdateClassification(session,
+                                                      )
+                                                      
+                                                      .chain(() -> resourceItemResult.addOrUpdateClassification(session,
                                                                       StopBits,
                                                                       comPort.getStopBits()
                                                                               .toInt() + "",
@@ -205,10 +178,9 @@ public class CerialMasterService
                                                               .invoke(() -> log.debug("✅ StopBits classification added"))
                                                               .onFailure()
                                                               .invoke(error -> log.error("❌ Failed to add StopBits classification: {}", error.getMessage()))
-                                              );
-
-                                              classificationOperations.add(
-                                                      resourceItemResult.addOrUpdateClassification(session,
+                                                      )
+                                                      
+                                                      .chain(() -> resourceItemResult.addOrUpdateClassification(session,
                                                                       Parity,
                                                                       comPort.getParity()
                                                                               .toInt() + "",
@@ -218,21 +190,13 @@ public class CerialMasterService
                                                               .invoke(() -> log.debug("✅ Parity classification added"))
                                                               .onFailure()
                                                               .invoke(error -> log.error("❌ Failed to add Parity classification: {}", error.getMessage()))
-                                              );
-
-                                              log.info("🔄 Running {} classification operations in parallel for COM port {}",
-                                                      classificationOperations.size(), comPort.getComPort());
-
-                                              // Run all classification operations in parallel
-                                              return Uni.combine()
-                                                             .all()
-                                                             .unis(classificationOperations)
-                                                             .discardItems()
-                                                             .onItem()
-                                                             .invoke(() -> log.info("🎉 All classifications added successfully for COM port {}", comPort.getComPort()))
-                                                             .onFailure()
-                                                             .invoke(error -> log.error("💥 One or more classification operations failed for COM port {}: {}",
-                                                                     comPort.getComPort(), error.getMessage(), error));
+                                                      )
+                                                      
+                                                      .onItem()
+                                                      .invoke(() -> log.info("🎉 All classifications added successfully for COM port {}", comPort.getComPort()))
+                                                      .onFailure()
+                                                      .invoke(error -> log.error("💥 One or more classification operations failed for COM port {}: {}",
+                                                              comPort.getComPort(), error.getMessage(), error));
                                           });
                        })
                        .chain(() -> {
@@ -541,30 +505,27 @@ public class CerialMasterService
 
 
     @Override
-    public Uni<List<String>> listRegisteredComPorts(Mutiny.Session session)
+    public Uni<List<String>> listRegisteredComPorts(Mutiny.Session session, IEnterprise<?, ?> enterprise)
     {
         log.debug("🔍 Listing registered COM ports using external session: {}", session.hashCode());
-    
-        // Get enterprise from session context or use a default one
-        IEnterprise<?, ?> enterprise = null;
-    
+
         // Use reactive pattern with getISystem and getISystemToken
         return getISystem(session, CerialMasterSystemName, enterprise)
             .onItem()
             .invoke(systemCtx -> log.debug("✅ Retrieved CerialMaster system for listing registered COM ports"))
             .onFailure()
-            .recoverWithItem(() -> {
-                log.warn("⚠️ Failed to retrieve CerialMaster system, falling back to injected system");
-                return system;
+            .recoverWithUni(error -> {
+                log.error("❌ Failed to retrieve CerialMaster system: {}", error.getMessage(), error);
+                return Uni.createFrom().failure(new IllegalStateException("Failed to retrieve CerialMaster system", error));
             })
             .chain(systemCtx ->
                 getISystemToken(session, CerialMasterSystemName, enterprise)
                     .onItem()
                     .invoke(token -> log.debug("✅ Retrieved system token for listing registered COM ports"))
                     .onFailure()
-                    .recoverWithItem(() -> {
-                        log.warn("⚠️ Failed to retrieve system token, falling back to injected token");
-                        return identityToken;
+                    .recoverWithUni(error -> {
+                        log.error("❌ Failed to retrieve system token: {}", error.getMessage(), error);
+                        return Uni.createFrom().failure(new IllegalStateException("Failed to retrieve system token", error));
                     })
                     .chain(token -> 
                         resourceItemService.findByClassificationAll(
@@ -596,7 +557,7 @@ public class CerialMasterService
 
 
     @Override
-    public Uni<List<String>> listAvailableComPorts(Mutiny.Session session)
+    public Uni<List<String>> listAvailableComPorts(Mutiny.Session session, IEnterprise<?, ?> enterprise)
     {
         log.debug("🔍 Listing available COM ports using external session: {}", session.hashCode());
 
@@ -604,7 +565,7 @@ public class CerialMasterService
                        .onItem()
                        .invoke(allPorts -> log.debug("✅ Found {} total COM ports", allPorts.size()))
                        .chain(allPorts ->
-                                      listRegisteredComPorts(session)
+                                      listRegisteredComPorts(session, enterprise)
                                               .onItem()
                                               .invoke(registeredPorts -> log.debug("✅ Found {} registered COM ports", registeredPorts.size()))
                                               .chain(registeredPorts -> {

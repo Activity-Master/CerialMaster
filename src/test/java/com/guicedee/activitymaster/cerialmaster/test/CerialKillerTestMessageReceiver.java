@@ -1,4 +1,4 @@
-package com.guicedee.activitymaster.cerialmaster;
+package com.guicedee.activitymaster.cerialmaster.test;
 
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.client.services.IReceiveMessage;
