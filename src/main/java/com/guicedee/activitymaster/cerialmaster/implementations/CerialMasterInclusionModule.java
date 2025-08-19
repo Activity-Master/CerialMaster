@@ -14,6 +14,7 @@ public class CerialMasterInclusionModule
 	{
 		Set<String> set = new HashSet<>();
 		set.add("com.guicedee.activitymaster.cerialmaster");
+		set.add("com.guicedee.activitymaster.cerialmaster.client");
 		return set;
 	}
 }

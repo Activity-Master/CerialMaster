@@ -7,6 +7,7 @@ import com.guicedee.cerial.enumerations.*;
 import com.guicedee.client.IGuiceContext;
 import com.guicedee.services.jsonrepresentation.IJsonRepresentation;
 import io.smallrye.mutiny.Uni;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;

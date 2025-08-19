@@ -12,7 +12,6 @@ import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resou
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.cerial.enumerations.ComPortType;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.Vertx;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.reactive.mutiny.Mutiny;
 
@@ -30,13 +29,7 @@ public class CerialMasterService
 {
     @Inject
     private IResourceItemService<?> resourceItemService;
-
-    // Direct injections removed as part of migration to reactive pattern
-    // Now using IActivityMasterSystem.getISystem and getISystemToken methods
-
-    @Inject
-    private Vertx vertx;
-
+    
     @Override
     public Uni<IResourceItemType<?, ?>> getSerialConnectionType(Mutiny.Session session, ISystems<?, ?> system, java.util.UUID... identityToken)
     {
@@ -62,6 +55,7 @@ public class CerialMasterService
             return Uni.createFrom()
                            .failure(new UnsupportedOperationException("ComPort or number is null"));
         }
+        IResourceItemService<?> resourceService = get(IResourceItemService.class);
 
         log.debug("📋 Retrieving serial connection type for system: {} with session: {}", system.getName(), session.hashCode());
 
@@ -70,7 +64,6 @@ public class CerialMasterService
                 {
                     log.debug("✅ Serial connection type retrieved: '{}'", comPortResourceItemType.getName());
 
-                    IResourceItemService<?> resourceService = get(IResourceItemService.class);
                     UUID resourceItemKey = UUID.randomUUID();
                     comPort.setId(resourceItemKey);
 
@@ -93,8 +86,6 @@ public class CerialMasterService
                        .chain(result ->
                        {
                            log.debug("🔗 Adding classifications for COM port {} using external session", comPort.getComPort());
-
-                           IResourceItemService<?> resourceService = get(IResourceItemService.class);
                            return resourceService.findByUUID(session, result.getId())
                                           .chain(resourceItemResult -> {
                                               log.info("🔄 Running classification operations sequentially for COM port {}", comPort.getComPort());
@@ -308,34 +299,12 @@ public class CerialMasterService
                                    identityToken
                            );
                        })
-                       .onItem()
-                       .invoke(resourceItem -> {
-                           if (resourceItem != null)
-                           {
-                               log.debug("✅ Resource item found for COM port {}: ID {}", comPort.getComPort(), resourceItem.getId());
-                           }
-                           else
-                           {
-                               log.debug("❌ No resource item found for COM port {}", comPort.getComPort());
-                           }
-                       })
-                       .onFailure()
-                       .invoke(error -> log.error("❌ Failed to find resource item for COM port {}: {}",
-                               comPort.getComPort(), error.getMessage(), error))
                        .chain(comPortResourceItem -> {
-                           if (comPortResourceItem == null)
-                           {
-                               log.warn("⚠️ No resource item found for COM port {}", comPort.getComPort());
-                               return Uni.createFrom()
-                                              .item((ComPortConnection<?>) null);
-                           }
-
                            // Set the resource item and ID
                            comPort.setResourceItem(comPortResourceItem);
                            comPort.setId(comPortResourceItem.getId());
 
                            log.debug("📊 Retrieving classifications for COM port {} using external session", comPort.getComPort());
-
                            // Get the classifications using EntityAssist query builder
                            return comPortResourceItem.builder(session)
                                           .getClassificationsValuePivot(
@@ -404,11 +373,46 @@ public class CerialMasterService
     @Override
     public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise)
     {
+        return getComPortConnection(session, comPort, enterprise, null);
+    }
+
+    @Override
+    public Uni<ComPortConnection<?>> getComPortConnectionDirect(Integer comPort)
+    {
+        log.debug("🔌 Direct COM port connection request for port {}", comPort);
+        if (comPort == null)
+        {
+            return Uni.createFrom().failure(new IllegalArgumentException("comPort cannot be null"));
+        }
+        try
+        {
+            // Create or fetch the canonical connection and ensure it is registered
+            ComPortConnection<?> connection = ComPortConnection.getOrCreate(comPort, ComPortType.Device);
+
+            // Ensure a TimedComPortSender is registered with default configuration
+            com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender.Config defaultCfg =
+                    new com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender.Config();
+            maybeAttachTimedSender(connection, defaultCfg);
+
+            log.debug("✅ Direct COM port connection ready for port {} and sender registered", comPort);
+            return Uni.createFrom().item(connection);
+        }
+        catch (Throwable t)
+        {
+            log.error("❌ Failed to create direct COM port connection for {}: {}", comPort, t.getMessage(), t);
+            return Uni.createFrom().failure(t);
+        }
+    }
+
+    @Override
+    public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise, com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender.Config timedConfig)
+    {
         log.debug("🔍 Getting COM port connection for port {} using external session with enterprise context", comPort);
 
         if (enterprise == null)
         {
-            return getComPortConnection(session, comPort);
+            return getComPortConnection(session, comPort)
+                    .onItem().invoke(conn -> maybeAttachTimedSender(conn, timedConfig));
         }
 
         return getISystem(session, CerialMasterSystemName, enterprise)
@@ -423,13 +427,16 @@ public class CerialMasterService
                                               .invoke(token -> log.debug("✅ Retrieved system token for COM port {}", comPort))
                                               .chain(token -> findComPortConnection(
                                                       session,
-                                                      new ComPortConnection<>(comPort, ComPortType.Server),
+                                                      ComPortConnection.getOrCreate(comPort, ComPortType.Server),
                                                       systemCtx,
                                                       token
                                               ))
                        )
                        .onItem()
-                       .invoke(connection -> log.debug("✅ Retrieved COM port connection for port {}", comPort))
+                       .invoke(connection -> {
+                           log.debug("✅ Retrieved COM port connection for port {}", comPort);
+                           maybeAttachTimedSender(connection, timedConfig);
+                       })
                        .onFailure()
                        .invoke(error -> log.error("❌ Failed to get COM port connection for port {}: {}",
                                comPort, error.getMessage(), error));
@@ -446,11 +453,18 @@ public class CerialMasterService
     @Override
     public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise)
     {
+        return getScannerPortConnection(session, comPort, enterprise, null);
+    }
+
+    @Override
+    public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise, com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender.Config timedConfig)
+    {
         log.debug("🔍 Getting scanner port connection for port {} using external session with enterprise context", comPort);
 
         if (enterprise == null)
         {
-            return getScannerPortConnection(session, comPort);
+            return getScannerPortConnection(session, comPort)
+                    .onItem().invoke(conn -> maybeAttachTimedSender(conn, timedConfig));
         }
 
         return getISystem(session, CerialMasterSystemName, enterprise)
@@ -465,19 +479,30 @@ public class CerialMasterService
                                               .invoke(token -> log.debug("✅ Retrieved system token for scanner port {}", comPort))
                                               .chain(token -> findComPortConnection(
                                                       session,
-                                                      new ComPortConnection<>(comPort, ComPortType.Scanner),
+                                                      ComPortConnection.getOrCreate(comPort, ComPortType.Scanner),
                                                       systemCtx,
                                                       token
                                               ))
                        )
                        .onItem()
-                       .invoke(connection -> log.debug("✅ Retrieved scanner port connection for port {}", comPort))
+                       .invoke(connection -> {
+                           log.debug("✅ Retrieved scanner port connection for port {}", comPort);
+                           maybeAttachTimedSender(connection, timedConfig);
+                       })
                        .onFailure()
                        .invoke(error -> log.error("❌ Failed to get scanner port connection for port {}: {}",
                                comPort, error.getMessage(), error));
     }
 
     private static ArrayList<String> comStrings = new ArrayList<>();
+
+    private void maybeAttachTimedSender(ComPortConnection<?> connection, com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender.Config cfg)
+    {
+        if (cfg == null || connection == null || connection.getComPort() == null) return;
+        var sender = connection.getOrCreateTimedSender(cfg);
+        // Do not auto-start here; let callers decide. They can access via ComPortConnection.getTimedSender(port)
+        // This ensures registry tracking and public access as requested.
+    }
 
     @Override
     public Uni<List<String>> listComPorts()
