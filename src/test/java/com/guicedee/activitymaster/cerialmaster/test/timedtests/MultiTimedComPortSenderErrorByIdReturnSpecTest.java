@@ -1,8 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -34,11 +32,11 @@ public class MultiTimedComPortSenderErrorByIdReturnSpecTest {
         }
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
-        TimedComPortSender.Config cfg = new TimedComPortSender.Config(1, 10, 200);
+        Config cfg = new Config(1, 10, 200);
 
         String id = "RET-SPEC-ERR-BY-ID-22";
-        TimedComPortSender.MessageSpec spec = new TimedComPortSender.MessageSpec(id, "TITLE-22", "PAYLOAD-22", cfg);
-        Map<Integer, List<TimedComPortSender.MessageSpec>> byPort = Map.of(22, List.of(spec));
+        MessageSpec spec = new MessageSpec(id, "TITLE-22", "PAYLOAD-22", cfg);
+        Map<Integer, List<MessageSpec>> byPort = Map.of(22, List.of(spec));
 
         var statusSub = manager.status().subscribe().withSubscriber(AssertSubscriber.create(256));
         var progressSub = manager.messageProgress().subscribe().withSubscriber(AssertSubscriber.create(512));
@@ -46,18 +44,18 @@ public class MultiTimedComPortSenderErrorByIdReturnSpecTest {
         manager.messageProgress().subscribe().with(mp -> {
             if (mp != null && mp.progress != null && id.equals(mp.progress.id)
                     && mp.progress.note != null && mp.progress.note.contains("Starting")) {
-                Optional<TimedComPortSender.MessageSpec> ret = manager.markErroredReturningSpec(id, "Test by-id error");
+                Optional<MessageSpec> ret = manager.markErroredReturningSpec(id, "Test by-id error");
                 assertTrue(ret.isPresent(), "Expected returned spec present on error by id");
-                assertEquals(spec.id, ret.get().id);
-                assertEquals(spec.title, ret.get().title);
-                assertEquals(spec.payload, ret.get().payload);
+                assertEquals(spec.getId(), ret.get().getId());
+                assertEquals(spec.getTitle(), ret.get().getTitle());
+                assertEquals(spec.getPayload(), ret.get().getPayload());
             }
         });
 
         var allUni = manager.enqueueGroupsWithName("ReturnSpec-Error-ById-22", byPort, cfg);
         var aggUni = manager.currentRunAggregateUni();
 
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
         assertEquals(TimedComPortSender.State.Error, results.get(22).results.get(0).terminalState);
         var agg = aggUni.await().atMost(Duration.ofSeconds(50));
         assertEquals(100.0, agg.percentCompleteOverall, 0.0001);

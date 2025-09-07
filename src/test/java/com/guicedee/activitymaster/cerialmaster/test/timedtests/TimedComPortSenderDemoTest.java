@@ -1,6 +1,7 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
+import com.guicedee.activitymaster.cerialmaster.client.Config;
 import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
@@ -29,7 +30,7 @@ public class TimedComPortSenderDemoTest {
             return;
         }
 
-        TimedComPortSender.Config defaultCfg = new TimedComPortSender.Config(2, 30, 200);
+        Config defaultCfg = new Config(2, 30, 200);
         TimedComPortSender sender = conn.getOrCreateTimedSender(defaultCfg);
 
         var sub = sender.status().subscribe().withSubscriber(AssertSubscriber.create(200));
@@ -37,29 +38,29 @@ public class TimedComPortSenderDemoTest {
         Runnable awaitSomeSignals = () -> sub.awaitNextItems(1);
 
         // 1) Immediate external completion
-        sender.start("MSG-1", new TimedComPortSender.Config(0, 10, 200));
+        sender.start("MSG-1", new Config(0, 10, 200));
         Thread.sleep(20);
         sender.complete();
         Thread.sleep(20);
 
         // 2) Allow timeout by not completing
-        sender.start("MSG-2", new TimedComPortSender.Config(1, 20, 120));
+        sender.start("MSG-2", new Config(1, 20, 120));
         Thread.sleep(200); // enough time to attempt and time out
 
         // 3) Start and complete during window
-        sender.start("MSG-3", new TimedComPortSender.Config(1, 20, 200));
+        sender.start("MSG-3", new Config(1, 20, 200));
         Thread.sleep(40);
         sender.complete();
         Thread.sleep(20);
 
         // 4) Start, let it wait, then complete
-        sender.start("MSG-4", new TimedComPortSender.Config(0, 10, 200));
+        sender.start("MSG-4", new Config(0, 10, 200));
         Thread.sleep(50);
         sender.complete();
         Thread.sleep(20);
 
         // 5) Start and complete quickly
-        sender.start("MSG-5", new TimedComPortSender.Config(0, 10, 150));
+        sender.start("MSG-5", new Config(0, 10, 150));
         Thread.sleep(10);
         sender.complete();
         Thread.sleep(20);

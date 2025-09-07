@@ -1,8 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.SenderSnapshot;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -62,16 +60,16 @@ public class MultiTimedComPortSenderDebounceTest {
     public void sender_publishes_debounced_and_sends_latest_snapshot() throws Exception {
         TestableMulti mgr = new TestableMulti();
         int port = 77;
-        TimedComPortSender sender = mgr.getOrCreateSender(port, new TimedComPortSender.Config(1, 5, 40));
+        TimedComPortSender sender = mgr.getOrCreateSender(port, new Config(1, 5, 40));
         sender.setAttemptFn((c, a) -> java.util.concurrent.CompletableFuture.completedFuture(true));
 
         // Enqueue two messages to the same port so that state changes during the debounce window
-        TimedComPortSender.MessageSpec m1 = new TimedComPortSender.MessageSpec("M1", "Title-1", "PAY", new TimedComPortSender.Config(1, 5, 40));
-        TimedComPortSender.MessageSpec m2 = new TimedComPortSender.MessageSpec("M2", "Title-2", "PAY", new TimedComPortSender.Config(1, 5, 40));
-        Map<Integer, List<TimedComPortSender.MessageSpec>> byPort = Map.of(port, List.of(m1, m2));
+        MessageSpec m1 = new MessageSpec("M1", "Title-1", "PAY", new Config(1, 5, 40));
+        MessageSpec m2 = new MessageSpec("M2", "Title-2", "PAY", new Config(1, 5, 40));
+        Map<Integer, List<MessageSpec>> byPort = Map.of(port, List.of(m1, m2));
 
         // Start the run
-        var all = mgr.enqueueGroupsWithName("Run-DB", byPort, new TimedComPortSender.Config(1, 5, 40));
+        var all = mgr.enqueueGroupsWithName("Run-DB", byPort, new Config(1, 5, 40));
 
         // Quickly complete the first message so the second becomes active before the debounce timer fires
         Thread.sleep(20);
@@ -93,9 +91,9 @@ public class MultiTimedComPortSenderDebounceTest {
         SenderSnapshot snap = (SenderSnapshot) lastPayload;
         // Either sending is present with id M2, or M2 appears in completed if it finished quickly
         boolean ok = false;
-        if (snap.sending != null && "M2".equals(snap.sending.id)) ok = true;
+        if (snap.sending != null && "M2".equals(snap.getSending().getId())) ok = true;
         if (!ok) {
-            ok = snap.completed.stream().anyMatch(ms -> "M2".equals(ms.id));
+            ok = snap.completed.stream().anyMatch(ms -> "M2".equals(ms.getId()));
         }
         assertTrue(ok, "Expected the latest publish to reflect the later message M2 as active or completed");
 
@@ -108,7 +106,7 @@ public class MultiTimedComPortSenderDebounceTest {
     public void sender_no_duplicate_when_no_state_change() throws Exception {
         TestableMulti mgr = new TestableMulti();
         int port = 88;
-        TimedComPortSender sender = mgr.getOrCreateSender(port, new TimedComPortSender.Config(1, 5, 40));
+        TimedComPortSender sender = mgr.getOrCreateSender(port, new Config(1, 5, 40));
         sender.setAttemptFn((c, a) -> java.util.concurrent.CompletableFuture.completedFuture(true));
 
         // Trigger a single status change (pause) which will schedule a publish

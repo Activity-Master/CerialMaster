@@ -1,5 +1,7 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
+import com.guicedee.activitymaster.cerialmaster.client.Config;
+import com.guicedee.activitymaster.cerialmaster.client.MessageSpec;
 import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
 import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
 import org.junit.jupiter.api.Test;
@@ -17,13 +19,13 @@ public class MultiTimedComPortSenderOffsetDateTimeTest {
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
         int port = 50;
         // Ensure sender exists and set attempt function to avoid serial access
-        TimedComPortSender sender = manager.getOrCreateSender(port, new TimedComPortSender.Config(1, 5, 40));
+        TimedComPortSender sender = manager.getOrCreateSender(port, new Config(1, 5, 40));
         sender.setAttemptFn((c, a) -> java.util.concurrent.CompletableFuture.completedFuture(true));
 
-        TimedComPortSender.MessageSpec spec = new TimedComPortSender.MessageSpec("AGG-1", "Title-AGG-1", "PAYLOAD", new TimedComPortSender.Config(1, 5, 40));
-        Map<Integer, List<TimedComPortSender.MessageSpec>> byPort = Map.of(port, List.of(spec));
+        MessageSpec spec = new MessageSpec("AGG-1", "Title-AGG-1", "PAYLOAD", new Config(1, 5, 40));
+        Map<Integer, List<MessageSpec>> byPort = Map.of(port, List.of(spec));
 
-        var allUni = manager.enqueueGroupsWithName("Group-ODT", byPort, new TimedComPortSender.Config(1, 5, 40));
+        var allUni = manager.enqueueGroupsWithName("Group-ODT", byPort, new Config(1, 5, 40));
         var aggUni = manager.currentRunAggregateUni();
 
         // Drive to completion quickly

@@ -1,6 +1,7 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
+import com.guicedee.activitymaster.cerialmaster.client.Config;
 import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
@@ -24,7 +25,7 @@ public class TimedComPortSenderTest {
             Assumptions.assumeTrue(false, "Serial not available or blocked in test environment: " + t.getMessage());
             return;
         }
-        TimedComPortSender.Config cfg = new TimedComPortSender.Config(2, 50, 200);
+        Config cfg = new Config(2, 50, 200);
         TimedComPortSender sender = conn.getOrCreateTimedSender(cfg);
 
         var sub = sender.status().subscribe().withSubscriber(AssertSubscriber.create(50));

@@ -1,9 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MessageStat;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -39,12 +36,12 @@ public class MultiTimedComPortSenderSnapshotTest {
         }
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
-        TimedComPortSender.Config baseCfg = new TimedComPortSender.Config(1, 12, 160);
+        Config baseCfg = new Config(1, 12, 160);
 
         // Plan: Port 20 has two messages; Port 21 has one. We'll complete first messages early and let one timeout.
-        TimedComPortSender.MessageSpec A20 = new TimedComPortSender.MessageSpec("A20-SNP", "PAYLOAD-A20", new TimedComPortSender.Config(1, 12, 180));
-        TimedComPortSender.MessageSpec B20 = new TimedComPortSender.MessageSpec("B20-SNP", "PAYLOAD-B20", new TimedComPortSender.Config(2, 12, 160));
-        TimedComPortSender.MessageSpec A21 = new TimedComPortSender.MessageSpec("A21-SNP", "PAYLOAD-A21", new TimedComPortSender.Config(0, 8, 140));
+        MessageSpec A20 = new MessageSpec("A20-SNP", "PAYLOAD-A20", new Config(1, 12, 180));
+        MessageSpec B20 = new MessageSpec("B20-SNP", "PAYLOAD-B20", new Config(2, 12, 160));
+        MessageSpec A21 = new MessageSpec("A21-SNP", "PAYLOAD-A21", new Config(0, 8, 140));
 
         // Subscribe to ensure streams are alive
         var statusSub = manager.status().subscribe().withSubscriber(AssertSubscriber.create(256));
@@ -61,7 +58,7 @@ public class MultiTimedComPortSenderSnapshotTest {
         Thread.sleep(60);
 
         // Capture an in-flight snapshot; should show non-zero timeRemaining at aggregate and per-port
-        MultiTimedComPortSender.ManagerSnapshot snapMid = manager.snapshot();
+        ManagerSnapshot snapMid = manager.snapshot();
         assertNotNull(snapMid);
         assertNotNull(snapMid.aggregate);
         assertEquals(groupName, snapMid.aggregate.groupName);
@@ -80,8 +77,8 @@ public class MultiTimedComPortSenderSnapshotTest {
         assertEquals(s20mid.worstCaseRemainingMs, s20mid.timeRemainingMs);
         assertEquals(s21mid.worstCaseRemainingMs, s21mid.timeRemainingMs);
         // Verify sending is at most 1
-        assertTrue(s20mid.sending == null || s20mid.sending.id != null);
-        assertTrue(s21mid.sending == null || s21mid.sending.id != null);
+        assertTrue(s20mid.sending == null || s20mid.getSending().getId() != null);
+        assertTrue(s21mid.sending == null || s21mid.getSending().getId() != null);
         // Verify waiting/completed bounds
         assertTrue(s20mid.waiting.size() <= 25);
         assertTrue(s20mid.completed.size() <= 100);
@@ -89,14 +86,14 @@ public class MultiTimedComPortSenderSnapshotTest {
         assertTrue(s21mid.completed.size() <= 100);
         // Verify message-level fields include timeRemainingMs and estimates (when sending or waiting)
         if (s20mid.sending != null) {
-            assertTrue(s20mid.sending.timeRemainingMs >= 0);
-            assertNotNull(s20mid.sending.estimatedFinishedAtEpochMs);
+            assertTrue(s20mid.getSending().getTimeRemainingMs() >= 0);
+            assertNotNull(s20mid.getSending().getEstimatedFinishedAtEpochMs());
             // originallyEstimated may be null if not started yet (should be set when started) — allow null-or-positive
         }
         if (!s20mid.waiting.isEmpty()) {
             MessageStat w = s20mid.waiting.get(0);
-            assertTrue(w.timeRemainingMs >= 0);
-            assertNotNull(w.estimatedFinishedAtEpochMs);
+            assertTrue(w.getTimeRemainingMs() >= 0);
+            assertNotNull(w.getEstimatedFinishedAtEpochMs());
         }
 
         // Perform early completions
@@ -112,12 +109,12 @@ public class MultiTimedComPortSenderSnapshotTest {
         Thread.sleep(220);
 
         // Wait for run completion and aggregate
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
         assertNotNull(results);
         assertEquals(2, results.size());
 
         // Final snapshot after completion
-        MultiTimedComPortSender.ManagerSnapshot snapEnd = manager.snapshot();
+        ManagerSnapshot snapEnd = manager.snapshot();
         assertNotNull(snapEnd.aggregate.finishedAtEpochMs);
         assertEquals(0, snapEnd.aggregate.maxTimeRemainingMs);
         assertEquals(0, snapEnd.aggregate.timeRemainingMs);
@@ -144,8 +141,8 @@ public class MultiTimedComPortSenderSnapshotTest {
         // Completed list contains terminal messages with timeRemainingMs == 0 and estimates present
         if (!s20end.completed.isEmpty()) {
             MessageStat last = s20end.completed.get(s20end.completed.size() - 1);
-            assertEquals(0L, last.timeRemainingMs);
-            assertNotNull(last.estimatedFinishedAtEpochMs);
+            assertEquals(0L, last.getTimeRemainingMs());
+            assertNotNull(last.getEstimatedFinishedAtEpochMs());
         }
 
         // Ensure streams emitted

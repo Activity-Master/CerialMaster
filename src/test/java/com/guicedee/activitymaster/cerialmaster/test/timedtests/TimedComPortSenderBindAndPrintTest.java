@@ -1,7 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -30,7 +29,7 @@ public class TimedComPortSenderBindAndPrintTest {
             Assumptions.assumeTrue(false, "Serial not available or blocked in test environment: " + t.getMessage());
             return;
         }
-        TimedComPortSender sender = conn.getOrCreateTimedSender(new TimedComPortSender.Config(2, 15, 120));
+        TimedComPortSender sender = conn.getOrCreateTimedSender(new Config(2, 15, 120));
 
         // Subscribe to messageProgress to print each message id and its retry status per attempt
         var progressSub = sender.messageProgress().subscribe().withSubscriber(AssertSubscriber.create(200));
@@ -42,9 +41,9 @@ public class TimedComPortSenderBindAndPrintTest {
         });
 
         // Create three messages for a group
-        var A = new TimedComPortSender.MessageSpec("A", "PAYLOAD-A", new TimedComPortSender.Config(1, 15, 150));
-        var B = new TimedComPortSender.MessageSpec("B", "PAYLOAD-B", new TimedComPortSender.Config(1, 15, 80));
-        var C = new TimedComPortSender.MessageSpec("C", "PAYLOAD-C", new TimedComPortSender.Config(2, 15, 150));
+        var A = new MessageSpec("A", "PAYLOAD-A", new Config(1, 15, 150));
+        var B = new MessageSpec("B", "PAYLOAD-B", new Config(1, 15, 80));
+        var C = new MessageSpec("C", "PAYLOAD-C", new Config(2, 15, 150));
 
         // Register per-message result listeners that print terminal outcomes
         sender.onMessageResult("A").subscribe().with(res -> {
@@ -78,7 +77,7 @@ public class TimedComPortSenderBindAndPrintTest {
         progressSub.awaitNextItems(3);
 
         // Also wait for group to fully complete and inspect outcome programmatically
-        TimedComPortSender.GroupResult result = groupUni.await().indefinitely();
+        GroupResult result = groupUni.await().indefinitely();
         assertEquals(3, result.results.size());
         assertEquals("A", result.results.get(0).id);
         assertEquals(TimedComPortSender.State.Completed, result.results.get(0).terminalState);

@@ -1,9 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.AggregateProgress;
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -41,13 +38,13 @@ public class MultiTimedComPortSenderAggregateTest {
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
 
         // Reasonable base config; per-message configs below will tailor retries/timeouts
-        TimedComPortSender.Config baseCfg = new TimedComPortSender.Config(1, 10, 150);
+        Config baseCfg = new Config(1, 10, 150);
 
         // Port 20: A20 will be completed early; B20 will be allowed to timeout
-        TimedComPortSender.MessageSpec A20 = new TimedComPortSender.MessageSpec("A20", "PAYLOAD-A20", new TimedComPortSender.Config(1, 12, 180));
-        TimedComPortSender.MessageSpec B20 = new TimedComPortSender.MessageSpec("B20", "PAYLOAD-B20", new TimedComPortSender.Config(2, 12, 160));
+        MessageSpec A20 = new MessageSpec("A20", "PAYLOAD-A20", new Config(1, 12, 180));
+        MessageSpec B20 = new MessageSpec("B20", "PAYLOAD-B20", new Config(2, 12, 160));
         // Port 21: A21 will be completed early
-        TimedComPortSender.MessageSpec A21 = new TimedComPortSender.MessageSpec("A21", "PAYLOAD-A21", new TimedComPortSender.Config(0, 8, 140));
+        MessageSpec A21 = new MessageSpec("A21", "PAYLOAD-A21", new Config(0, 8, 140));
 
         // Subscribe to ensure streams emit
         var statusSub = manager.status().subscribe().withSubscriber(AssertSubscriber.create(256));

@@ -46,10 +46,10 @@ public class MultiTimedComPortSenderFourPortsPauseResumeTest {
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
         // Base config: modest retry/delay/timeout to make the test reasonably fast
-        TimedComPortSender.Config baseCfg = new TimedComPortSender.Config(1, 12, 140);
+        Config baseCfg = new Config(1, 12, 140);
 
         // Build 5 messages per port
-        Map<Integer, List<TimedComPortSender.MessageSpec>> byPort = new LinkedHashMap<>();
+        Map<Integer, List<MessageSpec>> byPort = new LinkedHashMap<>();
         byPort.put(20, buildSpecs("P20-", 5));
         byPort.put(21, buildSpecs("P21-", 5));
         byPort.put(22, buildSpecs("P22-", 5));
@@ -69,7 +69,7 @@ public class MultiTimedComPortSenderFourPortsPauseResumeTest {
         manager.pauseAll().await().atMost(Duration.ofSeconds(10));
 
         // Capture and print ManagerSnapshot (aggregate + per-sender summaries)
-        MultiTimedComPortSender.ManagerSnapshot snap1 = manager.snapshot();
+        ManagerSnapshot snap1 = manager.snapshot();
         System.out.println("[SNAPSHOT-PAUSED] Aggregate: group=" + snap1.aggregate.groupName
                 + ", started=" + snap1.aggregate.startedAtEpochMs
                 + ", finished=" + snap1.aggregate.finishedAtEpochMs
@@ -84,7 +84,7 @@ public class MultiTimedComPortSenderFourPortsPauseResumeTest {
                     + ", percent=" + s.percentComplete
                     + ", tasksRemaining=" + s.tasksRemaining
                     + ", timeRemainingMs=" + s.timeRemainingMs
-                    + ", sending=" + (s.sending == null ? "-" : s.sending.id)
+                    + ", sending=" + (s.sending == null ? "-" : s.getSending().getId())
                     + ", waitingCount=" + s.waiting.size()
                     + ", completedCount=" + s.completed.size());
         }
@@ -98,7 +98,7 @@ public class MultiTimedComPortSenderFourPortsPauseResumeTest {
 
         SenderSnapshot s20before = s20.snapshot(25, 100);
         System.out.println("[SENDER-SNAPSHOT-20-PAUSED] completed=" + s20before.messagesCompleted
-                + "/" + s20before.totalPlannedMessages + ", sending=" + (s20before.sending == null ? "-" : s20before.sending.id)
+                + "/" + s20before.totalPlannedMessages + ", sending=" + (s20before.sending == null ? "-" : s20before.sending.getId())
                 + ", waiting=" + s20before.waiting.size() + ", timeRemainingMs=" + s20before.timeRemainingMs);
 
         // Resume only port 20; the manager remains in pausedAll state for others
@@ -119,7 +119,7 @@ public class MultiTimedComPortSenderFourPortsPauseResumeTest {
         assertEquals(0, s20after.timeRemainingMs);
 
         // Manager should NOT be complete yet since other ports are still paused
-        MultiTimedComPortSender.ManagerSnapshot snapAfterPort20 = manager.snapshot();
+        ManagerSnapshot snapAfterPort20 = manager.snapshot();
         assertNull(snapAfterPort20.aggregate.finishedAtEpochMs, "Aggregate should not be finished while others paused");
         assertTrue(snapAfterPort20.aggregate.percentCompleteOverall < 100.0, "Overall not 100% yet");
 
@@ -135,7 +135,7 @@ public class MultiTimedComPortSenderFourPortsPauseResumeTest {
         Thread.sleep(200);
 
         // Await combined result and aggregate completion
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
         assertNotNull(results);
         assertEquals(4, results.size());
 
@@ -163,12 +163,12 @@ public class MultiTimedComPortSenderFourPortsPauseResumeTest {
         }
     }
 
-    private static List<TimedComPortSender.MessageSpec> buildSpecs(String prefix, int count) {
-        List<TimedComPortSender.MessageSpec> list = new ArrayList<>(count);
+    private static List<MessageSpec> buildSpecs(String prefix, int count) {
+        List<MessageSpec> list = new ArrayList<>(count);
         for (int i = 1; i <= count; i++) {
             // Slightly varied configs are fine; keep timeouts consistent for speed
-            list.add(new TimedComPortSender.MessageSpec(prefix + i, "PAYLOAD-" + prefix + i,
-                    new TimedComPortSender.Config(1, 10, 140)));
+            list.add(new MessageSpec(prefix + i, "PAYLOAD-" + prefix + i,
+                    new Config(1, 10, 140)));
         }
         return list;
     }

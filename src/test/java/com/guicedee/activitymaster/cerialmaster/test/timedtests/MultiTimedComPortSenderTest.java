@@ -1,8 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -36,11 +34,11 @@ public class MultiTimedComPortSenderTest {
         }
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
-        TimedComPortSender.Config baseCfg = new TimedComPortSender.Config(1, 15, 100);
+        Config baseCfg = new Config(1, 15, 100);
 
-        TimedComPortSender.MessageSpec A20 = new TimedComPortSender.MessageSpec("A20", "PAYLOAD-A20", new TimedComPortSender.Config(0, 10, 120));
-        TimedComPortSender.MessageSpec B20 = new TimedComPortSender.MessageSpec("B20", "PAYLOAD-B20", new TimedComPortSender.Config(0, 10, 120));
-        TimedComPortSender.MessageSpec A21 = new TimedComPortSender.MessageSpec("A21", "PAYLOAD-A21", new TimedComPortSender.Config(0, 10, 120));
+        MessageSpec A20 = new MessageSpec("A20", "PAYLOAD-A20", new Config(0, 10, 120));
+        MessageSpec B20 = new MessageSpec("B20", "PAYLOAD-B20", new Config(0, 10, 120));
+        MessageSpec A21 = new MessageSpec("A21", "PAYLOAD-A21", new Config(0, 10, 120));
 
         var statusSub = manager.status().subscribe().withSubscriber(AssertSubscriber.create(200));
         var progressSub = manager.messageProgress().subscribe().withSubscriber(AssertSubscriber.create(200));
@@ -80,7 +78,7 @@ public class MultiTimedComPortSenderTest {
         manager.cancelAll("test-cancel").await().atMost(Duration.ofSeconds(50));
 
         // Await combined result map without throwing; map should contain both ports
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
         assertNotNull(results);
         assertTrue(results.containsKey(20));
         assertTrue(results.containsKey(21));

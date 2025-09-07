@@ -1,8 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -36,11 +34,11 @@ public class MultiTimedComPortSenderGroupPropertiesTest {
         }
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
-        TimedComPortSender.Config cfg = new TimedComPortSender.Config(1, 10, 200);
+        Config cfg = new Config(1, 10, 200);
 
         // One simple message for COM20
-        TimedComPortSender.MessageSpec spec = new TimedComPortSender.MessageSpec("PROPS-20", "PAYLOAD-20", cfg);
-        Map<Integer, List<TimedComPortSender.MessageSpec>> byPort = Map.of(20, List.of(spec));
+        MessageSpec spec = new MessageSpec("PROPS-20", "PAYLOAD-20", cfg);
+        Map<Integer, List<MessageSpec>> byPort = Map.of(20, List.of(spec));
 
         // Custom properties to attach to the run
         Map<String, Boolean> props = new LinkedHashMap<>();
@@ -55,7 +53,7 @@ public class MultiTimedComPortSenderGroupPropertiesTest {
         var aggUni = manager.currentRunAggregateUni();
 
         // Wait for completion
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
         assertNotNull(results);
         var agg = aggUni.await().atMost(Duration.ofSeconds(50));
         assertNotNull(agg);
@@ -67,7 +65,7 @@ public class MultiTimedComPortSenderGroupPropertiesTest {
         assertEquals(props.get("auditEnabled"), agg.properties.get("auditEnabled"));
 
         // Check snapshot also exposes properties
-        MultiTimedComPortSender.ManagerSnapshot snap = manager.snapshot();
+        ManagerSnapshot snap = manager.snapshot();
         assertNotNull(snap);
         assertNotNull(snap.aggregate);
         assertNotNull(snap.aggregate.properties);

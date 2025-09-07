@@ -1,9 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.AggregateProgress;
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -33,10 +30,10 @@ public class MultiTimedComPortSenderManualRetryTest
         }
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
-        TimedComPortSender.Config baseCfg = new TimedComPortSender.Config(0, 10, 140); // 0 retries, 140ms timeout
+        Config baseCfg = new Config(0, 10, 140); // 0 retries, 140ms timeout
 
         // Single message that will time out on first run if we don't complete early
-        TimedComPortSender.MessageSpec M = new TimedComPortSender.MessageSpec("AUTO-RETRY-1", "PAYLOAD", new TimedComPortSender.Config(0, 10, 140));
+        MessageSpec M = new MessageSpec("AUTO-RETRY-1", "PAYLOAD", new Config(0, 10, 140));
 
         var statusSub = manager.status().subscribe().withSubscriber(AssertSubscriber.create(256));
         var progressSub = manager.messageProgress().subscribe().withSubscriber(AssertSubscriber.create(1024));
@@ -61,7 +58,7 @@ public class MultiTimedComPortSenderManualRetryTest
         Thread.sleep(250);
 
         // The primary combinedUni will complete at end of first run
-        Map<Integer, TimedComPortSender.GroupResult> firstResults = combinedUni.await().atMost(Duration.ofSeconds(10));
+        Map<Integer, GroupResult> firstResults = combinedUni.await().atMost(Duration.ofSeconds(10));
         assertNotNull(firstResults);
         assertTrue(firstResults.containsKey(23));
 
@@ -79,7 +76,7 @@ public class MultiTimedComPortSenderManualRetryTest
         Thread.sleep(80);
 
         // Await second run completion and aggregate
-        Map<Integer, TimedComPortSender.GroupResult> secondResults = combinedUni2.await().atMost(Duration.ofSeconds(10));
+        Map<Integer, GroupResult> secondResults = combinedUni2.await().atMost(Duration.ofSeconds(10));
         assertNotNull(secondResults);
         AggregateProgress agg2 = aggUni2.await().atMost(Duration.ofSeconds(10));
         assertNotNull(agg2);

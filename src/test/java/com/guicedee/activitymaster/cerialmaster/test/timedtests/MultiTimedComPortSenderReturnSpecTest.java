@@ -1,8 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import org.junit.jupiter.api.Assumptions;
@@ -33,28 +31,28 @@ public class MultiTimedComPortSenderReturnSpecTest {
         }
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
-        TimedComPortSender.Config cfg = new TimedComPortSender.Config(1, 10, 200);
+        Config cfg = new Config(1, 10, 200);
 
-        TimedComPortSender.MessageSpec spec = new TimedComPortSender.MessageSpec("RET-SPEC-COMP-20", "TITLE-20", "PAYLOAD-20", cfg);
-        Map<Integer, List<TimedComPortSender.MessageSpec>> byPort = Map.of(20, List.of(spec));
+        MessageSpec spec = new MessageSpec("RET-SPEC-COMP-20", "TITLE-20", "PAYLOAD-20", cfg);
+        Map<Integer, List<MessageSpec>> byPort = Map.of(20, List.of(spec));
 
         // When it starts, call the API that returns the spec
         manager.messageProgress().subscribe().with(mp -> {
             if (mp != null && Integer.valueOf(20).equals(mp.comPort)
-                    && mp.progress != null && spec.id.equals(mp.progress.id)
+                    && mp.progress != null && spec.getId().equals(mp.progress.id)
                     && mp.progress.note != null && mp.progress.note.contains("Starting")) {
-                Optional<TimedComPortSender.MessageSpec> ret = manager.markCompletedReturningSpec(20);
+                Optional<MessageSpec> ret = manager.markCompletedReturningSpec(20);
                 assertTrue(ret.isPresent(), "Expected returned spec present on completion");
-                assertEquals(spec.id, ret.get().id);
-                assertEquals(spec.title, ret.get().title);
-                assertEquals(spec.payload, ret.get().payload);
+                assertEquals(spec.getId(), ret.get().getId());
+                assertEquals(spec.getTitle(), ret.get().getTitle());
+                assertEquals(spec.getPayload(), ret.get().getPayload());
             }
         });
 
         var allUni = manager.enqueueGroupsWithName("ReturnSpec-Complete-20", byPort, cfg);
         var aggUni = manager.currentRunAggregateUni();
 
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
         assertEquals(TimedComPortSender.State.Completed, results.get(20).results.get(0).terminalState);
         var agg = aggUni.await().atMost(Duration.ofSeconds(50));
         assertEquals(100.0, agg.percentCompleteOverall, 0.0001);
@@ -72,28 +70,28 @@ public class MultiTimedComPortSenderReturnSpecTest {
         }
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
-        TimedComPortSender.Config cfg = new TimedComPortSender.Config(1, 10, 200);
+        Config cfg = new Config(1, 10, 200);
 
-        TimedComPortSender.MessageSpec spec = new TimedComPortSender.MessageSpec("RET-SPEC-ERR-21", "TITLE-21", "PAYLOAD-21", cfg);
-        Map<Integer, List<TimedComPortSender.MessageSpec>> byPort = Map.of(21, List.of(spec));
+        MessageSpec spec = new MessageSpec("RET-SPEC-ERR-21", "TITLE-21", "PAYLOAD-21", cfg);
+        Map<Integer, List<MessageSpec>> byPort = Map.of(21, List.of(spec));
 
         // When it starts, call the API that returns the spec for error
         manager.messageProgress().subscribe().with(mp -> {
             if (mp != null && Integer.valueOf(21).equals(mp.comPort)
-                    && mp.progress != null && spec.id.equals(mp.progress.id)
+                    && mp.progress != null && spec.getId().equals(mp.progress.id)
                     && mp.progress.note != null && mp.progress.note.contains("Starting")) {
-                Optional<TimedComPortSender.MessageSpec> ret = manager.markErroredReturningSpec(21, "Test error");
+                Optional<MessageSpec> ret = manager.markErroredReturningSpec(21, "Test error");
                 assertTrue(ret.isPresent(), "Expected returned spec present on error");
-                assertEquals(spec.id, ret.get().id);
-                assertEquals(spec.title, ret.get().title);
-                assertEquals(spec.payload, ret.get().payload);
+                assertEquals(spec.getId(), ret.get().getId());
+                assertEquals(spec.getTitle(), ret.get().getTitle());
+                assertEquals(spec.getPayload(), ret.get().getPayload());
             }
         });
 
         var allUni = manager.enqueueGroupsWithName("ReturnSpec-Error-21", byPort, cfg);
         var aggUni = manager.currentRunAggregateUni();
 
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
         assertEquals(TimedComPortSender.State.Error, results.get(21).results.get(0).terminalState);
         var agg = aggUni.await().atMost(Duration.ofSeconds(50));
         assertEquals(100.0, agg.percentCompleteOverall, 0.0001);

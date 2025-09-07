@@ -1,9 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.SenderSnapshot;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -91,7 +88,7 @@ public class MultiTimedComPortSenderAddSenderTest {
         assertTrue(lastPayload instanceof SenderSnapshot, "Payload should be a SenderSnapshot");
 
         // Finally, verify a simple snapshot call includes the sender
-        MultiTimedComPortSender.ManagerSnapshot snap = mgr.snapshot();
+        ManagerSnapshot snap = mgr.snapshot();
         assertNotNull(snap);
         assertTrue(snap.perSender.containsKey(20));
     }

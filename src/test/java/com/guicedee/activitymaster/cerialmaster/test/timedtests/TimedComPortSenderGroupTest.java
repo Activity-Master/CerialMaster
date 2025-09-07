@@ -1,7 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -26,15 +25,15 @@ public class TimedComPortSenderGroupTest {
             Assumptions.assumeTrue(false, "Serial not available or blocked in test environment: " + t.getMessage());
             return;
         }
-        TimedComPortSender sender = conn.getOrCreateTimedSender(new TimedComPortSender.Config(0, 5, 100));
+        TimedComPortSender sender = conn.getOrCreateTimedSender(new Config(0, 5, 100));
 
         // Subscribe to messageProgress to observe ids flowing
         var progressSub = sender.messageProgress().subscribe().withSubscriber(AssertSubscriber.create(100));
 
         // Prepare a FIFO group of three messages, each with its own config
-        var msgA = new TimedComPortSender.MessageSpec("A", "PAYLOAD-A", new TimedComPortSender.Config(0, 10, 120));
-        var msgB = new TimedComPortSender.MessageSpec("B", "PAYLOAD-B", new TimedComPortSender.Config(0, 10, 80));
-        var msgC = new TimedComPortSender.MessageSpec("C", "PAYLOAD-C", new TimedComPortSender.Config(0, 10, 150));
+        var msgA = new MessageSpec("A", "PAYLOAD-A", new Config(0, 10, 120));
+        var msgB = new MessageSpec("B", "PAYLOAD-B", new Config(0, 10, 80));
+        var msgC = new MessageSpec("C", "PAYLOAD-C", new Config(0, 10, 150));
 
         var groupUni = sender.enqueueGroup(List.of(msgA, msgB, msgC));
 
@@ -49,7 +48,7 @@ public class TimedComPortSenderGroupTest {
         Thread.sleep(30);
         sender.complete();
 
-        TimedComPortSender.GroupResult groupResult = groupUni.await().indefinitely();
+        GroupResult groupResult = groupUni.await().indefinitely();
         assertNotNull(groupResult);
         assertEquals(3, groupResult.results.size());
 

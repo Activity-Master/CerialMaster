@@ -1,9 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.AggregateProgress;
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -43,10 +40,10 @@ public class MultiTimedComPortSenderCompleteByIdTest {
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
         // Keep retries 0 and a small timeout; we will complete early using only the id
-        TimedComPortSender.Config baseCfg = new TimedComPortSender.Config(0, 10, 200);
+        Config baseCfg = new Config(0, 10, 200);
 
         String messageId = "COMPLETE-BY-ID-24";
-        TimedComPortSender.MessageSpec spec = new TimedComPortSender.MessageSpec(messageId, "PAYLOAD-ID-ONLY", new TimedComPortSender.Config(0, 10, 200));
+        MessageSpec spec = new MessageSpec(messageId, "PAYLOAD-ID-ONLY", new Config(0, 10, 200));
 
         // Subscribe to manager streams (ensures they are active and also gives us debug if needed)
         var statusSub = manager.status().subscribe().withSubscriber(AssertSubscriber.create(128));
@@ -69,13 +66,13 @@ public class MultiTimedComPortSenderCompleteByIdTest {
         var aggUni = manager.currentRunAggregateUni();
 
         // Await the specific message's result via the pre-registered id-based Uni
-        TimedComPortSender.MessageResult msgResult = messageResultUni.await().atMost(Duration.ofSeconds(10));
+        MessageResult msgResult = messageResultUni.await().atMost(Duration.ofSeconds(10));
         assertNotNull(msgResult);
         assertEquals(messageId, msgResult.id);
         assertEquals(TimedComPortSender.State.Completed, msgResult.terminalState);
 
         // Also wait for the entire run to finish and check aggregate shows success
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(10));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(10));
         assertNotNull(results);
         AggregateProgress agg = aggUni.await().atMost(Duration.ofSeconds(10));
         assertNotNull(agg);

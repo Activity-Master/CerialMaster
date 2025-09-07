@@ -1,9 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.AggregateProgress;
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MultiTimedComPortSender;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
@@ -37,11 +34,11 @@ public class MultiTimedComPortSenderMarkByPortTest {
         }
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
-        TimedComPortSender.Config cfg = new TimedComPortSender.Config(1, 10, 200);
+        Config cfg = new Config(1, 10, 200);
 
         // One simple message for COM20
-        TimedComPortSender.MessageSpec m = new TimedComPortSender.MessageSpec("BY-PORT-COMPLETE-20", "PAYLOAD-A20", cfg);
-        Map<Integer, List<TimedComPortSender.MessageSpec>> byPort = Map.of(20, List.of(m));
+        MessageSpec m = new MessageSpec("BY-PORT-COMPLETE-20", "PAYLOAD-A20", cfg);
+        Map<Integer, List<MessageSpec>> byPort = Map.of(20, List.of(m));
 
         var statusSub = manager.status().subscribe().withSubscriber(AssertSubscriber.create(128));
         var progressSub = manager.messageProgress().subscribe().withSubscriber(AssertSubscriber.create(512));
@@ -57,10 +54,10 @@ public class MultiTimedComPortSenderMarkByPortTest {
         var aggUni = manager.currentRunAggregateUni();
 
         // Wait for the group to finish
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
         assertNotNull(results);
         assertTrue(results.containsKey(20));
-        TimedComPortSender.GroupResult gr = results.get(20);
+        GroupResult gr = results.get(20);
         assertEquals(1, gr.results.size());
         assertEquals(TimedComPortSender.State.Completed, gr.results.get(0).terminalState);
 
@@ -88,11 +85,11 @@ public class MultiTimedComPortSenderMarkByPortTest {
         }
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
-        TimedComPortSender.Config cfg = new TimedComPortSender.Config(1, 10, 200);
+        Config cfg = new Config(1, 10, 200);
 
         // One simple message for COM21
-        TimedComPortSender.MessageSpec m = new TimedComPortSender.MessageSpec("BY-PORT-ERROR-21", "PAYLOAD-A21", cfg);
-        Map<Integer, List<TimedComPortSender.MessageSpec>> byPort = Map.of(21, List.of(m));
+        MessageSpec m = new MessageSpec("BY-PORT-ERROR-21", "PAYLOAD-A21", cfg);
+        Map<Integer, List<MessageSpec>> byPort = Map.of(21, List.of(m));
 
         var statusSub = manager.status().subscribe().withSubscriber(AssertSubscriber.create(128));
         var progressSub = manager.messageProgress().subscribe().withSubscriber(AssertSubscriber.create(512));
@@ -108,10 +105,10 @@ public class MultiTimedComPortSenderMarkByPortTest {
         var aggUni = manager.currentRunAggregateUni();
 
         // Wait for the group to finish
-        Map<Integer, TimedComPortSender.GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
+        Map<Integer, GroupResult> results = allUni.await().atMost(Duration.ofSeconds(50));
         assertNotNull(results);
         assertTrue(results.containsKey(21));
-        TimedComPortSender.GroupResult gr = results.get(21);
+        GroupResult gr = results.get(21);
         assertEquals(1, gr.results.size());
         assertEquals(TimedComPortSender.State.Error, gr.results.get(0).terminalState);
 

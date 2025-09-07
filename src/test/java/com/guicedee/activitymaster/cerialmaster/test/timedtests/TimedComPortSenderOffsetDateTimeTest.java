@@ -1,9 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
-import com.guicedee.activitymaster.cerialmaster.client.MessageStat;
-import com.guicedee.activitymaster.cerialmaster.client.SenderSnapshot;
-import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
+import com.guicedee.activitymaster.cerialmaster.client.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,13 +10,13 @@ public class TimedComPortSenderOffsetDateTimeTest {
     @Test
     public void messageStat_has_offsetDateTime_fields() throws Exception {
         ComPortConnection<?> conn = ComPortConnection.getOrCreate(40, null);
-        TimedComPortSender sender = conn.getOrCreateTimedSender(new TimedComPortSender.Config(1, 5, 40));
+        TimedComPortSender sender = conn.getOrCreateTimedSender(new Config(1, 5, 40));
         sender.setAttemptFn((c, attempt) -> java.util.concurrent.CompletableFuture.completedFuture(true));
 
         String id = "MSG-ODT-1";
         String title = "Title-ODT-1";
         String payload = "PAYLOAD";
-        TimedComPortSender.MessageSpec spec = new TimedComPortSender.MessageSpec(id, title, payload, new TimedComPortSender.Config(1, 5, 40));
+        MessageSpec spec = new MessageSpec(id, title, payload, new Config(1, 5, 40));
 
         sender.start(spec);
         Thread.sleep(15);
@@ -45,12 +42,12 @@ public class TimedComPortSenderOffsetDateTimeTest {
         // Completed message should also include ODT fields corresponding to ms
         boolean foundAny = false;
         for (MessageStat ms : snap.completed) {
-            if (id.equals(ms.id)) {
+            if (id.equals(ms.getId())) {
                 foundAny = true;
-                if (ms.startedAtEpochMs != null) assertNotNull(ms.startedAt);
-                if (ms.finishedAtEpochMs != null) assertNotNull(ms.finishedAt);
-                if (ms.estimatedFinishedAtEpochMs != null) assertNotNull(ms.estimatedFinishedAt);
-                if (ms.originallyEstimatedFinishedAtEpochMs != null) assertNotNull(ms.originallyEstimatedFinishedAt);
+                if (ms.getStartedAtEpochMs() != null) assertNotNull(ms.getStartedAt());
+                if (ms.getFinishedAtEpochMs() != null) assertNotNull(ms.getFinishedAt());
+                if (ms.getEstimatedFinishedAtEpochMs() != null) assertNotNull(ms.getEstimatedFinishedAt());
+                if (ms.getOriginallyEstimatedFinishedAtEpochMs() != null) assertNotNull(ms.getOriginallyEstimatedFinishedAt());
             }
         }
         assertTrue(foundAny, "Expected to find completed message stats for the test id");
