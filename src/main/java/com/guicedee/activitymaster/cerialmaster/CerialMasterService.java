@@ -32,12 +32,12 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   @Override
   public Uni<IResourceItemType<?, ?>> getSerialConnectionType(Mutiny.Session session, ISystems<?, ?> system, java.util.UUID... identityToken)
   {
-    log.debug("🔍 Retrieving serial connection type for system: '{}' using session: {}", system.getName(), session.hashCode());
+    log.trace("🔍 Retrieving serial connection type for system: '{}' using session: {}", system.getName(), session.hashCode());
 
     IResourceItemService<?> resourceService = get(IResourceItemService.class);
     return resourceService.findResourceItemType(session, SerialConnectionPort.toString(), system, identityToken)
                .onItem()
-               .invoke(type -> log.debug("✅ Serial connection type retrieved: '{}'", type.getName()))
+               .invoke(type -> log.trace("✅ Serial connection type retrieved: '{}'", type.getName()))
                .onFailure()
                .invoke(error -> log.error("❌ Failed to retrieve serial connection type for system '{}': {}", system.getName(), error.getMessage(), error));
   }
@@ -55,23 +55,23 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
     }
     IResourceItemService<?> resourceService = get(IResourceItemService.class);
 
-    log.debug("📋 Retrieving serial connection type for system: {} with session: {}", system.getName(), session.hashCode());
+    log.trace("📋 Retrieving serial connection type for system: {} with session: {}", system.getName(), session.hashCode());
 
     // First get the serial connection type (now uses session parameter)
     return getSerialConnectionType(session, system, identityToken).chain(comPortResourceItemType -> {
-          log.debug("✅ Serial connection type retrieved: '{}'", comPortResourceItemType.getName());
+          log.trace("✅ Serial connection type retrieved: '{}'", comPortResourceItemType.getName());
 
           UUID resourceItemKey = UUID.randomUUID();
           comPort.setId(resourceItemKey);
 
-          log.debug("💾 Creating resource item for COM port {} using external session", comPort.getComPort());
+          log.trace("💾 Creating resource item for COM port {} using external session", comPort.getComPort());
 
           // Create the resource item using provided session
           return resourceService.create(session, comPortResourceItemType.getName(), resourceItemKey, comPort.getComPort() + "", system, identityToken);
         })
                .onItem()
                .invoke(result -> {
-                 log.debug("✅ Resource item created with ID: {}", result.getId());
+                 log.trace("✅ Resource item created with ID: {}", result.getId());
                  comPort.setId(result.getId());
                })
                .onFailure()
@@ -79,21 +79,21 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                  log.error("❌ Failed to create resource item for COM port {}: {}", comPort.getComPort(), error.getMessage(), error);
                })
                .chain(result -> {
-                 log.debug("🔗 Adding classifications for COM port {} using external session", comPort.getComPort());
+                 log.trace("🔗 Adding classifications for COM port {} using external session", comPort.getComPort());
                  return resourceService.findByUUID(session, result.getId())
                             .chain(resourceItemResult -> {
-                              log.info("🔄 Running classification operations sequentially for COM port {}", comPort.getComPort());
+                              log.trace("🔄 Running classification operations sequentially for COM port {}", comPort.getComPort());
 
                               // Run all classification operations sequentially by chaining them
                               return resourceItemResult.addOrUpdateClassification(session, ComPort, "", system, identityToken)
                                          .onItem()
-                                         .invoke(() -> log.debug("✅ ComPort classification added"))
+                                         .invoke(() -> log.trace("✅ ComPort classification added"))
                                          .onFailure()
                                          .invoke(error -> log.error("❌ Failed to add ComPort classification: {}", error.getMessage()))
 
                                          .chain(() -> resourceItemResult.addOrUpdateClassification(session, ComPortNumber, comPort.getComPort() + "", system, identityToken)
                                                           .onItem()
-                                                          .invoke(() -> log.debug("✅ ComPortNumber classification added"))
+                                                          .invoke(() -> log.trace("✅ ComPortNumber classification added"))
                                                           .onFailure()
                                                           .invoke(error -> log.error("❌ Failed to add ComPortNumber classification: {}", error.getMessage())))
 
@@ -104,7 +104,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                                                  system,
                                                  identityToken)
                                                           .onItem()
-                                                          .invoke(() -> log.debug("✅ ComPortDeviceType classification added"))
+                                                          .invoke(() -> log.trace("✅ ComPortDeviceType classification added"))
                                                           .onFailure()
                                                           .invoke(error -> log.error("❌ Failed to add ComPortDeviceType classification: {}", error.getMessage())))
 
@@ -115,7 +115,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                                                  system,
                                                  identityToken)
                                                           .onItem()
-                                                          .invoke(() -> log.debug("✅ ComPortStatus classification added"))
+                                                          .invoke(() -> log.trace("✅ ComPortStatus classification added"))
                                                           .onFailure()
                                                           .invoke(error -> log.error("❌ Failed to add ComPortStatus classification: {}", error.getMessage())))
 
@@ -126,13 +126,13 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                                                  system,
                                                  identityToken)
                                                           .onItem()
-                                                          .invoke(() -> log.debug("✅ BaudRate classification added"))
+                                                          .invoke(() -> log.trace("✅ BaudRate classification added"))
                                                           .onFailure()
                                                           .invoke(error -> log.error("❌ Failed to add BaudRate classification: {}", error.getMessage())))
 
                                          .chain(() -> resourceItemResult.addOrUpdateClassification(session, BufferSize, comPort.getBufferSize() + "", system, identityToken)
                                                           .onItem()
-                                                          .invoke(() -> log.debug("✅ BufferSize classification added"))
+                                                          .invoke(() -> log.trace("✅ BufferSize classification added"))
                                                           .onFailure()
                                                           .invoke(error -> log.error("❌ Failed to add BufferSize classification: {}", error.getMessage())))
 
@@ -143,7 +143,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                                                  system,
                                                  identityToken)
                                                           .onItem()
-                                                          .invoke(() -> log.debug("✅ DataBits classification added"))
+                                                          .invoke(() -> log.trace("✅ DataBits classification added"))
                                                           .onFailure()
                                                           .invoke(error -> log.error("❌ Failed to add DataBits classification: {}", error.getMessage())))
 
@@ -154,7 +154,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                                                  system,
                                                  identityToken)
                                                           .onItem()
-                                                          .invoke(() -> log.debug("✅ StopBits classification added"))
+                                                          .invoke(() -> log.trace("✅ StopBits classification added"))
                                                           .onFailure()
                                                           .invoke(error -> log.error("❌ Failed to add StopBits classification: {}", error.getMessage())))
 
@@ -165,12 +165,12 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                                                  system,
                                                  identityToken)
                                                           .onItem()
-                                                          .invoke(() -> log.debug("✅ Parity classification added"))
+                                                          .invoke(() -> log.trace("✅ Parity classification added"))
                                                           .onFailure()
                                                           .invoke(error -> log.error("❌ Failed to add Parity classification: {}", error.getMessage())))
 
                                          .onItem()
-                                         .invoke(() -> log.info("🎉 All classifications added successfully for COM port {}", comPort.getComPort()))
+                                         .invoke(() -> log.debug("🎉 All classifications added successfully for COM port {}", comPort.getComPort()))
                                          .onFailure()
                                          .invoke(error -> log.error("💥 One or more classification operations failed for COM port {}: {}", comPort.getComPort(), error.getMessage(), error));
                             });
@@ -187,11 +187,11 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   {
     log.info("🔄 Updating status for COM port {} to {} using external session", comPort.getComPort(), comPort.getComPortStatus());
 
-    log.debug("📋 Retrieving serial connection type for system: {} with session: {}", system.getName(), session.hashCode());
+ //   log.debug("📋 Retrieving serial connection type for system: {} with session: {}", system.getName(), session.hashCode());
 
     // First get the serial connection type using session parameter
     return getSerialConnectionType(session, system, identityToken).onItem()
-               .invoke(type -> log.debug("✅ Serial connection type retrieved: '{}'", type.getName()))
+               .invoke(type -> log.trace("✅ Serial connection type retrieved: '{}'", type.getName()))
                .onFailure()
                .invoke(error -> log.error("❌ Failed to get serial connection type for COM port {}: {}", comPort.getComPort(), error.getMessage(), error))
                .chain(comPortResourceItemType -> {
@@ -203,7 +203,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                  return resourceService.findByClassification(session, comPortResourceItemType.getName(), ComPortNumber.toString(), comPort.getComPort() + "", system, identityToken);
                })
                .onItem()
-               .invoke(resourceItem -> log.debug("✅ Resource item found for COM port {}: ID {}", comPort.getComPort(), resourceItem != null ? resourceItem.getId() : "null"))
+               .invoke(resourceItem -> log.trace("✅ Resource item found for COM port {}: ID {}", comPort.getComPort(), resourceItem != null ? resourceItem.getId() : "null"))
                .onFailure()
                .invoke(error -> log.error("❌ Failed to find resource item for COM port {}: {}", comPort.getComPort(), error.getMessage(), error))
                .chain(resourceItem -> {
@@ -214,7 +214,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                               .item(comPort);
                  }
 
-                 log.debug("🔗 Updating ComPortStatus classification for COM port {} using external session", comPort.getComPort());
+                 log.trace("🔗 Updating ComPortStatus classification for COM port {} using external session", comPort.getComPort());
 
                  // Update the classification using the provided session
                  return resourceItem.addOrUpdateClassification(session,
@@ -224,11 +224,11 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                          system,
                          identityToken)
                             .onItem()
-                            .invoke(() -> log.debug("✅ ComPortStatus classification updated successfully for COM port {}", comPort.getComPort()))
+                            .invoke(() -> log.info("✅ ComPortStatus classification updated successfully for COM port {}", comPort.getComPort()))
                             .onFailure()
                             .invoke(error -> log.error("❌ Failed to update ComPortStatus classification for COM port {}: {}", comPort.getComPort(), error.getMessage(), error))
                             .chain(() -> {
-                              log.info("✅ Status update completed successfully for COM port {}", comPort.getComPort());
+                              log.trace("✅ Status update completed successfully for COM port {}", comPort.getComPort());
                               return Uni.createFrom()
                                          .item(comPort);
                             });
@@ -241,15 +241,15 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   {
     log.info("🔍 Finding COM port connection for port {} using external session", comPort.getComPort());
 
-    log.debug("📋 Retrieving serial connection type for system: {} with session: {}", system.getName(), session.hashCode());
+    log.trace("📋 Retrieving serial connection type for system: {} with session: {}", system.getName(), session.hashCode());
 
     // First get the serial connection type using session parameter
     return getSerialConnectionType(session, system, identityToken).onItem()
-               .invoke(type -> log.debug("✅ Serial connection type retrieved: '{}'", type.getName()))
+               .invoke(type -> log.trace("✅ Serial connection type retrieved: '{}'", type.getName()))
                .onFailure()
                .invoke(error -> log.error("❌ Failed to get serial connection type for COM port {}: {}", comPort.getComPort(), error.getMessage(), error))
                .chain(comPortResourceItemType -> {
-                 log.debug("🔍 Finding resource item for COM port {} by classification", comPort.getComPort());
+                 log.trace("🔍 Finding resource item for COM port {} by classification", comPort.getComPort());
 
                  IResourceItemService<?> resourceService = get(IResourceItemService.class);
 
@@ -261,7 +261,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                  comPort.setResourceItem(comPortResourceItem);
                  comPort.setId(comPortResourceItem.getId());
 
-                 log.debug("📊 Retrieving classifications for COM port {} using external session", comPort.getComPort());
+                 log.trace("📊 Retrieving classifications for COM port {} using external session", comPort.getComPort());
                  // Get the classifications using EntityAssist query builder
                  return comPortResourceItem.builder(session)
                             .getClassificationsValuePivot(session,
@@ -280,7 +280,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                                 ComPortAllowedCharacters.toString(),
                                 ComPortEndOfMessage.toString())
                             .onItem()
-                            .invoke(values -> log.debug("✅ Retrieved {} classification values for COM port {}", values.size(), comPort.getComPort()))
+                            .invoke(values -> log.trace("✅ Retrieved {} classification values for COM port {}", values.size(), comPort.getComPort()))
                             .onFailure()
                             .invoke(error -> log.error("❌ Failed to retrieve classifications for COM port {}: {}", comPort.getComPort(), error.getMessage(), error))
                             .chain(values -> {
@@ -297,7 +297,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                                                      .orElseThrow()
                                   ;
 
-                              log.debug("🔗 Populating COM port {} configuration from classifications", comPort.getComPort());
+                              log.trace("🔗 Populating COM port {} configuration from classifications", comPort.getComPort());
 
                               // Map classification values to ComPortConnection properties
                               comPort.setComPort(Integer.parseInt(objects[1].toString()));
@@ -309,7 +309,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                               comPort.setStopBits(com.guicedee.cerial.enumerations.StopBits.from(Integer.parseInt(objects[7] == null ? "1" : objects[7].toString()) + ""));
                               comPort.setParity(com.guicedee.cerial.enumerations.Parity.from(objects[8] == null ? "None" : objects[8].toString()));
 
-                              log.info("✅ COM port connection {} successfully populated with configuration", comPort.getComPort());
+                              log.trace("✅ COM port connection {} successfully populated with configuration", comPort.getComPort());
                               return Uni.createFrom()
                                          .item(comPort);
                             });
@@ -319,7 +319,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
 
   public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.Session session, Integer comPort)
   {
-    log.debug("🔍 Getting COM port connection for port {} using external session (backward compatibility)", comPort);
+    log.trace("🔍 Getting COM port connection for port {} using external session (backward compatibility)", comPort);
     // Call the overloaded method with null enterprise to use the reactive pattern
     return getComPortConnection(session, comPort, null);
   }
@@ -333,7 +333,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   @Override
   public Uni<ComPortConnection<?>> getComPortConnectionDirect(Integer comPort)
   {
-    log.debug("🔌 Direct COM port connection request for port {}", comPort);
+    log.trace("🔌 Direct COM port connection request for port {}", comPort);
     if (comPort == null)
     {
       return Uni.createFrom()
@@ -348,7 +348,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
       com.guicedee.activitymaster.cerialmaster.client.Config defaultCfg = new com.guicedee.activitymaster.cerialmaster.client.Config();
       maybeAttachTimedSender(connection, defaultCfg);
 
-      log.debug("✅ Direct COM port connection ready for port {} and sender registered", comPort);
+      log.info("✅ Direct COM port connection ready for port {} and sender registered", comPort);
       return Uni.createFrom()
                  .item(connection);
     }
@@ -363,7 +363,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   @Override
   public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise, com.guicedee.activitymaster.cerialmaster.client.Config timedConfig)
   {
-    log.debug("🔍 Getting COM port connection for port {} using external session with enterprise context", comPort);
+    log.trace("🔍 Getting COM port connection for port {} using external session with enterprise context", comPort);
 
     if (enterprise == null)
     {
@@ -372,15 +372,15 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
     }
 
     return getISystem(session, CerialMasterSystemName, enterprise).onItem()
-               .invoke(systemCtx -> log.debug("✅ Retrieved CerialMaster system for COM port {}", comPort))
+               .invoke(systemCtx -> log.trace("✅ Retrieved CerialMaster system for COM port {}", comPort))
                .onFailure()
                .invoke(error -> log.error("❌ Failed to retrieve CerialMaster system for COM port {}: {}", comPort, error.getMessage(), error))
                .chain(systemCtx -> getISystemToken(session, CerialMasterSystemName, enterprise).onItem()
-                                       .invoke(token -> log.debug("✅ Retrieved system token for COM port {}", comPort))
+                                       .invoke(token -> log.trace("✅ Retrieved system token for COM port {}", comPort))
                                        .chain(token -> findComPortConnection(session, ComPortConnection.getOrCreate(comPort, ComPortType.Server), systemCtx, token)))
                .onItem()
                .invoke(connection -> {
-                 log.debug("✅ Retrieved COM port connection for port {}", comPort);
+                 log.trace("✅ Retrieved COM port connection for port {}", comPort);
                  maybeAttachTimedSender(connection, timedConfig);
                })
                .onFailure()
@@ -390,7 +390,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
 
   public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.Session session, Integer comPort)
   {
-    log.debug("🔍 Getting scanner port connection for port {} using external session (backward compatibility)", comPort);
+    log.trace("🔍 Getting scanner port connection for port {} using external session (backward compatibility)", comPort);
     // Call the overloaded method with null enterprise to use the reactive pattern
     return getScannerPortConnection(session, comPort, null);
   }
@@ -444,17 +444,17 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   @Override
   public Uni<List<String>> listComPorts()
   {
-    log.debug("🔍 Listing all available COM ports");
+    log.trace("🔍 Listing all available COM ports");
 
     return Uni.createFrom()
                .item(() -> {
                  if (comStrings.isEmpty())
                  {
-                   log.debug("📋 COM port list is empty, scanning system for available ports");
+                   log.trace("📋 COM port list is empty, scanning system for available ports");
                    comStrings.addAll(Arrays.stream(SerialPort.getCommPorts())
                                          .map(SerialPort::getSystemPortName)
                                          .toList());
-                   log.debug("✅ Found {} COM ports on system", comStrings.size());
+                   log.trace("✅ Found {} COM ports on system", comStrings.size());
                  }
                  comStrings.sort(String::compareTo);
                  return (List<String>) new ArrayList<>(comStrings);
@@ -469,11 +469,11 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   @Override
   public Uni<List<String>> listRegisteredComPorts(Mutiny.Session session, IEnterprise<?, ?> enterprise)
   {
-    log.debug("🔍 Listing registered COM ports using external session: {}", session.hashCode());
+    log.trace("🔍 Listing registered COM ports using external session: {}", session.hashCode());
 
     // Use reactive pattern with getISystem and getISystemToken
     return getISystem(session, CerialMasterSystemName, enterprise).onItem()
-               .invoke(systemCtx -> log.debug("✅ Retrieved CerialMaster system for listing registered COM ports"))
+               .invoke(systemCtx -> log.trace("✅ Retrieved CerialMaster system for listing registered COM ports"))
                .onFailure()
                .recoverWithUni(error -> {
                  log.error("❌ Failed to retrieve CerialMaster system: {}", error.getMessage(), error);
@@ -481,7 +481,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                             .failure(new IllegalStateException("Failed to retrieve CerialMaster system", error));
                })
                .chain(systemCtx -> getISystemToken(session, CerialMasterSystemName, enterprise).onItem()
-                                       .invoke(token -> log.debug("✅ Retrieved system token for listing registered COM ports"))
+                                       .invoke(token -> log.trace("✅ Retrieved system token for listing registered COM ports"))
                                        .onFailure()
                                        .recoverWithUni(error -> {
                                          log.error("❌ Failed to retrieve system token: {}", error.getMessage(), error);
@@ -490,7 +490,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                                        })
                                        .chain(token -> resourceItemService.findByClassificationAll(session, SerialConnectionPort.toString(), ComPortNumber.toString(), null, systemCtx, token)))
                .onItem()
-               .invoke(items -> log.debug("✅ Found {} registered COM port resources", items.size()))
+               .invoke(items -> log.trace("✅ Found {} registered COM port resources", items.size()))
                .onFailure()
                .invoke(error -> log.error("❌ Failed to find registered COM ports: {}", error.getMessage(), error))
                .chain(resourceItems -> {
@@ -512,16 +512,16 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   @Override
   public Uni<List<String>> listAvailableComPorts(Mutiny.Session session, IEnterprise<?, ?> enterprise)
   {
-    log.debug("🔍 Listing available COM ports using external session: {}", session.hashCode());
+    log.trace("🔍 Listing available COM ports using external session: {}", session.hashCode());
 
     return listComPorts().onItem()
-               .invoke(allPorts -> log.debug("✅ Found {} total COM ports", allPorts.size()))
+               .invoke(allPorts -> log.trace("✅ Found {} total COM ports", allPorts.size()))
                .chain(allPorts -> listRegisteredComPorts(session, enterprise).onItem()
-                                      .invoke(registeredPorts -> log.debug("✅ Found {} registered COM ports", registeredPorts.size()))
+                                      .invoke(registeredPorts -> log.trace("✅ Found {} registered COM ports", registeredPorts.size()))
                                       .chain(registeredPorts -> {
                                         List<String> availablePorts = new ArrayList<>(allPorts);
                                         availablePorts.removeAll(registeredPorts);
-                                        log.debug("📊 Available COM ports: {} (Total: {} - Registered: {})", availablePorts.size(), allPorts.size(), registeredPorts.size());
+                                        log.trace("📊 Available COM ports: {} (Total: {} - Registered: {})", availablePorts.size(), allPorts.size(), registeredPorts.size());
                                         log.debug("📤 Returning available COM ports: {}", availablePorts);
                                         return Uni.createFrom()
                                                    .item((List<String>) availablePorts);
