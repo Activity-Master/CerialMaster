@@ -1,32 +1,17 @@
-import com.guicedee.activitymaster.cerialmaster.test.PostgreSQLTestDBModule;
-import com.guicedee.guicedinjection.interfaces.IGuiceModule;
-
 open module cerial.master.tests {
-  requires transitive com.entityassist;
-  requires transitive com.guicedee.vertxpersistence;
-
-  requires org.junit.jupiter.api;
-  requires junit;
-
-
-  requires jakarta.xml.bind;
-  requires jakarta.persistence;
-
-
-  requires transitive org.hibernate.reactive;
-  requires io.smallrye.mutiny;
-  requires com.google.guice;
+  requires transitive org.junit.jupiter.api;
+  requires transitive com.guicedee.activitymaster.cerialmaster.client;
+  requires transitive com.guicedee.cerial;
+  requires transitive com.guicedee.guicedinjection;
+  requires transitive com.guicedee.activitymaster.fsdm.client;
+  requires transitive com.guicedee.activitymaster.fsdm;
   requires static lombok;
-
   requires org.testcontainers;
-  requires io.vertx.sql.client.pg;
-  requires io.vertx.sql.client;
-
-  requires com.guicedee.activitymaster.fsdm;
-  requires com.guicedee.activitymaster.cerialmaster.client;
   requires com.guicedee.activitymaster.cerialmaster;
 
-  provides IGuiceModule with PostgreSQLTestDBModule;
+  exports com.guicedee.activitymaster.cerialmaster.test;
+  exports com.guicedee.activitymaster.cerialmaster.testimpl;
 
-
+  provides com.guicedee.activitymaster.cerialmaster.client.services.IComPortStatusChanged
+      with com.guicedee.activitymaster.cerialmaster.testimpl.TestStatusListener;
 }

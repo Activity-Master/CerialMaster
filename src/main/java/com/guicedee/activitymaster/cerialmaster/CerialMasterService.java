@@ -316,14 +316,6 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                });
   }
 
-
-  public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.Session session, Integer comPort)
-  {
-    log.trace("🔍 Getting COM port connection for port {} using external session (backward compatibility)", comPort);
-    // Call the overloaded method with null enterprise to use the reactive pattern
-    return getComPortConnection(session, comPort, null);
-  }
-
   @Override
   public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise)
   {
@@ -364,13 +356,6 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise, com.guicedee.activitymaster.cerialmaster.client.Config timedConfig)
   {
     log.trace("🔍 Getting COM port connection for port {} using external session with enterprise context", comPort);
-
-    if (enterprise == null)
-    {
-      return getComPortConnection(session, comPort).onItem()
-                 .invoke(conn -> maybeAttachTimedSender(conn, timedConfig));
-    }
-
     return getISystem(session, CerialMasterSystemName, enterprise).onItem()
                .invoke(systemCtx -> log.trace("✅ Retrieved CerialMaster system for COM port {}", comPort))
                .onFailure()
@@ -387,14 +372,6 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                .invoke(error -> log.error("❌ Failed to get COM port connection for port {}: {}", comPort, error.getMessage(), error));
   }
 
-
-  public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.Session session, Integer comPort)
-  {
-    log.trace("🔍 Getting scanner port connection for port {} using external session (backward compatibility)", comPort);
-    // Call the overloaded method with null enterprise to use the reactive pattern
-    return getScannerPortConnection(session, comPort, null);
-  }
-
   @Override
   public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise)
   {
@@ -405,20 +382,16 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise, com.guicedee.activitymaster.cerialmaster.client.Config timedConfig)
   {
     log.debug("🔍 Getting scanner port connection for port {} using external session with enterprise context", comPort);
-
-    if (enterprise == null)
-    {
-      return getScannerPortConnection(session, comPort).onItem()
-                 .invoke(conn -> maybeAttachTimedSender(conn, timedConfig));
-    }
-
     return getISystem(session, CerialMasterSystemName, enterprise).onItem()
                .invoke(systemCtx -> log.debug("✅ Retrieved CerialMaster system for scanner port {}", comPort))
                .onFailure()
                .invoke(error -> log.error("❌ Failed to retrieve CerialMaster system for scanner port {}: {}", comPort, error.getMessage(), error))
                .chain(systemCtx -> getISystemToken(session, CerialMasterSystemName, enterprise).onItem()
                                        .invoke(token -> log.debug("✅ Retrieved system token for scanner port {}", comPort))
-                                       .chain(token -> findComPortConnection(session, ComPortConnection.getOrCreate(comPort, ComPortType.Scanner), systemCtx, token)))
+                                       .chain(token -> findComPortConnection(session,
+                                           ComPortConnection.getOrCreate(comPort, ComPortType.Scanner), systemCtx, token)
+                                       )
+               )
                .onItem()
                .invoke(connection -> {
                  log.debug("✅ Retrieved scanner port connection for port {}", comPort);
@@ -432,7 +405,8 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
 
   private void maybeAttachTimedSender(ComPortConnection<?> connection, com.guicedee.activitymaster.cerialmaster.client.Config cfg)
   {
-    if (cfg == null || connection == null || connection.getComPort() == null)
+    //we don't start any sender or sending mechanism for the scanner com port type
+    if (cfg == null || connection == null || connection.getComPort() == null || connection.getComPortType() == null || connection.getComPortType() == ComPortType.Scanner)
     {
       return;
     }
