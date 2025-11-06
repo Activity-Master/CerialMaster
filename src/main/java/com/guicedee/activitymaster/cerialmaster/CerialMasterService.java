@@ -239,7 +239,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   @Override
   public Uni<ComPortConnection<?>> findComPortConnection(Mutiny.Session session, ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken)
   {
-    log.info("🔍 Finding COM port connection for port {} using external session", comPort.getComPort());
+    log.trace("🔍 Finding COM port connection for port {} using external session", comPort.getComPort());
 
     log.trace("📋 Retrieving serial connection type for system: {} with session: {}", system.getName(), session.hashCode());
 
@@ -340,7 +340,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
       com.guicedee.activitymaster.cerialmaster.client.Config defaultCfg = new com.guicedee.activitymaster.cerialmaster.client.Config();
       maybeAttachTimedSender(connection, defaultCfg);
 
-      log.info("✅ Direct COM port connection ready for port {} and sender registered", comPort);
+      log.trace("✅ Direct COM port connection ready for port {} and sender registered", comPort);
       return Uni.createFrom()
                  .item(connection);
     }
@@ -381,9 +381,9 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
   @Override
   public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise, com.guicedee.activitymaster.cerialmaster.client.Config timedConfig)
   {
-    log.debug("🔍 Getting scanner port connection for port {} using external session with enterprise context", comPort);
+    log.trace("🔍 Getting scanner port connection for port {} using external session with enterprise context", comPort);
     return getISystem(session, CerialMasterSystemName, enterprise).onItem()
-               .invoke(systemCtx -> log.debug("✅ Retrieved CerialMaster system for scanner port {}", comPort))
+               .invoke(systemCtx -> log.trace("✅ Retrieved CerialMaster system for scanner port {}", comPort))
                .onFailure()
                .invoke(error -> log.error("❌ Failed to retrieve CerialMaster system for scanner port {}: {}", comPort, error.getMessage(), error))
                .chain(systemCtx -> getISystemToken(session, CerialMasterSystemName, enterprise).onItem()
@@ -394,7 +394,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                )
                .onItem()
                .invoke(connection -> {
-                 log.debug("✅ Retrieved scanner port connection for port {}", comPort);
+                 log.trace("✅ Retrieved scanner port connection for port {}", comPort);
                  maybeAttachTimedSender(connection, timedConfig);
                })
                .onFailure()

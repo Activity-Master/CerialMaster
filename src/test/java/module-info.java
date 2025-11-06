@@ -8,8 +8,9 @@ open module cerial.master.tests {
   requires static lombok;
   requires org.testcontainers;
   requires com.guicedee.activitymaster.cerialmaster;
-
-  exports com.guicedee.activitymaster.cerialmaster.test;
+		requires jakarta.validation;
+		
+		exports com.guicedee.activitymaster.cerialmaster.test;
   exports com.guicedee.activitymaster.cerialmaster.testimpl;
 
   provides com.guicedee.activitymaster.cerialmaster.client.services.IComPortStatusChanged

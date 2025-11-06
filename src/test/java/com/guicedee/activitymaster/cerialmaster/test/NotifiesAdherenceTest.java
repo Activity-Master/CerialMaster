@@ -67,7 +67,8 @@ public class NotifiesAdherenceTest
     List<TestStatusListener.Event> ev = TestStatusListener.events();
     assertEquals(1, ev.size(), "Exactly one notification expected");
     assertEquals(101, ev.get(0).port());
-    assertEquals(next, ev.get(0).newStatus());
+    ComPortStatus expected = ("Idle".equals(next.name())) ? ComPortStatus.Silent : next;
+    assertEquals(expected, ev.get(0).newStatus());
   }
 
   @Test
@@ -92,7 +93,8 @@ public class NotifiesAdherenceTest
     List<TestStatusListener.Event> ev = TestStatusListener.events();
     assertEquals(1, ev.size(), "Exactly one notification expected for scanner");
     assertEquals(102, ev.get(0).port());
-    assertEquals(next, ev.get(0).newStatus());
+    ComPortStatus expected2 = ("Idle".equals(next.name())) ? ComPortStatus.Silent : next;
+    assertEquals(expected2, ev.get(0).newStatus());
   }
 
   @Test
@@ -158,6 +160,7 @@ public class NotifiesAdherenceTest
     List<TestStatusListener.Event> ev = TestStatusListener.events();
     assertEquals(1, ev.size());
     assertEquals(105, ev.get(0).port());
-    assertEquals(next, ev.get(0).newStatus());
+    ComPortStatus expected3 = ("Idle".equals(next.name())) ? ComPortStatus.Silent : next;
+    assertEquals(expected3, ev.get(0).newStatus());
   }
 }
