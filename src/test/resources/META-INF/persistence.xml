@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+    <persistence-unit name="ActivityMaster-Test" transaction-type="RESOURCE_LOCAL">
+
+        <provider>org.hibernate.reactive.provider.ReactivePersistenceProvider</provider>
+
+        <class>com.entityassist.converters.LocalDateAttributeConverter</class>
+        <class>com.entityassist.converters.LocalDateTimeAttributeConverter</class>
+        <class>com.entityassist.converters.LocalDateTimestampAttributeConverter</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.activeflag.ActiveFlag</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.activeflag.ActiveFlagSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.activeflag.ActiveFlagXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.activeflag.ActiveFlagXClassificationSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.address.Address</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.address.AddressSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.address.AddressXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.address.AddressXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.address.AddressXGeography</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.address.AddressXGeographySecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.address.AddressXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.address.AddressXResourceItemSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.Arrangement</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementTypeXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementTypeXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXArrangement</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXArrangementSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXArrangementType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXArrangementTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXInvolvedParty</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXInvolvedPartySecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXProduct</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXProductSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXResourceItemSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXRules</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXRulesSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXRulesType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.arrangement.ArrangementXRulesTypeSecurityToken</class>
+
+
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.Classification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationDataConcept</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationDataConceptSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationDataConceptXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationDataConceptXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationDataConceptXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationDataConceptXResourceItemSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.classifications.ClassificationXResourceItemSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.enterprise.Enterprise</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.enterprise.EnterpriseSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.enterprise.EnterpriseXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.enterprise.EnterpriseXClassificationSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.Event</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventTypesSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXAddress</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXAddressSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXArrangement</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXArrangementsSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXEvent</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXEventSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXEventType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXEventTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXGeography</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXGeographySecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXInvolvedParty</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXInvolvedPartySecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXProduct</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXProductSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXResourceItemSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXRules</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.events.EventXRulesSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.geography.Geography</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.geography.GeographySecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.geography.GeographyXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.geography.GeographyXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.geography.GeographyXGeography</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.geography.GeographyXGeographySecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.geography.GeographyXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.geography.GeographyXResourceItemSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedParty</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyIdentificationType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyIdentificationTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyNameType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyNameTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyNonOrganic</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyNonOrganicSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyOrganic</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyOrganicSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyOrganicType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyOrganicTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartySecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXAddress</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXAddressSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXInvolvedParty</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXInvolvedPartySecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXInvolvedPartyIdentificationType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXInvolvedPartyIdentificationTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXInvolvedPartyNameType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXInvolvedPartyNameTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXInvolvedPartyType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXInvolvedPartyTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXProduct</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXProductSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXResourceItemSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXRules</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXRulesSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXProductType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.involvedparty.InvolvedPartyXProductTypeSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.Product</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductTypeXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductTypeXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductXProduct</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductXProductSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductXProductType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductXProductTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.product.ProductXResourceItemSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemData</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemXResourceItemSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemXResourceItemType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemXResourceItemTypeSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.Rules</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.Rules</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesTypeXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesTypeXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesTypeXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesTypeXResourceItemSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXResourceItem</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXResourceItemSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXRules</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXRulesSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXRulesType</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXRulesTypeSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXArrangement</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXArrangementsSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXInvolvedParty</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXInvolvedPartySecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXProduct</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.rules.RulesXProductSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.security.SecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.security.SecurityTokensSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.security.SecurityTokenXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.security.SecurityTokenXClassificationSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.security.SecurityTokenXSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.security.SecurityTokenXSecurityTokenSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.systems.Systems</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.systems.SystemsSecurityToken</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.systems.SystemsXClassification</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.systems.SystemsXClassificationSecurityToken</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.DayNames</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.DayParts</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.Days</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.HalfHourDayParts</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.HalfHours</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.Hours</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.MonthOfYear</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.Months</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.PublicHolidays</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.Quarters</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.Time</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.TransFiscal</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.TransMtd</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.TransQtd</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.TransQtm</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.TransYtd</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.Weeks</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.time.Years</class>
+
+        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.ArrangementsHierarchyView</class>
+        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.ClassificationHierarchyView</class>
+        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.GeographyHierarchyView</class>
+        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.InvolvedPartyHierarchyView</class>
+        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.ProductHierarchyView</class>
+        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.RulesHierarchyView</class>
+        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.ResourceItemHierarchyView</class>
+        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.SecurityHierarchyView</class>
+        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.SecurityHierarchyParents</class>
+
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+
+        <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+        <validation-mode>NONE</validation-mode>
+
+
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="${FSDM_FORMATSQL}"/>
+            <property name="hibernate.use_sql_comments" value="false"/>
+            <property name="hibernate.reactive" value="true"/>
+
+            <property name="hibernate.flushMode" value="FLUSH_AUTO"/>
+
+            <property name="hibernate.jdbc.batch_size" value="500"/>
+            <property name="hibernate.temp.use_jdbc_metadata_defaults" value="false"/>
+            <property name="hibernate.javax.cache.missing_cache_strategy" value="create"/>
+
+            <property name="hibernate.connection.useUnicode" value="yes"/>
+            <property name="hibernate.connection.characterEncoding" value="UTF-8"/>
+
+            <property name="hibernate.jdbc.lob.non_contextual_creation" value="true"/>
+
+            <property name="hibernate.order_inserts" value="true"/>
+            <property name="hibernate.order_updates" value="true"/>
+            <property name="hibernate.connection.autocommit" value="false"/>
+            <property name="hibernate.cache.use_query_cache" value="true"/>
+            <property name="hibernate.generate_statistics" value="false"/>
+            <property name="hibernate.bytecode.use_reflection_optimizer" value="true"/>
+
+             <property name="hibernate.cache.use_second_level_cache" value="true"/>
+             <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.jcache.JCacheRegionFactory"/>
+             <property name="hibernate.javax.cache.provider" value="org.ehcache.jsr107.EhcacheCachingProvider"/>
+             <property name="hibernate.javax.cache.uri" value="/ehcache.xml"/>
+
+
+
+            <!--
+              <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="${FSDM_FORMATSQL}"/>
+            <property name="hibernate.use_sql_comments" value="false"/>
+            <property name="hibernate.reactive" value="true"/>
+
+            <property name="hibernate.flushMode" value="FLUSH_AUTO"/>
+
+            <property name="hibernate.jdbc.batch_size" value="50"/>
+            <property name="hibernate.order_inserts" value="true"/>
+            <property name="hibernate.order_updates" value="true"/>
+            <property name="hibernate.jdbc.batch_versioned_data" value="true"/>
+
+            <property name="hibernate.cache.use_second_level_cache" value="true"/>
+            <property name="hibernate.cache.use_query_cache" value="true"/>
+            <property name="hibernate.cache.region.factory_class"
+                      value="org.hibernate.cache.jcache.JCacheRegionFactory"/>
+            <property name="hibernate.javax.cache.provider" value="org.ehcache.jsr107.EhcacheCachingProvider"/>
+            <property name="hibernate.javax.cache.uri" value="ehcache.xml"/>
+            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+
+             -->
+
+        </properties>
+
+    </persistence-unit>
+</persistence>

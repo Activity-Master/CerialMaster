@@ -1,13 +1,13 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
-import com.guicedee.guicedinjection.GuiceConfig;
+import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
 import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
 
 public class CerialMasterGuiceConfig
 		implements IGuiceConfigurator
 {
 	@Override
-	public GuiceConfig<?> configure(GuiceConfig config)
+	public IGuiceConfig<?> configure(IGuiceConfig<?> config)
 	{
 		config.setClasspathScanning(true)
 		      .setAnnotationScanning(true)

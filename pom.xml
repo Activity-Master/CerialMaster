@@ -5,9 +5,9 @@
     <parent>
         <groupId>com.guicedee.activitymaster</groupId>
         <artifactId>activitymaster-group</artifactId>
-        <version>0.0.0_0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
-	
+
     <artifactId>cerial-master</artifactId>
     <description>As in froot loops xD</description>
     <packaging>jar</packaging>
@@ -31,10 +31,15 @@
 
         <dependency>
             <groupId>com.guicedee.services</groupId>
-            <artifactId>log4j-core</artifactId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
         </dependency>
 
-
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
