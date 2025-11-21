@@ -63,7 +63,7 @@ public class Pause5Seconds<J extends Pause5Seconds<J>> extends MessageSpec<J>
 		return groupName;
 	}
 	
-	public J setGroupName(String groupName)
+	public @org.jspecify.annotations.NonNull J setGroupName(String groupName)
 	{
 		this.groupName = groupName;
 		return (J)this;
