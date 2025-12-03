@@ -1,6 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
-import com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions;
+import com.guicedee.client.services.config.IGuiceScanModuleInclusions;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.HashSet;

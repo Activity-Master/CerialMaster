@@ -1,5 +1,8 @@
 import com.guicedee.activitymaster.cerialmaster.implementations.*;
 import com.guicedee.activitymaster.fsdm.client.services.systems.IActivityMasterSystem;
+import com.guicedee.client.services.lifecycle.IGuiceConfigurator;
+import com.guicedee.client.services.lifecycle.IGuiceModule;
+import com.guicedee.client.services.config.IGuiceScanModuleInclusions;
 
 module com.guicedee.activitymaster.cerialmaster {
 
@@ -20,10 +23,10 @@ module com.guicedee.activitymaster.cerialmaster {
   requires com.guicedee.cerial;
   requires io.vertx.core;
 
-  provides com.guicedee.guicedinjection.interfaces.IGuiceModule with CerialMasterModule;
+  provides IGuiceModule with CerialMasterModule;
   provides IActivityMasterSystem with CerialMasterSystem;
-  provides com.guicedee.guicedinjection.interfaces.IGuiceConfigurator with CerialMasterGuiceConfig;
-  provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions with CerialMasterInclusionModule;
+  provides IGuiceConfigurator with CerialMasterGuiceConfig;
+  provides IGuiceScanModuleInclusions with CerialMasterInclusionModule;
 
   opens com.guicedee.activitymaster.cerialmaster to com.google.guice;
   opens com.guicedee.activitymaster.cerialmaster.implementations to com.google.guice;

@@ -1,7 +1,7 @@
 package com.guicedee.activitymaster.cerialmaster.test;
 
 import com.guicedee.activitymaster.fsdm.db.ActivityMasterDBModule;
-import com.guicedee.guicedinjection.interfaces.IGuiceModule;
+import com.guicedee.client.services.lifecycle.IGuiceModule;
 import com.guicedee.vertxpersistence.ConnectionBaseInfo;
 import com.guicedee.vertxpersistence.DatabaseModule;
 import com.guicedee.vertxpersistence.annotations.EntityManager;
