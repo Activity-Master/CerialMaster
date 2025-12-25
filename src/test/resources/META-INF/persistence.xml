@@ -151,6 +151,7 @@
 
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItem</class>
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemData</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataValue</class>
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataSecurityToken</class>
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataXClassification</class>
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataXClassificationSecurityToken</class>
