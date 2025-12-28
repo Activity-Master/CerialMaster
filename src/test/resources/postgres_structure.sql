@@ -3113,7 +3113,7 @@ WHERE resourceitemdatavalueid IS NOT NULL;
 
 
 -- Drop column in a *later* change, after app cutover:
--- ALTER TABLE resource.resourceitemdata DROP COLUMN resourceitemdata;
+ ALTER TABLE resource.resourceitemdata DROP COLUMN resourceitemdata;
 
 
 select count(*) from resource.resourceitemdatavalue;
