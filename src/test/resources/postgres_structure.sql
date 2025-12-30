@@ -3115,8 +3115,34 @@ WHERE resourceitemdatavalueid IS NOT NULL;
 -- Drop column in a *later* change, after app cutover:
  ALTER TABLE resource.resourceitemdata DROP COLUMN resourceitemdata;
 
+CREATE INDEX IF NOT EXISTS rix_cls_val_effdesc_idx
+ON resource.ResourceItemXClassification
+(ClassificationID, Value, EffectiveFromDate DESC)
+INCLUDE (ResourceItemID);
 
-select count(*) from resource.resourceitemdatavalue;
 
-select count(*) from resource.resourceitemdata;
+CREATE INDEX IF NOT EXISTS ric_item_class_eff_idx
+ON resource.ResourceItemXClassification
+(ResourceItemID, ClassificationID, EffectiveFromDate, EffectiveToDate)
+INCLUDE (Value, ActiveFlagID);
+
+
+CREATE INDEX IF NOT EXISTS ric_class_value_eff_idx
+ON resource.ResourceItemXClassification
+(ClassificationID, Value, EffectiveFromDate DESC)
+INCLUDE (ResourceItemID, ActiveFlagID);
+
+CREATE INDEX IF NOT EXISTS classification_name_idx
+ON classification.Classification (ClassificationName)
+INCLUDE (ClassificationID, ActiveFlagID, EffectiveFromDate, EffectiveToDate);
+
+
+-- if ResourceItemID is PK you're mostly covered, but effective filtering can still benefit:
+CREATE INDEX IF NOT EXISTS ri_active_eff_idx
+ON resource.ResourceItem
+(ResourceItemID, ActiveFlagID, EffectiveFromDate, EffectiveToDate);
+
+
+
+
 

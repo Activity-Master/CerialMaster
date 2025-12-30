@@ -246,7 +246,7 @@
 
             <property name="hibernate.flushMode" value="FLUSH_AUTO"/>
 
-            <property name="hibernate.jdbc.batch_size" value="500"/>
+            <!--<property name="hibernate.jdbc.batch_size" value="500"/>-->
             <property name="hibernate.temp.use_jdbc_metadata_defaults" value="false"/>
             <property name="hibernate.javax.cache.missing_cache_strategy" value="create"/>
 
