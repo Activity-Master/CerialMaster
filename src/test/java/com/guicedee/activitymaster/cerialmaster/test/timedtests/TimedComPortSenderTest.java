@@ -5,7 +5,6 @@ import com.guicedee.activitymaster.cerialmaster.client.Config;
 import com.guicedee.activitymaster.cerialmaster.client.TimedComPortSender;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.client.IGuiceContext;
-import io.smallrye.mutiny.helpers.test.AssertSubscriber;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
@@ -28,8 +27,10 @@ public class TimedComPortSenderTest {
         Config cfg = new Config(2, 50, 200);
         TimedComPortSender sender = conn.getOrCreateTimedSender(cfg);
 
-        var sub = sender.status().subscribe().withSubscriber(AssertSubscriber.create(50));
+        java.util.List<Object> receivedItems = new java.util.concurrent.CopyOnWriteArrayList<>();
+        sender.status().subscribe().with(receivedItems::add);
 
+        Thread.sleep(100);
         sender.start("PING");
         // Let two attempts happen
         Thread.sleep(130);
@@ -41,8 +42,8 @@ public class TimedComPortSenderTest {
         Thread.sleep(30);
         sender.complete();
 
-        // Ensure we observed terminal Completed state within some time
-        sub.awaitNextItems(3); // at least a few signals
+        Thread.sleep(1000);
+        assertTrue(receivedItems.size() >= 3, "Should have received at least 3 items, but got " + receivedItems.size());
         // There isn't a direct terminal completion of Multi; check registry and state by presence of last status
         // We just assert that the sender remains registered and no exception thrown
         assertNotNull(ComPortConnection.getTimedSender(20));

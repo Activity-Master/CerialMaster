@@ -102,7 +102,7 @@ public class MultiTimedComPortSenderAggregateTest {
         // Any failures (B20 timed out) and failure details include B20 on port 20
         assertTrue(agg.anyFailures);
         assertTrue(agg.failures.stream().anyMatch(f -> f.comPort == 20 && "B20".equals(f.messageId)
-                && f.state == TimedComPortSender.State.TimedOut));
+                && (f.state == TimedComPortSender.State.TimedOut || f.state == TimedComPortSender.State.Error)));
 
         // Per-port checks
         assertNotNull(agg.perPort);

@@ -25,24 +25,46 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class MultiTimedComPortSenderFourPortsPauseResumeTest {
 
+    static class MockConnection extends ComPortConnection<MockConnection> {
+        public MockConnection(int port) {
+            super(port, com.guicedee.cerial.enumerations.ComPortType.Device);
+        }
+        @Override public MockConnection connect() {
+            setComPortStatus(com.guicedee.cerial.enumerations.ComPortStatus.Running);
+            return this;
+        }
+        @Override public MockConnection disconnect() { return this; }
+        @Override public void write(String message, boolean... checkForEndOfCharacter) { }
+    }
+
     @Test
     public void fourPorts_pauseMulti_resumeSingle_then_resumeAll_and_complete() throws Exception {
-        ICerialMasterService<?> svc = IGuiceContext.get(ICerialMasterService.class);
-        ComPortConnection<?> c20, c21, c22, c23;
+        Map<Integer, ComPortConnection<?>> oldConns = new LinkedHashMap<>();
+        Map<Integer, TimedComPortSender> oldSenders = new LinkedHashMap<>();
+        int[] ports = {20, 21, 22, 23};
         try {
-            c20 = svc.getComPortConnectionDirect(20).await().atMost(Duration.ofSeconds(50));
-            c21 = svc.getComPortConnectionDirect(21).await().atMost(Duration.ofSeconds(50));
-            c22 = svc.getComPortConnectionDirect(22).await().atMost(Duration.ofSeconds(50));
-            c23 = svc.getComPortConnectionDirect(23).await().atMost(Duration.ofSeconds(50));
-            // Perform a quick connect/disconnect to validate access
-            c20.connect(); c20.disconnect();
-            c21.connect(); c21.disconnect();
-            c22.connect(); c22.disconnect();
-            c23.connect(); c23.disconnect();
-        } catch (Throwable t) {
-            Assumptions.assumeTrue(false, "Serial not available or blocked in test environment: " + t.getMessage());
-            return;
+            for (int p : ports) {
+                oldConns.put(p, ComPortConnection.PORT_CONNECTIONS.get(p));
+                oldSenders.put(p, ComPortConnection.getTimedSender(p));
+                
+                MockConnection mock = new MockConnection(p);
+                ComPortConnection.PORT_CONNECTIONS.put(p, mock);
+                ComPortConnection.TIMED_SENDERS.remove(p);
+            }
+
+            doTest();
+        } finally {
+            for (int p : ports) {
+                if (oldConns.get(p) != null) ComPortConnection.PORT_CONNECTIONS.put(p, oldConns.get(p));
+                else ComPortConnection.PORT_CONNECTIONS.remove(p);
+                
+                if (oldSenders.get(p) != null) ComPortConnection.TIMED_SENDERS.put(p, oldSenders.get(p));
+                else ComPortConnection.TIMED_SENDERS.remove(p);
+            }
         }
+    }
+
+    private void doTest() throws Exception {
 
         MultiTimedComPortSender manager = new MultiTimedComPortSender();
         // Base config: modest retry/delay/timeout to make the test reasonably fast
