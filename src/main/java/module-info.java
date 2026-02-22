@@ -22,8 +22,9 @@ module com.guicedee.activitymaster.cerialmaster {
   requires com.guicedee.activitymaster.cerialmaster.client;
   requires com.guicedee.cerial;
   requires io.vertx.core;
+    requires com.guicedee.rest.client;
 
-  provides IGuiceModule with CerialMasterModule;
+    provides IGuiceModule with CerialMasterModule;
   provides IActivityMasterSystem with CerialMasterSystem;
   provides IGuiceConfigurator with CerialMasterGuiceConfig;
   provides IGuiceScanModuleInclusions with CerialMasterInclusionModule;

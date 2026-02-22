@@ -36,6 +36,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.guicedee</groupId>
+            <artifactId>guiced-rest-client</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
