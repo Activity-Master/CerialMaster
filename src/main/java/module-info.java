@@ -13,7 +13,7 @@ module com.guicedee.activitymaster.cerialmaster {
 
   requires org.apache.logging.log4j.core;
   requires com.google.guice;
-  requires transitive com.guicedee.vertxpersistence;
+  requires transitive com.guicedee.persistence;
 
   requires transitive com.guicedee.activitymaster.fsdm.client;
   requires transitive com.guicedee.activitymaster.fsdm;

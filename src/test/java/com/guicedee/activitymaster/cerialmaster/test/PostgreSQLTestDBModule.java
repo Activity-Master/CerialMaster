@@ -2,10 +2,10 @@ package com.guicedee.activitymaster.cerialmaster.test;
 
 import com.guicedee.activitymaster.fsdm.db.ActivityMasterDBModule;
 import com.guicedee.client.services.lifecycle.IGuiceModule;
-import com.guicedee.vertxpersistence.ConnectionBaseInfo;
-import com.guicedee.vertxpersistence.DatabaseModule;
-import com.guicedee.vertxpersistence.annotations.EntityManager;
-import com.guicedee.vertxpersistence.implementations.postgres.PostgresConnectionBaseInfo;
+import com.guicedee.persistence.ConnectionBaseInfo;
+import com.guicedee.persistence.DatabaseModule;
+import com.guicedee.persistence.annotations.EntityManager;
+import com.guicedee.persistence.implementations.postgres.PostgresConnectionBaseInfo;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.jpa.boot.spi.PersistenceUnitDescriptor;
 import org.testcontainers.containers.Container;
