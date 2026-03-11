@@ -33,3 +33,4 @@ ActivityMasterClient.rar
 *.log
 /logs/
 /cerial/
+/.vscode/settings.json
