@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.google.inject.*;
 import com.guicedee.activitymaster.cerialmaster.CerialMasterService;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
-import com.guicedee.guicedinjection.interfaces.IGuiceModule;
+import com.guicedee.client.services.lifecycle.IGuiceModule;
 
 public class CerialMasterModule
 		extends PrivateModule
