@@ -18,11 +18,11 @@ public class CerialMasterModule
 		@SuppressWarnings("Convert2Diamond")
 		Key<ICerialMasterService<CerialMasterService>> realKey
 				= Key.get(new TypeLiteral<ICerialMasterService<CerialMasterService>>() {});
-		
+
 		bind(genericKey).to(realKey);
 		bind(realKey).to(CerialMasterService.class);
 		bind(ICerialMasterService.class).to(genericKey);
-		
+
 		expose(genericKey);
 		expose(ICerialMasterService.class);
 	}

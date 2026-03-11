@@ -1,25 +1,26 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
-import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
-import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
+
+import com.guicedee.client.services.IGuiceConfig;
+import com.guicedee.client.services.lifecycle.IGuiceConfigurator;
 
 public class CerialMasterGuiceConfig
-		implements IGuiceConfigurator
+        implements IGuiceConfigurator
 {
-	@Override
-	public IGuiceConfig<?> configure(IGuiceConfig<?> config)
-	{
-		config.setClasspathScanning(true)
-		      .setAnnotationScanning(true)
-		      .setFieldInfo(true)
-		      .setMethodInfo(true)
-		   //   .setAllowPaths(true)
-		      .setIgnoreFieldVisibility(true)
-		      .setIgnoreMethodVisibility(true)
-		      .setIgnoreClassVisibility(true)
-		    //  .setIncludeModuleAndJars(true)
-		//.setVerbose(true)
-		;
-		return config;
-	}
+    @Override
+    public IGuiceConfig<?> configure(IGuiceConfig<?> config)
+    {
+        config.setClasspathScanning(true)
+                .setAnnotationScanning(true)
+                .setFieldInfo(true)
+                .setMethodInfo(true)
+                //   .setAllowPaths(true)
+                .setIgnoreFieldVisibility(true)
+                .setIgnoreMethodVisibility(true)
+                .setIgnoreClassVisibility(true)
+        //  .setIncludeModuleAndJars(true)
+        //.setVerbose(true)
+        ;
+        return config;
+    }
 }

@@ -5,15 +5,13 @@ import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.cerial.enumerations.*;
 import com.guicedee.client.IGuiceContext;
-import com.guicedee.services.jsonrepresentation.IJsonRepresentation;
+import com.guicedee.modules.services.jsonrepresentation.IJsonRepresentation;
 import io.smallrye.mutiny.Uni;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
-import static com.guicedee.activitymaster.fsdm.client.services.IActivityMasterService.getISystem;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ComPortConnectionTest
 {

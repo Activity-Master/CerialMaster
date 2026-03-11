@@ -151,6 +151,7 @@
 
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItem</class>
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemData</class>
+        <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataValue</class>
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataSecurityToken</class>
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataXClassification</class>
         <class>com.guicedee.activitymaster.fsdm.db.entities.resourceitem.ResourceItemDataXClassificationSecurityToken</class>
@@ -245,7 +246,7 @@
 
             <property name="hibernate.flushMode" value="FLUSH_AUTO"/>
 
-            <property name="hibernate.jdbc.batch_size" value="500"/>
+            <!--<property name="hibernate.jdbc.batch_size" value="500"/>-->
             <property name="hibernate.temp.use_jdbc_metadata_defaults" value="false"/>
             <property name="hibernate.javax.cache.missing_cache_strategy" value="create"/>
 
@@ -257,14 +258,14 @@
             <property name="hibernate.order_inserts" value="true"/>
             <property name="hibernate.order_updates" value="true"/>
             <property name="hibernate.connection.autocommit" value="false"/>
-            <property name="hibernate.cache.use_query_cache" value="true"/>
+            <property name="hibernate.cache.use_query_cache" value="false"/>
             <property name="hibernate.generate_statistics" value="false"/>
             <property name="hibernate.bytecode.use_reflection_optimizer" value="true"/>
 
-             <property name="hibernate.cache.use_second_level_cache" value="true"/>
-             <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.jcache.JCacheRegionFactory"/>
-             <property name="hibernate.javax.cache.provider" value="org.ehcache.jsr107.EhcacheCachingProvider"/>
-             <property name="hibernate.javax.cache.uri" value="/ehcache.xml"/>
+            <property name="hibernate.cache.use_second_level_cache" value="true"/>
+            <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.jcache.JCacheRegionFactory"/>
+            <property name="hibernate.javax.cache.provider" value="org.ehcache.jsr107.EhcacheCachingProvider"/>
+            <property name="hibernate.javax.cache.uri" value="/ehcache.xml"/>
 
 
 
@@ -284,7 +285,7 @@
             <property name="hibernate.jdbc.batch_versioned_data" value="true"/>
 
             <property name="hibernate.cache.use_second_level_cache" value="true"/>
-            <property name="hibernate.cache.use_query_cache" value="true"/>
+            <property name="hibernate.cache.use_query_cache" value="false"/>
             <property name="hibernate.cache.region.factory_class"
                       value="org.hibernate.cache.jcache.JCacheRegionFactory"/>
             <property name="hibernate.javax.cache.provider" value="org.ehcache.jsr107.EhcacheCachingProvider"/>
