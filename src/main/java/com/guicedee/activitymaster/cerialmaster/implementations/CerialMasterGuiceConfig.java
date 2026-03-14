@@ -5,7 +5,7 @@ import com.guicedee.client.services.IGuiceConfig;
 import com.guicedee.client.services.lifecycle.IGuiceConfigurator;
 
 public class CerialMasterGuiceConfig
-        implements IGuiceConfigurator
+        implements IGuiceConfigurator<CerialMasterGuiceConfig>
 {
     @Override
     public IGuiceConfig<?> configure(IGuiceConfig<?> config)
