@@ -27,7 +27,6 @@ public class PostgreSQLTestDBModule
             .withPassword("postgres");
 
     static {
-        ActivityMasterDBModule.forTests = true;
         postgresContainer.start();
         try {
             // Copy and execute postgres_fsdm.sql
