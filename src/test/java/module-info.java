@@ -8,10 +8,19 @@ open module cerial.master.tests {
   requires static lombok;
   requires org.testcontainers;
   requires com.guicedee.activitymaster.cerialmaster;
+  requires com.google.guice;
 		requires jakarta.validation;
-		
+
+  requires com.graphqljava;
+  requires com.guicedee.vertx.graphql;
+
+  uses com.guicedee.vertx.graphql.services.IGraphQLSchemaProvider;
+
 		exports com.guicedee.activitymaster.cerialmaster.test;
   exports com.guicedee.activitymaster.cerialmaster.testimpl;
+
+  provides com.guicedee.client.services.lifecycle.IGuiceModule
+      with com.guicedee.activitymaster.cerialmaster.test.PostgreSQLTestDBModule;
 
   provides com.guicedee.activitymaster.cerialmaster.client.services.IComPortStatusChanged
       with com.guicedee.activitymaster.cerialmaster.testimpl.TestStatusListener;

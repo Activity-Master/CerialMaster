@@ -112,13 +112,6 @@ order by pg_catalog.pg_relation_size(tc.conrelid) desc
 $$;
 
 
-alter table resource.resourceitemdata
-    alter COLUMN resourceitemdata SET COMPRESSION lz4;
-alter table resource.resourceitemdata
-    alter COLUMN resourceitemdata SET STORAGE EXTERNAL;
-
-
-
 --CREATE EXTENSION pg_stat_statements;
 --LOAD 'auto_explain';
 --SET auto_explain.log_min_duration = '3s';
@@ -3093,27 +3086,8 @@ select * from resource.resourceitemdata where resourceitemid = 'b8eb4da4-b596-4c
 select * from resource.resourceitemdatavalue where resourceitemdatavalueid = 'b8eb4da4-b596-4c92-8979-a2304950571a';
 
 
---alter table resource.resourceitemdata 	drop COLUMN resourceitemdata;
+alter table resource.resourceitemdata 	drop COLUMN resourceitemdata;
 
-
-ALTER TABLE resource.resourceitemdatavalue SET (
-  autovacuum_vacuum_scale_factor = 0.005,
-  autovacuum_analyze_scale_factor = 0.005,
-  autovacuum_vacuum_threshold = 2000,
-  autovacuum_analyze_threshold = 2000,
-  autovacuum_vacuum_cost_limit = 10000,
-  toast_tuple_target = 2048
-);
-
-
-CREATE INDEX IF NOT EXISTS resourceitemdata_resourceitemdatavalueid_notnull_idx
-ON resource.resourceitemdata (resourceitemdatavalueid)
-WHERE resourceitemdatavalueid IS NOT NULL;
-
-
-
--- Drop column in a *later* change, after app cutover:
- ALTER TABLE resource.resourceitemdata DROP COLUMN resourceitemdata;
 
 CREATE INDEX IF NOT EXISTS rix_cls_val_effdesc_idx
 ON resource.ResourceItemXClassification
@@ -3141,7 +3115,6 @@ INCLUDE (ClassificationID, ActiveFlagID, EffectiveFromDate, EffectiveToDate);
 CREATE INDEX IF NOT EXISTS ri_active_eff_idx
 ON resource.ResourceItem
 (ResourceItemID, ActiveFlagID, EffectiveFromDate, EffectiveToDate);
-
 
 
 

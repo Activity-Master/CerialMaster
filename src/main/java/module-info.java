@@ -10,8 +10,10 @@ module com.guicedee.activitymaster.cerialmaster {
   exports com.guicedee.activitymaster.cerialmaster.services;
   exports com.guicedee.activitymaster.cerialmaster.services.enumerations;
   exports com.guicedee.activitymaster.cerialmaster;
+  exports com.guicedee.activitymaster.cerialmaster.rest;
 
   requires org.apache.logging.log4j.core;
+  requires org.apache.logging.log4j;
   requires com.google.guice;
   requires transitive com.guicedee.persistence;
 
@@ -24,14 +26,27 @@ module com.guicedee.activitymaster.cerialmaster {
   requires io.vertx.core;
   requires com.guicedee.rest.client;
 
+  requires com.guicedee.rest;
+  requires com.guicedee.vertx;
+  requires com.guicedee.vertx.graphql;
+  requires com.graphqljava;
+  requires jakarta.ws.rs;
+  requires com.fasterxml.jackson.databind;
+  requires io.smallrye.mutiny;
+  requires org.hibernate.reactive;
+
   provides IGuiceModule with CerialMasterModule;
   provides IActivityMasterSystem with CerialMasterSystem;
   provides IGuiceConfigurator with CerialMasterGuiceConfig;
   provides IGuiceScanModuleInclusions with CerialMasterInclusionModule;
+  provides com.guicedee.vertx.graphql.services.IGraphQLSchemaProvider
+      with com.guicedee.activitymaster.cerialmaster.implementations.graphql.CerialMasterGraphQLSchemaProvider;
 
   opens com.guicedee.activitymaster.cerialmaster to com.google.guice;
   opens com.guicedee.activitymaster.cerialmaster.implementations to com.google.guice;
+  opens com.guicedee.activitymaster.cerialmaster.implementations.graphql to com.google.guice;
   opens com.guicedee.activitymaster.cerialmaster.services to com.google.guice, com.fasterxml.jackson.databind;
 
   opens com.guicedee.activitymaster.cerialmaster.services.enumerations to com.google.guice, com.fasterxml.jackson.databind;
+  opens com.guicedee.activitymaster.cerialmaster.rest to com.google.guice, com.guicedee.rest, com.fasterxml.jackson.databind, org.hibernate.reactive, net.bytebuddy;
 }

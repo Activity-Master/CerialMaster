@@ -4,10 +4,13 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
+import com.guicedee.activitymaster.cerialmaster.client.dto.CerialComPort;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 
+import com.guicedee.activitymaster.fsdm.client.services.IResourceItemService;
 import com.guicedee.activitymaster.fsdm.client.services.rest.*;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
+import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.resourceitem.IResourceItem;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
 import com.guicedee.activitymaster.fsdm.client.services.rest.resourceitems.*;
 import com.guicedee.activitymaster.fsdm.client.services.rest.RelationshipUpdateEntry;
@@ -26,6 +29,9 @@ import static com.guicedee.activitymaster.cerialmaster.services.enumerations.Cer
 public class CerialMasterService implements ICerialMasterService<CerialMasterService> {
     @Inject
     private RestClients restClients;
+
+    @Inject
+    private IResourceItemService<?> resourceItemService;
 
     @Override
     public Uni<ComPortConnection<?>> addOrUpdateConnection(Mutiny.Session session, ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
@@ -322,6 +328,75 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                         }))
                 .onFailure()
                 .invoke(error -> log.error("❌ Failed to list available COM ports: {}", error.getMessage(), error));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    //  Strongly-typed warehouse read path (GraphQL + REST exposure)
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Uni<CerialComPort> findComPortDetailed(Mutiny.Session session, Integer comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        log.trace("🔍 Hydrating CerialComPort DTO for port {} directly from the warehouse", comPort);
+        return resourceItemService.findByClassification(session, SerialConnectionPort.toString(),
+                        ComPortNumber.toString(), String.valueOf(comPort), system, identityToken)
+                .chain(item -> hydrateComPort(session, item, system, identityToken))
+                .onFailure().invoke(error -> log.error("❌ Failed to hydrate COM port {}: {}", comPort, error.getMessage(), error));
+    }
+
+    @Override
+    public Uni<List<CerialComPort>> listComPortsDetailed(Mutiny.Session session, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        log.trace("🔍 Listing all registered COM ports as CerialComPort DTOs from the warehouse");
+        return resourceItemService.findByResourceItemType(session, SerialConnectionPort.toString(), system, identityToken)
+                .chain(items -> {
+                    List<CerialComPort> results = new ArrayList<>();
+                    Uni<Void> chain = Uni.createFrom().voidItem();
+                    for (IResourceItem<?, ?> item : items) {
+                        chain = chain.chain(() -> hydrateComPort(session, item, system, identityToken)
+                                .invoke(results::add)
+                                .replaceWithVoid());
+                    }
+                    return chain.replaceWith(results);
+                })
+                .onFailure().invoke(error -> log.error("❌ Failed to list COM ports: {}", error.getMessage(), error));
+    }
+
+    /**
+     * Reads the supporting classifications off a {@code SerialConnectionPort} resource item and maps
+     * them onto a strongly-typed {@link CerialComPort} DTO.
+     */
+    private Uni<CerialComPort> hydrateComPort(Mutiny.Session session, IResourceItem<?, ?> item, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        CerialComPort dto = new CerialComPort();
+        dto.setResourceItemId(item.getId());
+        return classificationValue(session, item, ComPortNumber.toString(), system, identityToken).invoke(v -> dto.setComPort(parseInteger(v)))
+                .chain(() -> classificationValue(session, item, ComPortDeviceType.toString(), system, identityToken).invoke(dto::setDeviceType))
+                .chain(() -> classificationValue(session, item, ComPortStatus.toString(), system, identityToken).invoke(dto::setStatus))
+                .chain(() -> classificationValue(session, item, BaudRate.toString(), system, identityToken).invoke(v -> dto.setBaudRate(parseInteger(v))))
+                .chain(() -> classificationValue(session, item, BufferSize.toString(), system, identityToken).invoke(v -> dto.setBufferSize(parseInteger(v))))
+                .chain(() -> classificationValue(session, item, DataBits.toString(), system, identityToken).invoke(v -> dto.setDataBits(parseInteger(v))))
+                .chain(() -> classificationValue(session, item, StopBits.toString(), system, identityToken).invoke(v -> dto.setStopBits(parseInteger(v))))
+                .chain(() -> classificationValue(session, item, Parity.toString(), system, identityToken).invoke(v -> dto.setParity(parseInteger(v))))
+                .replaceWith(dto);
+    }
+
+    /**
+     * Reads a single classification value off a resource item, returning {@code null} (rather than
+     * failing the chain) when the relationship is absent.
+     */
+    private Uni<String> classificationValue(Mutiny.Session session, IResourceItem<?, ?> item, String classificationName, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        return item.findClassification(session, classificationName, system, identityToken)
+                .map(rel -> rel != null ? rel.getValue() : null)
+                .onFailure().recoverWithItem((String) null);
+    }
+
+    private static Integer parseInteger(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(value.trim());
+        } catch (NumberFormatException nfe) {
+            return null;
+        }
     }
 
 }
