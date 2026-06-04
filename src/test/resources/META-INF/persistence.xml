@@ -220,15 +220,6 @@
         <class>com.guicedee.activitymaster.fsdm.db.entities.time.Weeks</class>
         <class>com.guicedee.activitymaster.fsdm.db.entities.time.Years</class>
 
-        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.ArrangementsHierarchyView</class>
-        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.ClassificationHierarchyView</class>
-        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.GeographyHierarchyView</class>
-        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.InvolvedPartyHierarchyView</class>
-        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.ProductHierarchyView</class>
-        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.RulesHierarchyView</class>
-        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.ResourceItemHierarchyView</class>
-        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.SecurityHierarchyView</class>
-        <class>com.guicedee.activitymaster.fsdm.db.hierarchies.SecurityHierarchyParents</class>
 
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
