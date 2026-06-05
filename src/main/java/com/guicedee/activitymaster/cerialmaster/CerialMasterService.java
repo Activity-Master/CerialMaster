@@ -367,26 +367,24 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
     private Uni<CerialComPort> hydrateComPort(Mutiny.Session session, IResourceItem<?, ?> item, ISystems<?, ?> system, java.util.UUID... identityToken) {
         CerialComPort dto = new CerialComPort();
         dto.setResourceItemId(item.getId());
-        return classificationValue(session, item, ComPortNumber.toString(), system, identityToken).invoke(v -> dto.setComPort(parseInteger(v)))
-                .chain(() -> classificationValue(session, item, ComPortDeviceType.toString(), system, identityToken).invoke(dto::setDeviceType))
-                .chain(() -> classificationValue(session, item, ComPortStatus.toString(), system, identityToken).invoke(dto::setStatus))
-                .chain(() -> classificationValue(session, item, BaudRate.toString(), system, identityToken).invoke(v -> dto.setBaudRate(parseInteger(v))))
-                .chain(() -> classificationValue(session, item, BufferSize.toString(), system, identityToken).invoke(v -> dto.setBufferSize(parseInteger(v))))
-                .chain(() -> classificationValue(session, item, DataBits.toString(), system, identityToken).invoke(v -> dto.setDataBits(parseInteger(v))))
-                .chain(() -> classificationValue(session, item, StopBits.toString(), system, identityToken).invoke(v -> dto.setStopBits(parseInteger(v))))
-                .chain(() -> classificationValue(session, item, Parity.toString(), system, identityToken).invoke(v -> dto.setParity(parseInteger(v))))
+        // Read-only hydration: read every classification on this resource item in a single
+        // security-checked query instead of chaining a round-trip per field. A shared Mutiny.Session
+        // cannot run operations in parallel (Hibernate Reactive constraint), so batching one query is
+        // the safe equivalent of fetching them concurrently.
+        return item.findClassificationValues(session, system, identityToken)
+                .invoke(values -> {
+                    dto.setComPort(parseInteger(values.get(ComPortNumber.toString())));
+                    dto.setDeviceType(values.get(ComPortDeviceType.toString()));
+                    dto.setStatus(values.get(ComPortStatus.toString()));
+                    dto.setBaudRate(parseInteger(values.get(BaudRate.toString())));
+                    dto.setBufferSize(parseInteger(values.get(BufferSize.toString())));
+                    dto.setDataBits(parseInteger(values.get(DataBits.toString())));
+                    dto.setStopBits(parseInteger(values.get(StopBits.toString())));
+                    dto.setParity(parseInteger(values.get(Parity.toString())));
+                })
                 .replaceWith(dto);
     }
 
-    /**
-     * Reads a single classification value off a resource item, returning {@code null} (rather than
-     * failing the chain) when the relationship is absent.
-     */
-    private Uni<String> classificationValue(Mutiny.Session session, IResourceItem<?, ?> item, String classificationName, ISystems<?, ?> system, java.util.UUID... identityToken) {
-        return item.findClassification(session, classificationName, system, identityToken)
-                .map(rel -> rel != null ? rel.getValue() : null)
-                .onFailure().recoverWithItem((String) null);
-    }
 
     private static Integer parseInteger(String value) {
         if (value == null || value.isBlank()) {
