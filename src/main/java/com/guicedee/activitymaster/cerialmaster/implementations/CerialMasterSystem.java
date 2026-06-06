@@ -2,22 +2,20 @@ package com.guicedee.activitymaster.cerialmaster.implementations;
 
 import com.google.inject.Inject;
 import com.guicedee.activitymaster.fsdm.client.services.ISystemsService;
-import com.guicedee.activitymaster.fsdm.client.services.administration.ActivityMasterDefaultSystem;
+import com.guicedee.activitymaster.fsdm.client.services.administration.MasterDefaultSystem;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.systems.ISystems;
-import com.guicedee.activitymaster.fsdm.client.services.systems.IActivityMasterSystem;
+import com.guicedee.activitymaster.fsdm.client.services.systems.IMasterSystem;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.reactive.mutiny.Mutiny;
 import io.smallrye.mutiny.Uni;
-
-import java.time.Duration;
 
 import static com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService.*;
 
 @Log4j2
 public class CerialMasterSystem
-		extends ActivityMasterDefaultSystem<CerialMasterSystem>
-		implements IActivityMasterSystem<CerialMasterSystem>
+		extends MasterDefaultSystem<CerialMasterSystem>
+		implements IMasterSystem<CerialMasterSystem>
 {
 	
 	@Inject

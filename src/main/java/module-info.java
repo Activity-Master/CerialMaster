@@ -1,5 +1,5 @@
 import com.guicedee.activitymaster.cerialmaster.implementations.*;
-import com.guicedee.activitymaster.fsdm.client.services.systems.IActivityMasterSystem;
+import com.guicedee.activitymaster.fsdm.client.services.systems.IMasterSystem;
 import com.guicedee.client.services.lifecycle.IGuiceConfigurator;
 import com.guicedee.client.services.lifecycle.IGuiceModule;
 import com.guicedee.client.services.config.IGuiceScanModuleInclusions;
@@ -36,7 +36,7 @@ module com.guicedee.activitymaster.cerialmaster {
   requires org.hibernate.reactive;
 
   provides IGuiceModule with CerialMasterModule;
-  provides IActivityMasterSystem with CerialMasterSystem;
+  provides IMasterSystem with CerialMasterSystem;
   provides IGuiceConfigurator with CerialMasterGuiceConfig;
   provides IGuiceScanModuleInclusions with CerialMasterInclusionModule;
   provides com.guicedee.vertx.graphql.services.IGraphQLSchemaProvider
