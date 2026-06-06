@@ -106,7 +106,7 @@ public class CerialMasterInstall implements ISystemUpdate
 																							  // Process each port configuration operation sequentially by chaining operations
 																							  for (Uni<?> operation : portConfigOperations) {
 																							      final Uni<?> currentOperation = operation; // Create final reference for lambda
-																							      sequentialChain = sequentialChain.chain(() -> currentOperation.replaceWithVoid());
+																							      sequentialChain = sequentialChain.chain(currentOperation::replaceWithVoid);
 																							  }
 																							  
 																							  // Return the sequential chain
@@ -142,7 +142,7 @@ public class CerialMasterInstall implements ISystemUpdate
 																							  // Process each message classification operation sequentially by chaining operations
 																							  for (Uni<?> operation : messageClassOperations) {
 																							      final Uni<?> currentOperation = operation; // Create final reference for lambda
-																							      sequentialChain = sequentialChain.chain(() -> currentOperation.replaceWithVoid());
+																							      sequentialChain = sequentialChain.chain(currentOperation::replaceWithVoid);
 																							  }
 																							  
 																							  // Return the sequential chain
@@ -224,7 +224,7 @@ public class CerialMasterInstall implements ISystemUpdate
 																							  // Process each resource item type operation sequentially by chaining operations
 																							  for (Uni<?> operation : resourceItemTypeOperations) {
 																							      final Uni<?> currentOperation = operation; // Create final reference for lambda
-																							      sequentialChain = sequentialChain.chain(() -> currentOperation.replaceWithVoid());
+																							      sequentialChain = sequentialChain.chain(currentOperation::replaceWithVoid);
 																							  }
 																							  
 																							  // Return the sequential chain
