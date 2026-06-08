@@ -1,5 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.implementations;
 
+import com.guicedee.activitymaster.cerialmaster.CerialMasterSecurityCollector;
 import com.guicedee.activitymaster.fsdm.client.services.*;
 import com.guicedee.activitymaster.fsdm.client.services.builders.warehouse.enterprise.IEnterprise;
 import com.guicedee.activitymaster.fsdm.client.services.systems.ISystemUpdate;
@@ -47,7 +48,12 @@ public class CerialMasterInstall implements ISystemUpdate
 						error.getMessage(), error))
 					.chain(identityToken -> {
 						log.info("📦 Creating SerialConnectionPort resource item type...");
-						
+
+						// Batch default security for every classification / event-type / resource-item-type
+						// (and their classification links) created during this taxonomy install; flushed once
+						// below via applyDefaultSecurityToRows on a single stateless transaction.
+						get(CerialMasterSecurityCollector.class).activate(session);
+
 						// Create SerialConnectionPort type
 						return resourceItemService.createType(session, SerialConnectionPort, system)
 							.onItem().invoke(type -> log.debug("✅ Created SerialConnectionPort type: {}", type.getDescription()))
@@ -238,6 +244,8 @@ public class CerialMasterInstall implements ISystemUpdate
 																							  logProgress("Cerial Master", "Completed Com Ports");
 																							  log.info("🎉 CerialMaster installation completed successfully!");
 																						  })
+																						  // Secure every row recorded during this taxonomy install in one batch.
+																						  .chain(() -> get(CerialMasterSecurityCollector.class).flush(session, system, identityToken))
 																						  .map(result -> true)); // Return Boolean
 							});
 					}));
