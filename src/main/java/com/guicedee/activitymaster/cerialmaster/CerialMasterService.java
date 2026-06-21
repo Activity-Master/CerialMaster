@@ -43,11 +43,8 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                     .failure(new UnsupportedOperationException("ComPort or number is null"));
         }
 
-        // Build the create DTO with the type, data value, and all classifications
-        ResourceItemCreateDTO createDto = new ResourceItemCreateDTO();
-        createDto.type = SerialConnectionPort.toString();
-        createDto.dataValue = comPort.getComPort() + "";
-
+        // The full classification set describing this connection — shared by both the create and the
+        // update branch so the persisted shape is identical regardless of which path runs.
         Map<String, String> classifications = new LinkedHashMap<>();
         classifications.put(ComPort.toString(), "");
         classifications.put(ComPortNumber.toString(), comPort.getComPort() + "");
@@ -58,20 +55,107 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
         classifications.put(DataBits.toString(), comPort.getDataBits().toInt() + "");
         classifications.put(StopBits.toString(), comPort.getStopBits().toInt() + "");
         classifications.put(Parity.toString(), comPort.getParity().toInt() + "");
+
+        // Genuine upsert: look for an existing SerialConnectionPort for this port number first so that a
+        // repeated call (e.g. a REST PUT) updates the existing row's classifications instead of inserting
+        // a duplicate resource item.
+        ResourceItemSearchDTO searchDto = new ResourceItemSearchDTO();
+        searchDto.resourceItemType = SerialConnectionPort.toString();
+        searchDto.classificationName = ComPortNumber.toString();
+        searchDto.classificationValue = comPort.getComPort() + "";
+        searchDto.maxResults = 1;
+        searchDto.sortField = SearchSortField.WAREHOUSE_CREATED_TIMESTAMP;
+        searchDto.sortDirection = SortDirection.DESC;
+
+        return restClients.searchResourceItems(requestingSystemName(system), searchDto)
+                .chain(results -> {
+                    if (results == null || results.isEmpty()) {
+                        return createConnection(comPort, classifications, system);
+                    }
+                    ResourceItemDTO found = results.get(0);
+                    log.info("🔄 Existing resource item {} found for COM port {} - updating classifications", found.resourceItemId, comPort.getComPort());
+                    comPort.setId(found.resourceItemId);
+
+                    ResourceItemUpdateDTO updateDto = new ResourceItemUpdateDTO();
+                    updateDto.resourceItemId = found.resourceItemId;
+                    RelationshipUpdateEntry classificationUpdate = new RelationshipUpdateEntry();
+                    classificationUpdate.addOrUpdate = classifications;
+                    updateDto.classifications = classificationUpdate;
+
+                    return restClients.updateResourceItem(requestingSystemName(system), updateDto)
+                            .onItem()
+                            .invoke(updated -> log.info("✅ COM port connection {} successfully updated via REST", comPort.getComPort()))
+                            .replaceWith(comPort);
+                })
+                .onFailure()
+                .invoke(error -> log.error("❌ Failed to add/update COM port {}: {}", comPort.getComPort(), error.getMessage(), error));
+    }
+
+    /**
+     * Create branch of {@link #addOrUpdateConnection}: persists a brand-new {@code SerialConnectionPort}
+     * resource item with the supplied classifications.
+     */
+    private Uni<ComPortConnection<?>> createConnection(ComPortConnection<?> comPort, Map<String, String> classifications, ISystems<?, ?> system) {
+        ResourceItemCreateDTO createDto = new ResourceItemCreateDTO();
+        createDto.type = SerialConnectionPort.toString();
+        createDto.dataValue = comPort.getComPort() + "";
         createDto.classifications = classifications;
 
-        return restClients.createResourceItem(CerialMasterSystemName, createDto)
+        return restClients.createResourceItem(requestingSystemName(system), createDto)
                 .onItem()
                 .invoke(result -> {
                     log.info("✅ Resource item created via REST with ID: {}", result.resourceItemId);
                     comPort.setId(result.resourceItemId);
                 })
-                .onFailure()
-                .invoke(error -> log.error("❌ Failed to create resource item for COM port {}: {}", comPort.getComPort(), error.getMessage(), error))
-                .chain(() -> {
-                    log.info("✅ COM port connection {} successfully added/updated via REST", comPort.getComPort());
-                    return Uni.createFrom().item(comPort);
-                });
+                .replaceWith(comPort);
+    }
+
+    @Override
+    public Uni<CerialComPort> addOrUpdateComPortDetailed(Mutiny.Session session, CerialComPort comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        if (comPort == null || comPort.getComPort() == null) {
+            return Uni.createFrom().failure(new IllegalArgumentException("CerialComPort or its comPort number is null"));
+        }
+        log.info("🚀 Add/update CerialComPort DTO for port {} (delegating to addOrUpdateConnection)", comPort.getComPort());
+
+        // Map the transport DTO onto the runtime ComPortConnection so the single write path
+        // (addOrUpdateConnection) is reused, then read the canonical shape back from the warehouse.
+        ComPortConnection<?> connection = toConnection(comPort);
+        return addOrUpdateConnection(session, connection, system, identityToken)
+                .chain(saved -> findComPortDetailed(session, saved.getComPort(), system, identityToken));
+    }
+
+    /**
+     * Maps a transport {@link CerialComPort} DTO onto a runtime {@link ComPortConnection}, parsing the
+     * DTO's string/numeric fields into the strongly-typed serial enumerations. Unset (null) fields fall
+     * back to the {@link ComPortConnection} defaults so a partial DTO still yields a valid connection.
+     */
+    private static ComPortConnection<?> toConnection(CerialComPort dto) {
+        ComPortType deviceType = dto.getDeviceType() != null ? ComPortType.valueOf(dto.getDeviceType()) : ComPortType.Device;
+        // Use the constructor (not getOrCreate) so a metadata-only REST write does not mutate the static
+        // runtime PORT_CONNECTIONS registry — this connection is a transient mapping carrier only.
+        ComPortConnection<?> connection = new ComPortConnection<>(dto.getComPort(), deviceType);
+        if (dto.getResourceItemId() != null) {
+            connection.setId(dto.getResourceItemId());
+        }
+        if (dto.getStatus() != null) {
+            connection.setComPortStatus(com.guicedee.cerial.enumerations.ComPortStatus.valueOf(dto.getStatus()), true);
+        }
+        if (dto.getBaudRate() != null) {
+            connection.setBaudRate(com.guicedee.cerial.enumerations.BaudRate.from(dto.getBaudRate() + ""));
+        }
+        if (dto.getBufferSize() != null) {
+            connection.setBufferSize(dto.getBufferSize());
+        }
+        if (dto.getDataBits() != null) {
+            connection.setDataBits(com.guicedee.cerial.enumerations.DataBits.fromString(dto.getDataBits() + ""));
+        }
+        if (dto.getStopBits() != null) {
+            connection.setStopBits(com.guicedee.cerial.enumerations.StopBits.from(dto.getStopBits() + ""));
+        }
+        if (dto.getParity() != null) {
+            connection.setParity(com.guicedee.cerial.enumerations.Parity.from(dto.getParity() + ""));
+        }
+        return connection;
     }
 
     @Override
@@ -87,7 +171,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
         searchDto.sortField = SearchSortField.WAREHOUSE_CREATED_TIMESTAMP;
         searchDto.sortDirection = SortDirection.DESC;
 
-        return restClients.searchResourceItems(CerialMasterSystemName, searchDto)
+        return restClients.searchResourceItems(requestingSystemName(system), searchDto)
                 .chain(results -> {
                     if (results == null || results.isEmpty()) {
                         log.warn("⚠️ No resource item found for COM port {}", comPort.getComPort());
@@ -104,7 +188,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                     classificationUpdate.addOrUpdate = Map.of(ComPortStatus.toString(), comPort.getComPortStatus().toString());
                     updateDto.classifications = classificationUpdate;
 
-                    return restClients.updateResourceItem(CerialMasterSystemName, updateDto)
+                    return restClients.updateResourceItem(requestingSystemName(system), updateDto)
                             .onItem()
                             .invoke(updated -> log.info("✅ ComPortStatus classification updated successfully for COM port {}", comPort.getComPort()))
                             .onFailure()
@@ -130,7 +214,7 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
         searchDto.sortField = SearchSortField.WAREHOUSE_CREATED_TIMESTAMP;
         searchDto.sortDirection = SortDirection.DESC;
 
-        return restClients.searchResourceItems(CerialMasterSystemName, searchDto)
+        return restClients.searchResourceItems(requestingSystemName(system), searchDto)
                 .chain(results -> {
                     if (results == null || results.isEmpty()) {
                         log.warn("⚠️ No resource item found for COM port {}", comPort.getComPort());
@@ -383,6 +467,23 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                     dto.setParity(parseInteger(values.get(Parity.toString())));
                 })
                 .replaceWith(dto);
+    }
+
+
+    /**
+     * Resolves the requesting system name used for the warehouse REST operations so that each call runs
+     * under the <em>caller's own</em> system identity (and therefore that system's own scoped security
+     * token, per the {@code SessionUtils.withActivityMaster} per-system identity model) rather than always
+     * borrowing the broadly-privileged Cerial Master system token.
+     *
+     * <p>Falls back to {@link #CerialMasterSystemName} only when no caller system is available (e.g. the
+     * internal no-context reads invoked by {@code getComPortConnection}/{@code getScannerPortConnection}).</p>
+     */
+    private static String requestingSystemName(ISystems<?, ?> system) {
+        if (system != null && system.getName() != null && !system.getName().isBlank()) {
+            return system.getName();
+        }
+        return CerialMasterSystemName;
     }
 
 

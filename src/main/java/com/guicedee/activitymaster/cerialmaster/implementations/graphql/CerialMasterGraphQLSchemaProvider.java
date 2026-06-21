@@ -31,47 +31,46 @@ import java.util.List;
  * <p>The {@code Query} root is shared with the core {@code FsdmGraphQLSchemaProvider}; this provider
  * therefore {@code extend}s it rather than redefining it.</p>
  */
-public class CerialMasterGraphQLSchemaProvider implements IGraphQLSchemaProvider<CerialMasterGraphQLSchemaProvider>
-{
+public class CerialMasterGraphQLSchemaProvider implements IGraphQLSchemaProvider<CerialMasterGraphQLSchemaProvider> {
     private static final String SDL =
-            "\"A serial (COM) port connection as stored within ActivityMaster.\"\n"
-            + "type CerialComPort {\n"
-            + "    \"The warehouse ResourceItem row identifier.\"\n"
-            + "    resourceItemId: String\n"
-            + "    \"The COM port number (e.g. 3 for COM3).\"\n"
-            + "    comPort: Int\n"
-            + "    \"The device type of the port (Device, Server, Scanner).\"\n"
-            + "    deviceType: String\n"
-            + "    \"The last registered status of the port.\"\n"
-            + "    status: String\n"
-            + "    \"The configured baud rate.\"\n"
-            + "    baudRate: Int\n"
-            + "    \"The configured read/write buffer size.\"\n"
-            + "    bufferSize: Int\n"
-            + "    \"The number of data bits per byte.\"\n"
-            + "    dataBits: Int\n"
-            + "    \"The number of stop bits.\"\n"
-            + "    stopBits: Int\n"
-            + "    \"The parity setting (numeric form).\"\n"
-            + "    parity: Int\n"
-            + "}\n"
-            + "\n"
-            + "extend type Query {\n"
-            + "    \"Resolves a single registered COM port by its number within an enterprise/system scope.\"\n"
-            + "    cerialComPort(enterprise: String!, system: String!, comPort: Int!): CerialComPort\n"
-            + "    \"Lists every registered COM port within an enterprise/system scope.\"\n"
-            + "    cerialComPorts(enterprise: String!, system: String!): [CerialComPort!]!\n"
-            + "}\n";
+            """
+                    "A serial (COM) port connection as stored within ActivityMaster."
+                    type CerialComPort {
+                        "The warehouse ResourceItem row identifier."
+                        resourceItemId: String
+                        "The COM port number (e.g. 3 for COM3)."
+                        comPort: Int
+                        "The device type of the port (Device, Server, Scanner)."
+                        deviceType: String
+                        "The last registered status of the port."
+                        status: String
+                        "The configured baud rate."
+                        baudRate: Int
+                        "The configured read/write buffer size."
+                        bufferSize: Int
+                        "The number of data bits per byte."
+                        dataBits: Int
+                        "The number of stop bits."
+                        stopBits: Int
+                        "The parity setting (numeric form)."
+                        parity: Int
+                    }
+                    
+                    extend type Query {
+                        "Resolves a single registered COM port by its number within an enterprise/system scope."
+                        cerialComPort(enterprise: String!, system: String!, comPort: Int!): CerialComPort
+                        "Lists every registered COM port within an enterprise/system scope."
+                        cerialComPorts(enterprise: String!, system: String!): [CerialComPort!]!
+                    }
+                    """;
 
     @Override
-    public TypeDefinitionRegistry getTypeDefinitions()
-    {
+    public TypeDefinitionRegistry getTypeDefinitions() {
         return new SchemaParser().parse(SDL);
     }
 
     @Override
-    public RuntimeWiring.Builder configureWiring(RuntimeWiring.Builder builder)
-    {
+    public RuntimeWiring.Builder configureWiring(RuntimeWiring.Builder builder) {
         return builder
                 .type("Query", q -> q
                         .dataFetcher("cerialComPort", comPortFetcher())
@@ -88,8 +87,7 @@ public class CerialMasterGraphQLSchemaProvider implements IGraphQLSchemaProvider
      * Activity Master security/session context and the resulting Mutiny {@link Uni} is bridged to a
      * Vert.x {@link Future} so the auto-installed {@code VertxFutureAdapter} resolves it.
      */
-    private DataFetcher<Future<CerialComPort>> comPortFetcher()
-    {
+    private DataFetcher<Future<CerialComPort>> comPortFetcher() {
         return env -> {
             String enterprise = env.getArgument("enterprise");
             String system = env.getArgument("system");
@@ -106,8 +104,7 @@ public class CerialMasterGraphQLSchemaProvider implements IGraphQLSchemaProvider
         };
     }
 
-    private DataFetcher<Future<List<CerialComPort>>> comPortsFetcher()
-    {
+    private DataFetcher<Future<List<CerialComPort>>> comPortsFetcher() {
         return env -> {
             String enterprise = env.getArgument("enterprise");
             String system = env.getArgument("system");

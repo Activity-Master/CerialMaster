@@ -88,7 +88,6 @@ public class CerialMasterSystem
 	{
 		return "CerialMaster System - Provides serial port communication functionality for ActivityMaster";
 	}
-	
 
 	@Override
 	public Integer sortOrder()
