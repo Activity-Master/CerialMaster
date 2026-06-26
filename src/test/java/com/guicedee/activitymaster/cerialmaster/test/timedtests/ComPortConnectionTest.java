@@ -1,6 +1,6 @@
 package com.guicedee.activitymaster.cerialmaster.test.timedtests;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import com.guicedee.activitymaster.cerialmaster.client.ComPortConnection;
 import com.guicedee.activitymaster.cerialmaster.client.services.ICerialMasterService;
 import com.guicedee.cerial.enumerations.*;
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ComPortConnectionTest
 {
   @Test
-  public void testSerialization() throws JsonProcessingException
+  public void testSerialization() throws JacksonException
   {
     ComPortConnection<?> cpc = new ComPortConnection<>(20, ComPortType.Device);
     cpc.setDataBits(DataBits.$8);

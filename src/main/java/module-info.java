@@ -31,7 +31,7 @@ module com.guicedee.activitymaster.cerialmaster {
   requires com.guicedee.vertx.graphql;
   requires com.graphqljava;
   requires jakarta.ws.rs;
-  requires com.fasterxml.jackson.databind;
+  requires tools.jackson.databind;
   requires io.smallrye.mutiny;
   requires org.hibernate.reactive;
 
@@ -45,8 +45,8 @@ module com.guicedee.activitymaster.cerialmaster {
   opens com.guicedee.activitymaster.cerialmaster to com.google.guice;
   opens com.guicedee.activitymaster.cerialmaster.implementations to com.google.guice;
   opens com.guicedee.activitymaster.cerialmaster.implementations.graphql to com.google.guice;
-  opens com.guicedee.activitymaster.cerialmaster.services to com.google.guice, com.fasterxml.jackson.databind;
+  opens com.guicedee.activitymaster.cerialmaster.services to com.google.guice, tools.jackson.databind;
 
-  opens com.guicedee.activitymaster.cerialmaster.services.enumerations to com.google.guice, com.fasterxml.jackson.databind;
-  opens com.guicedee.activitymaster.cerialmaster.rest to com.google.guice, com.guicedee.rest, com.fasterxml.jackson.databind, org.hibernate.reactive, net.bytebuddy;
+  opens com.guicedee.activitymaster.cerialmaster.services.enumerations to com.google.guice, tools.jackson.databind;
+  opens com.guicedee.activitymaster.cerialmaster.rest to com.google.guice, com.guicedee.rest, tools.jackson.databind, org.hibernate.reactive, net.bytebuddy;
 }
