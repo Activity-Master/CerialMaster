@@ -60,5 +60,23 @@ public class CerialMasterSecurityCollector
 	{
 		return DefaultSecurityCollector.flush(session, system, identityToken);
 	}
+
+	/** Stateless twin of {@link #activate(Mutiny.Session)}. */
+	public void activate(Mutiny.StatelessSession session)
+	{
+		DefaultSecurityCollector.activate(session);
+	}
+
+	/** Stateless twin of {@link #record(Mutiny.Session, IWarehouseCoreTable)}. */
+	public void record(Mutiny.StatelessSession session, IWarehouseCoreTable<?, ?, ?, ?> row)
+	{
+		DefaultSecurityCollector.record(session, row);
+	}
+
+	/** Stateless twin of {@link #flush(Mutiny.Session, ISystems, UUID...)}. */
+	public Uni<Void> flush(Mutiny.StatelessSession session, ISystems<?, ?> system, UUID... identityToken)
+	{
+		return DefaultSecurityCollector.flush(session, system, identityToken);
+	}
 }
 

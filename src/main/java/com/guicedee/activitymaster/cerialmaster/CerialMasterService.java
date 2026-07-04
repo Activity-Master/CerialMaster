@@ -91,6 +91,12 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                 .invoke(error -> log.error("❌ Failed to add/update COM port {}: {}", comPort.getComPort(), error.getMessage(), error));
     }
 
+    @Override
+    public Uni<ComPortConnection<?>> addOrUpdateConnection(Mutiny.StatelessSession session, ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        // All writes go through REST — session is not used
+        return addOrUpdateConnection((Mutiny.Session) null, comPort, system, identityToken);
+    }
+
     /**
      * Create branch of {@link #addOrUpdateConnection}: persists a brand-new {@code SerialConnectionPort}
      * resource item with the supplied classifications.
@@ -108,6 +114,17 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                     comPort.setId(result.resourceItemId);
                 })
                 .replaceWith(comPort);
+    }
+
+    @Override
+    public Uni<CerialComPort> addOrUpdateComPortDetailed(Mutiny.StatelessSession session, CerialComPort comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        if (comPort == null || comPort.getComPort() == null) {
+            return Uni.createFrom().failure(new IllegalArgumentException("CerialComPort or its comPort number is null"));
+        }
+        log.info("🚀 (stateless) Add/update CerialComPort DTO for port {}", comPort.getComPort());
+        ComPortConnection<?> connection = toConnection(comPort);
+        return addOrUpdateConnection(session, connection, system, identityToken)
+                .chain(saved -> findComPortDetailed(session, saved.getComPort(), system, identityToken));
     }
 
     @Override
@@ -159,6 +176,12 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
     }
 
     @Override
+    public Uni<ComPortConnection<?>> updateStatus(Mutiny.StatelessSession session, ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        // All writes go through REST — session is not used
+        return updateStatus((Mutiny.Session) null, comPort, system, identityToken);
+    }
+
+    @Override
     public Uni<ComPortConnection<?>> updateStatus(Mutiny.Session session, ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
         log.info("🔄 Updating status for COM port {} to {} via REST", comPort.getComPort(), comPort.getComPortStatus());
 
@@ -199,6 +222,12 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                 .invoke(error -> log.error("❌ Failed to update status for COM port {}: {}", comPort.getComPort(), error.getMessage(), error));
     }
 
+
+    @Override
+    public Uni<ComPortConnection<?>> findComPortConnection(Mutiny.StatelessSession session, ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        // All reads go through REST — session is not used
+        return findComPortConnection((Mutiny.Session) null, comPort, system, identityToken);
+    }
 
     @Override
     public Uni<ComPortConnection<?>> findComPortConnection(Mutiny.Session session, ComPortConnection<?> comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
@@ -257,6 +286,19 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
     }
 
     @Override
+    public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.StatelessSession session, Integer comPort, IEnterprise<?, ?> enterprise) {
+        return getComPortConnection(session, comPort, enterprise, null);
+    }
+
+    @Override
+    public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.StatelessSession session, Integer comPort, IEnterprise<?, ?> enterprise, com.guicedee.activitymaster.cerialmaster.client.Config timedConfig) {
+        // REST-based — session is not used
+        return findComPortConnection(session, ComPortConnection.getOrCreate(comPort, ComPortType.Server), null)
+                .onItem().invoke(connection -> maybeAttachTimedSender(connection, timedConfig))
+                .onFailure().invoke(error -> log.error("❌ Failed to get COM port connection for port {}: {}", comPort, error.getMessage(), error));
+    }
+
+    @Override
     public Uni<ComPortConnection<?>> getComPortConnection(Mutiny.Session session, Integer comPort, IEnterprise<?, ?> enterprise) {
         return getComPortConnection(session, comPort, enterprise, null);
     }
@@ -299,6 +341,19 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                 })
                 .onFailure()
                 .invoke(error -> log.error("❌ Failed to get COM port connection for port {}: {}", comPort, error.getMessage(), error));
+    }
+
+    @Override
+    public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.StatelessSession session, Integer comPort, IEnterprise<?, ?> enterprise) {
+        return getScannerPortConnection(session, comPort, enterprise, null);
+    }
+
+    @Override
+    public Uni<ComPortConnection<?>> getScannerPortConnection(Mutiny.StatelessSession session, Integer comPort, IEnterprise<?, ?> enterprise, com.guicedee.activitymaster.cerialmaster.client.Config timedConfig) {
+        // REST-based — session is not used
+        return findComPortConnection(session, ComPortConnection.getOrCreate(comPort, ComPortType.Scanner), null)
+                .onItem().invoke(connection -> maybeAttachTimedSender(connection, timedConfig))
+                .onFailure().invoke(error -> log.error("❌ Failed to get scanner port connection for port {}: {}", comPort, error.getMessage(), error));
     }
 
     @Override
@@ -355,6 +410,24 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                 .invoke(error -> log.error("❌ Failed to list COM ports: {}", error.getMessage(), error));
     }
 
+
+    @Override
+    public Uni<List<String>> listRegisteredComPorts(Mutiny.StatelessSession session, IEnterprise<?, ?> enterprise) {
+        // REST-based — session is not used
+        return listRegisteredComPorts((Mutiny.Session) null, enterprise);
+    }
+
+    @Override
+    public Uni<List<String>> listAvailableComPorts(Mutiny.StatelessSession session, IEnterprise<?, ?> enterprise) {
+        return listComPorts()
+                .chain(allPorts -> listRegisteredComPorts(session, enterprise)
+                        .chain(registeredPorts -> {
+                            List<String> availablePorts = new ArrayList<>(allPorts);
+                            availablePorts.removeAll(registeredPorts);
+                            return Uni.createFrom().item((List<String>) availablePorts);
+                        }))
+                .onFailure().invoke(error -> log.error("❌ Failed to list available COM ports: {}", error.getMessage(), error));
+    }
 
     @Override
     public Uni<List<String>> listRegisteredComPorts(Mutiny.Session session, IEnterprise<?, ?> enterprise) {
@@ -419,6 +492,32 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
     // ---------------------------------------------------------------------------------------------
 
     @Override
+    public Uni<CerialComPort> findComPortDetailed(Mutiny.StatelessSession session, Integer comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        log.trace("🔍 (stateless) Hydrating CerialComPort DTO for port {} from the warehouse", comPort);
+        return resourceItemService.findByClassification(session, SerialConnectionPort.toString(),
+                        ComPortNumber.toString(), String.valueOf(comPort), system, identityToken)
+                .chain(item -> hydrateComPort(session, item, system, identityToken))
+                .onFailure().invoke(error -> log.error("❌ (stateless) Failed to hydrate COM port {}: {}", comPort, error.getMessage(), error));
+    }
+
+    @Override
+    public Uni<List<CerialComPort>> listComPortsDetailed(Mutiny.StatelessSession session, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        log.trace("🔍 (stateless) Listing all registered COM ports as CerialComPort DTOs from the warehouse");
+        return resourceItemService.findByResourceItemType(session, SerialConnectionPort.toString(), system, identityToken)
+                .chain(items -> {
+                    List<CerialComPort> results = new ArrayList<>();
+                    Uni<Void> chain = Uni.createFrom().voidItem();
+                    for (IResourceItem<?, ?> item : items) {
+                        chain = chain.chain(() -> hydrateComPort(session, item, system, identityToken)
+                                .invoke(results::add)
+                                .replaceWithVoid());
+                    }
+                    return chain.replaceWith(results);
+                })
+                .onFailure().invoke(error -> log.error("❌ (stateless) Failed to list COM ports: {}", error.getMessage(), error));
+    }
+
+    @Override
     public Uni<CerialComPort> findComPortDetailed(Mutiny.Session session, Integer comPort, ISystems<?, ?> system, java.util.UUID... identityToken) {
         log.trace("🔍 Hydrating CerialComPort DTO for port {} directly from the warehouse", comPort);
         return resourceItemService.findByClassification(session, SerialConnectionPort.toString(),
@@ -442,6 +541,26 @@ public class CerialMasterService implements ICerialMasterService<CerialMasterSer
                     return chain.replaceWith(results);
                 })
                 .onFailure().invoke(error -> log.error("❌ Failed to list COM ports: {}", error.getMessage(), error));
+    }
+
+    /**
+     * Stateless variant of {@link #hydrateComPort(Mutiny.Session, IResourceItem, ISystems, java.util.UUID...)}.
+     */
+    private Uni<CerialComPort> hydrateComPort(Mutiny.StatelessSession session, IResourceItem<?, ?> item, ISystems<?, ?> system, java.util.UUID... identityToken) {
+        CerialComPort dto = new CerialComPort();
+        dto.setResourceItemId(item.getId());
+        return item.findClassificationValues(session, system, identityToken)
+                .invoke(values -> {
+                    dto.setComPort(parseInteger(values.get(ComPortNumber.toString())));
+                    dto.setDeviceType(values.get(ComPortDeviceType.toString()));
+                    dto.setStatus(values.get(ComPortStatus.toString()));
+                    dto.setBaudRate(parseInteger(values.get(BaudRate.toString())));
+                    dto.setBufferSize(parseInteger(values.get(BufferSize.toString())));
+                    dto.setDataBits(parseInteger(values.get(DataBits.toString())));
+                    dto.setStopBits(parseInteger(values.get(StopBits.toString())));
+                    dto.setParity(parseInteger(values.get(Parity.toString())));
+                })
+                .replaceWith(dto);
     }
 
     /**
