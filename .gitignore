@@ -43,5 +43,6 @@ Thumbs.db
 javadoc/
 javadoc.zip
 /cerial/
-cerial/
+cerial/**
 logs/
+*.gz
