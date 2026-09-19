@@ -9,6 +9,7 @@ open module cerial.master.tests {
   requires org.testcontainers;
   requires com.guicedee.activitymaster.cerialmaster;
   requires com.google.guice;
+  requires org.mockito;
 		requires jakarta.validation;
 
   requires com.graphqljava;

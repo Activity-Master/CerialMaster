@@ -94,7 +94,7 @@ public class CerialMasterGraphQLSchemaProvider implements IGraphQLSchemaProvider
             Integer comPort = ((Number) env.getArgument("comPort")).intValue();
 
             Uni<CerialComPort> uni = SessionUtils.withActivityMasterReadOnly(enterprise, system, tuple -> {
-                Mutiny.Session session = tuple.getItem1();
+                Mutiny.StatelessSession session = tuple.getItem1();
                 ISystems<?, ?> sys = tuple.getItem3();
                 ICerialMasterService<?> service = IGuiceContext.get(ICerialMasterService.class);
                 return service.findComPortDetailed(session, comPort, sys, tuple.getItem4());
@@ -110,7 +110,7 @@ public class CerialMasterGraphQLSchemaProvider implements IGraphQLSchemaProvider
             String system = env.getArgument("system");
 
             Uni<List<CerialComPort>> uni = SessionUtils.withActivityMasterReadOnly(enterprise, system, tuple -> {
-                Mutiny.Session session = tuple.getItem1();
+                Mutiny.StatelessSession session = tuple.getItem1();
                 ISystems<?, ?> sys = tuple.getItem3();
                 ICerialMasterService<?> service = IGuiceContext.get(ICerialMasterService.class);
                 return service.listComPortsDetailed(session, sys, tuple.getItem4());

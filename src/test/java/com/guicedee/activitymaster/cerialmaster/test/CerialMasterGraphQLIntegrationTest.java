@@ -89,7 +89,7 @@ public class CerialMasterGraphQLIntegrationTest {
      * Creates and starts the enterprise (which registers all systems, including CerialMaster).
      */
     private void bootstrapEnterprise() {
-        sessionFactory.withSession(session -> session.withTransaction(tx -> {
+        sessionFactory.withStatelessSession(session -> session.withTransaction(tx -> {
             IEnterpriseService<?> enterpriseService = IGuiceContext.get(IEnterpriseService.class);
             return enterpriseService.getEnterprise(session, ENTERPRISE)
                     .onFailure().recoverWithUni(t -> {
@@ -108,7 +108,7 @@ public class CerialMasterGraphQLIntegrationTest {
      */
     private void installEnterpriseUpdates() {
         IEnterpriseService<?> enterpriseService = IGuiceContext.get(IEnterpriseService.class);
-        sessionFactory.withTransaction(session ->
+        sessionFactory.withStatelessTransaction(session ->
                 enterpriseService.getEnterprise(session, ENTERPRISE)
                         .chain(enterprise -> enterpriseService.loadUpdates(session, enterprise))
         ).await().atMost(Duration.ofMinutes(5));
@@ -119,7 +119,7 @@ public class CerialMasterGraphQLIntegrationTest {
      */
     private void createTestComPort() {
         SessionUtils.withActivityMaster(ENTERPRISE, SYSTEM, tuple -> {
-            Mutiny.Session session = tuple.getItem1();
+            Mutiny.StatelessSession session = tuple.getItem1();
             ISystems<?, ?> system = tuple.getItem3();
             var token = tuple.getItem4();
             IResourceItemService<?> resourceItemService = IGuiceContext.get(IResourceItemService.class);

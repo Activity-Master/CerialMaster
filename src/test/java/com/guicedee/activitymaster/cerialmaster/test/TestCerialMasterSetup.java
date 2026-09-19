@@ -57,7 +57,7 @@ public class TestCerialMasterSetup
   public void testPostgreSQLConnects()
   {
     var result =
-        sessionFactory.withSession(session -> {
+        sessionFactory.withStatelessSession(session -> {
               // Persist the entity
               return session.withTransaction(tx -> {
                 log.info("Session: " + session);
@@ -79,7 +79,7 @@ public class TestCerialMasterSetup
     @Order(1)
     public void testEnterpriseInstallation()
     {
-      sessionFactory.withSession(session -> {
+      sessionFactory.withStatelessSession(session -> {
             // Persist the entity
             return session.withTransaction(tx -> {
 
@@ -111,7 +111,7 @@ public class TestCerialMasterSetup
       public void testEnterpriseUpdates()
       {
         IEnterpriseService<?> enterpriseService = IGuiceContext.get(IEnterpriseService.class);
-        var updates = sessionFactory.withTransaction(session -> {
+        var updates = sessionFactory.withStatelessTransaction(session -> {
           return enterpriseService.getEnterprise(session, TestEnterprise.name())
                      .chain(enterprise -> {
                        return enterpriseService.loadUpdates(session, enterprise)
@@ -133,7 +133,7 @@ public class TestCerialMasterSetup
       public void testStartNewEnterprise()
       {
         IEnterpriseService<?> enterpriseService = IGuiceContext.get(IEnterpriseService.class);
-        var updates = sessionFactory.withTransaction(session -> {
+        var updates = sessionFactory.withStatelessTransaction(session -> {
           return enterpriseService.getEnterprise(session, TestEnterprise.name())
                      .chain(enterprise -> {
                        return enterpriseService.startNewEnterprise(session, TestEnterprise.name(), "admin", "!@adminadmin")
@@ -156,7 +156,7 @@ public class TestCerialMasterSetup
       public void testCerialPort()
       {
         IEnterpriseService<?> enterpriseService = IGuiceContext.get(IEnterpriseService.class);
-        var updates = sessionFactory.withTransaction(session -> {
+        var updates = sessionFactory.withStatelessTransaction(session -> {
           return enterpriseService.getEnterprise(session, TestEnterprise.name())
                      .chain(enterprise -> {
                            return getISystem(session, CerialMasterSystemName, enterprise)

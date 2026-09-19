@@ -65,7 +65,7 @@ public class CerialMasterRestService
                                           @Parameter(description = "COM port number (e.g. 3 for COM3)") @PathParam("comPort") Integer comPort)
     {
         return SessionUtils.<CerialComPort>withActivityMaster(enterpriseName, systemName, tuple -> {
-            Mutiny.Session session = tuple.getItem1();
+            Mutiny.StatelessSession session = tuple.getItem1();
             ISystems<?, ?> system = tuple.getItem3();
             return cerialMasterService.findComPortDetailed(session, comPort, system, tuple.getItem4());
         }).onFailure().invoke(e ->
@@ -91,7 +91,7 @@ public class CerialMasterRestService
                                                  @Parameter(description = "Requesting system name (security scope)") @PathParam("requestingSystemName") String systemName)
     {
         return SessionUtils.<List<CerialComPort>>withActivityMaster(enterpriseName, systemName, tuple -> {
-            Mutiny.Session session = tuple.getItem1();
+            Mutiny.StatelessSession session = tuple.getItem1();
             ISystems<?, ?> system = tuple.getItem3();
             return cerialMasterService.listComPortsDetailed(session, system, tuple.getItem4());
         }).onFailure().invoke(e ->
@@ -124,7 +124,7 @@ public class CerialMasterRestService
                                             CerialComPort comPort)
     {
         return SessionUtils.<CerialComPort>withActivityMaster(enterpriseName, systemName, tuple -> {
-            Mutiny.Session session = tuple.getItem1();
+            Mutiny.StatelessSession session = tuple.getItem1();
             ISystems<?, ?> system = tuple.getItem3();
             return cerialMasterService.addOrUpdateComPortDetailed(session, comPort, system, tuple.getItem4());
         }).onFailure().invoke(e ->
@@ -165,7 +165,7 @@ public class CerialMasterRestService
         body.setComPort(comPort);
         CerialComPort payload = body;
         return SessionUtils.<CerialComPort>withActivityMaster(enterpriseName, systemName, tuple -> {
-            Mutiny.Session session = tuple.getItem1();
+            Mutiny.StatelessSession session = tuple.getItem1();
             ISystems<?, ?> system = tuple.getItem3();
             return cerialMasterService.addOrUpdateComPortDetailed(session, payload, system, tuple.getItem4());
         }).onFailure().invoke(e ->

@@ -22,7 +22,7 @@ public class CerialMasterSystem
 	private ISystemsService<?> systemsService;
 	
 	@Override
-	public Uni<ISystems<?,?>> registerSystem(Mutiny.Session session, IEnterprise<?,?> enterprise)
+	public Uni<ISystems<?,?>> registerSystem(Mutiny.StatelessSession session, IEnterprise<?,?> enterprise)
 	{
 		log.info("🚀 Registering CerialMaster system with external session for enterprise: '{}'", enterprise.getName());
 		
@@ -40,7 +40,7 @@ public class CerialMasterSystem
 	}
 	
 	@Override
-	public Uni<Void> createDefaults(Mutiny.Session session, IEnterprise<?,?> enterprise)
+	public Uni<Void> createDefaults(Mutiny.StatelessSession session, IEnterprise<?,?> enterprise)
 	{
 		log.info("🔧 Creating defaults for CerialMaster system with external session for enterprise: '{}'", enterprise.getName());
 		
@@ -54,7 +54,7 @@ public class CerialMasterSystem
 	}
 
 	@Override
-	public Uni<Void> postStartup(Mutiny.Session session, IEnterprise<?, ?> enterprise)
+	public Uni<Void> postStartup(Mutiny.StatelessSession session, IEnterprise<?, ?> enterprise)
 	{
 		log.info("🚀 CerialMaster post-startup operations for enterprise: '{}'", enterprise.getName());
 		

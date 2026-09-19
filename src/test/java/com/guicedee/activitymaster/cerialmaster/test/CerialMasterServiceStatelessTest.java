@@ -76,7 +76,7 @@ public class CerialMasterServiceStatelessTest {
     // ---------------------------------------------------------------------------------------------
 
     private void bootstrapEnterprise() {
-        sessionFactory.withSession(session -> session.withTransaction(tx -> {
+        sessionFactory.withStatelessSession(session -> session.withTransaction(tx -> {
             IEnterpriseService<?> es = IGuiceContext.get(IEnterpriseService.class);
             return es.getEnterprise(session, ENTERPRISE)
                     .onFailure().recoverWithUni(t -> {
@@ -96,7 +96,7 @@ public class CerialMasterServiceStatelessTest {
      */
     private void seedTestComPort() {
         SessionUtils.withActivityMaster(ENTERPRISE, SYSTEM, tuple -> {
-            Mutiny.Session session = tuple.getItem1();
+            Mutiny.StatelessSession session = tuple.getItem1();
             ISystems<?, ?> system = tuple.getItem3();
             UUID token = tuple.getItem4()[0];
             IResourceItemService<?> ris = IGuiceContext.get(IResourceItemService.class);

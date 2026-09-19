@@ -1,28 +1,29 @@
 # Sequence — Add or Update COM Port
 
-Flow traced from `CerialMasterService.addOrUpdateConnection` using a provided Mutiny session and Activity Master system token.
+`CerialMasterService.addOrUpdateConnection` accepts a `Mutiny.StatelessSession`, but persists through `RestClients` under the requesting system name. The warehouse REST boundary resolves its own session and security context.
 
 ```mermaid
 sequenceDiagram
   participant Caller
   participant Service as CerialMasterService
-  participant ResourceItemSvc as ResourceItemService
-  participant ClassificationSvc as ClassificationService
-  participant SystemSvc as ActivityMasterSystemSvc
-  participant SerialPorts as Serial Port Hardware
+  participant REST as RestClients
 
   Caller->>Service: addOrUpdateConnection(session, comPort, system, token)
-  Service->>ResourceItemSvc: findResourceItemType(SerialConnectionPort)
-  ResourceItemSvc-->>Service: resourceItemType
-  Service->>ResourceItemSvc: create(resource item with ComPort)
-  ResourceItemSvc-->>Service: resourceItem persisted
-  Service->>ClassificationSvc: add ComPort + ComPortNumber + DeviceType + Status
-  Service->>ClassificationSvc: add BaudRate + BufferSize + DataBits + StopBits + Parity
-  ClassificationSvc-->>Service: classifications applied
+  Service->>REST: search SerialConnectionPort by ComPortNumber
+  REST-->>Service: matching resources
+  alt Existing resource
+    Service->>REST: update classifications on existing resource ID
+  else Missing resource
+    Service->>REST: create resource with connection classifications
+  end
+  REST-->>Service: persisted resource
   Service-->>Caller: ComPortConnection with id and classifications
 ```
 
 Notes
 - Failure handling is logged via Log4j2; invalid comPort inputs short-circuit with UnsupportedOperationException.
 - Hardware enumeration is implicit: com port identity comes from `ComPortConnection` supplied by caller (created via jSerialComm discovery).
-- All persistence is executed with the provided Mutiny session to share a transaction boundary with upstream workflows.
+- The stateless method owns the REST implementation directly; it must not delegate to itself with a null session. Lookup, status updates and registered-port listing follow the same direct REST pattern.
+- Lookup hydrates serial settings and silently applies persisted status; missing resources fail with `NoSuchElementException`.
+- Status updates change only the status classification; a missing resource returns the supplied connection without a write.
+- REST failures propagate. These calls do not share the caller's database transaction or open serial hardware.

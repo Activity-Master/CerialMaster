@@ -75,7 +75,7 @@ public class TestCerialMasterSecurity
 	private void bootstrapEnterprise()
 	{
 		IEnterpriseService<?> enterpriseService = IGuiceContext.get(IEnterpriseService.class);
-		sessionFactory.withSession(session -> session.withTransaction(tx ->
+		sessionFactory.withStatelessSession(session -> session.withTransaction(tx ->
 				enterpriseService.getEnterprise(session, ENTERPRISE)
 						.onFailure().recoverWithUni(t -> {
 							var ent = enterpriseService.get();
@@ -92,7 +92,7 @@ public class TestCerialMasterSecurity
 	private void installTaxonomy()
 	{
 		IEnterpriseService<?> enterpriseService = IGuiceContext.get(IEnterpriseService.class);
-		Integer updates = sessionFactory.withTransaction(session ->
+		Integer updates = sessionFactory.withStatelessTransaction(session ->
 				enterpriseService.getEnterprise(session, ENTERPRISE)
 						.chain(enterprise -> enterpriseService.loadUpdates(session, enterprise))
 		).await().atMost(Duration.ofMinutes(3));
@@ -133,7 +133,7 @@ public class TestCerialMasterSecurity
 	public void systemCanAccessButAnonymousCannot()
 	{
 		Boolean[] access = SessionUtils.<Boolean[]>withActivityMaster(ENTERPRISE, CerialMasterSystemName, tuple -> {
-			Mutiny.Session session = tuple.getItem1();
+			Mutiny.StatelessSession session = tuple.getItem1();
 			var system = tuple.getItem3();
 			UUID[] systemToken = tuple.getItem4();
 
@@ -168,7 +168,7 @@ public class TestCerialMasterSecurity
 		long before = countDefaultSecurity(CerialMasterClassifications.ComPort);
 
 		IEnterpriseService<?> enterpriseService = IGuiceContext.get(IEnterpriseService.class);
-		Boolean done = sessionFactory.withTransaction(session ->
+		Boolean done = sessionFactory.withStatelessTransaction(session ->
 				enterpriseService.getEnterprise(session, ENTERPRISE)
 						.chain(enterprise -> IGuiceContext.get(
 										com.guicedee.activitymaster.cerialmaster.implementations.CerialMasterInstall.class)
@@ -184,7 +184,7 @@ public class TestCerialMasterSecurity
 	private long countDefaultSecurity(CerialMasterClassifications classification)
 	{
 		Long count = SessionUtils.<Long>withActivityMaster(ENTERPRISE, CerialMasterSystemName, tuple -> {
-			Mutiny.Session session = tuple.getItem1();
+			Mutiny.StatelessSession session = tuple.getItem1();
 			var system = tuple.getItem3();
 			UUID[] token = tuple.getItem4();
 
